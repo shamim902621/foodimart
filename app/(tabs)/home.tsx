@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#2ECC71",
     margin: 16,
     padding: 20,
     borderRadius: 16,
@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
+    paddingTop:10
   },
   sectionHeader: {
     flexDirection: "row",
@@ -346,16 +347,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginLeft:10,
+    marginLeft:14,
+    marginTop:10,
     color: "#333",
   },
   seeAllText: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#FF6B35",
     fontWeight: "600",
   },
   categoriesContainer: {
     paddingHorizontal: 16,
+    paddingTop:10
   },
   categoryCard: {
     alignItems: "center",

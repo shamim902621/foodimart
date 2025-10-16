@@ -1,5 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function UserOrdersScreen() {
@@ -8,7 +6,7 @@ export default function UserOrdersScreen() {
       {
         id: 1,
         restaurant: "Xero Degree",
-        items: "1X Narello Caramel, 1X Virgin Mojito Cooler",
+        items: "1× Narello Caramel, 1× Virgin Mojito Cooler",
         date: "30 May 2025, 10:00 PM",
         status: "preparing",
         amount: 149
@@ -18,7 +16,7 @@ export default function UserOrdersScreen() {
       {
         id: 2,
         restaurant: "Xero Degree",
-        items: "1X Narello Caramel, 1X Virgin Mojito Cooler",
+        items: "1× Narello Caramel, 1× Virgin Mojito Cooler",
         date: "28 May 2025, 08:30 PM",
         status: "delivered",
         amount: 149
@@ -33,33 +31,25 @@ export default function UserOrdersScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>User</Text>
-        <View style={styles.placeholder} />
-      </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Active</Text>
-            <Text style={styles.statValue}>¥ {stats.active}</Text>
+            <Text style={styles.statValue}>₹ {stats.active}</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Delivered</Text>
-            <Text style={styles.statValue}>¥ {stats.delivered}</Text>
+            <Text style={styles.statValue}>₹ {stats.delivered}</Text>
           </View>
         </View>
 
         {/* Upcoming Orders */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Upcoming</Text>
+          <Text style={styles.sectionTitle}>Upcoming Orders</Text>
           {orders.upcoming.map((order) => (
-            <TouchableOpacity key={order.id} style={styles.orderCard}>
+            <View key={order.id} style={styles.orderCard}>
               <View style={styles.orderHeader}>
                 <Text style={styles.restaurantName}>{order.restaurant}</Text>
                 <View style={[styles.statusBadge, styles.statusPreparing]}>
@@ -69,20 +59,20 @@ export default function UserOrdersScreen() {
               <Text style={styles.orderItems}>{order.items}</Text>
               <Text style={styles.orderDate}>{order.date}</Text>
               <View style={styles.orderFooter}>
-                <Text style={styles.orderAmount}>¥ {order.amount}</Text>
-                <TouchableOpacity style={styles.trackButton}>
-                  <Text style={styles.trackButtonText}>Track</Text>
+                <Text style={styles.orderAmount}>₹ {order.amount}</Text>
+                <TouchableOpacity style={styles.primaryButton}>
+                  <Text style={styles.primaryButtonText}>Track Order</Text>
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
 
         {/* Past Orders */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Past</Text>
+          <Text style={styles.sectionTitle}>Past Orders</Text>
           {orders.past.map((order) => (
-            <TouchableOpacity key={order.id} style={styles.orderCard}>
+            <View key={order.id} style={styles.orderCard}>
               <View style={styles.orderHeader}>
                 <Text style={styles.restaurantName}>{order.restaurant}</Text>
                 <View style={[styles.statusBadge, styles.statusDelivered]}>
@@ -92,12 +82,12 @@ export default function UserOrdersScreen() {
               <Text style={styles.orderItems}>{order.items}</Text>
               <Text style={styles.orderDate}>{order.date}</Text>
               <View style={styles.orderFooter}>
-                <Text style={styles.orderAmount}>¥ {order.amount}</Text>
-                <TouchableOpacity style={styles.reorderButton}>
-                  <Text style={styles.reorderButtonText}>Reorder</Text>
+                <Text style={styles.orderAmount}>₹ {order.amount}</Text>
+                <TouchableOpacity style={styles.outlineButton}>
+                  <Text style={styles.outlineButtonText}>Reorder</Text>
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
       </ScrollView>
@@ -109,24 +99,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 50,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
+    color: "#2ECC71",
   },
   placeholder: {
     width: 32,
@@ -141,20 +122,26 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#F9F9F9",
     padding: 16,
+        marginTop:10,
     borderRadius: 12,
     alignItems: "center",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: "#666",
+    color: "#777",
     marginBottom: 4,
   },
   statValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#2ECC71",
   },
   section: {
     padding: 16,
@@ -168,10 +155,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   orderCard: {
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#eee",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   orderHeader: {
     flexDirection: "row",
@@ -187,17 +181,18 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 6,
   },
   statusPreparing: {
-    backgroundColor: "#FFF3E0",
+    backgroundColor: "#E9F8F0",
   },
   statusDelivered: {
-    backgroundColor: "#E8F5E8",
+    backgroundColor: "#E9F8E0",
   },
   statusText: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#2ECC71",
   },
   orderItems: {
     fontSize: 14,
@@ -219,28 +214,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  trackButton: {
-    backgroundColor: "#FF6B35",
+  primaryButton: {
+    backgroundColor: "#2ECC71",
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    paddingVertical: 10,
+    borderRadius: 8,
   },
-  trackButtonText: {
+  primaryButtonText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "600",
   },
-  reorderButton: {
+  outlineButton: {
     backgroundColor: "transparent",
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "#FF6B35",
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: "#2ECC71",
   },
-  reorderButtonText: {
-    color: "#FF6B35",
-    fontSize: 12,
-    fontWeight: "500",
+  outlineButtonText: {
+    color: "#2ECC71",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
