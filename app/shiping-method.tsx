@@ -1,3 +1,4 @@
+import BackButton from "@/components/back-button";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -33,7 +34,10 @@ export default function ShippingMethodScreen() {
   return (
     <View style={styles.container}>
       {/* Progress Steps */}
+    
+
       <View style={styles.progressContainer}>
+            <BackButton fallbackRoute="/cart" />
         <View style={styles.steps}>
           <View style={[styles.step, styles.stepActive]}>
             <View style={styles.stepNumberActive}>1</View>
@@ -143,7 +147,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 4,
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
   },
   stepTextActive: {
     fontSize: 12,
-    color: "#FF6B35",
+    color: "#328a0dff",
     fontWeight: "600",
   },
   scrollView: {

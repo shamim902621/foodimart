@@ -8,14 +8,14 @@ export default function OrderSuccessScreen() {
   };
 
   const continueShopping = () => {
-    router.push('/(tabs)');
+    router.push('/home');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.successIcon}>
-          <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+          <Ionicons name="checkmark-circle" size={80} color="#328a0dff" />
         </View>
         
         <Text style={styles.title}>Order Success</Text>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   trackButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

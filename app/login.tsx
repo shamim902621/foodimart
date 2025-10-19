@@ -17,7 +17,7 @@ export default function LoginScreen() {
         onChangeText={setPhone}
       />
 
-      <TouchableOpacity style={styles.button} onPress={() => router.replace("/home")}>
+      <TouchableOpacity style={styles.button} onPress={() => router.replace("/category")}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
@@ -33,24 +33,24 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ffffffff", justifyContent: "center", padding: 24 },
-  title: { fontSize: 28, fontWeight: "bold", color: "#fff", marginBottom: 24 },
+  title: { fontSize: 28, fontWeight: "bold", color: "#2ECC71", marginBottom: 24 },
    input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    margin:10,
+    borderRadius: 5,
+    padding: 12,
+    fontSize: 10,
+    margin:5,
     backgroundColor: '#f9f9f9',
   },
    button: {
     backgroundColor: '#2ECC71',
-    padding: 14,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 5,
     alignItems: 'center',
     marginTop: 8,
   },
-  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
   bottomText: { color: "#fff", textAlign: "center", marginTop: 16 },
   link: { fontWeight: "bold", textDecorationLine: "underline" }
 });

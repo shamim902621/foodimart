@@ -131,43 +131,46 @@ const styles = StyleSheet.create({
   },
   otpContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+   justifyContent:"center",
+    gap:4,
     marginBottom: 40,
     backgroundColor: '#fff',
   },
   otpInput: {
-    width: 55,
-    height: 65,
+    width: 45,
+    height:55,
     borderWidth: 2,
     borderColor: '#ddd',
     borderRadius: 12,
     textAlign: 'center',
-    fontSize: 22,
+    fontSize: 14,
     fontWeight: '600',
     backgroundColor: '#fff',
     color: '#000',
   },
   verifyButton: {
-    backgroundColor: '#2ECC71',
-    padding: 16,
-    borderRadius: 12,
+     backgroundColor: '#2ECC71',
+    padding: 8,
+    borderRadius: 5,
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 8,
   },
   verifyButtonDisabled: {
     backgroundColor: '#A5D6A7',
   },
   verifyButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
   },
   resendContainer: {
+     marginTop:10,
     flexDirection: 'row',
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
-  resendText: {
+  resendText: { 
+  
     color: '#666',
   },
   resendLink: {

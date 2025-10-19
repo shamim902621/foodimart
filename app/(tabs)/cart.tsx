@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function CartScreen() {
-  // Dummy cart data
   const cartItems = [
     {
       id: 1,
@@ -34,19 +33,16 @@ export default function CartScreen() {
     }
   ];
 
-  // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const deliveryFee = 40;
   const tax = subtotal * 0.05; // 5% tax
   const total = subtotal + deliveryFee + tax;
 
   const updateQuantity = (id: number, change: number) => {
-    // In a real app, you would update state/context here
     console.log(`Update item ${id} quantity by ${change}`);
   };
 
   const removeItem = (id: number) => {
-    // In a real app, you would remove item from cart
     console.log(`Remove item ${id}`);
   };
 
@@ -65,7 +61,7 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Your Cart</Text>
         <Text style={styles.itemCount}>{cartItems.length} items</Text>
@@ -173,8 +169,6 @@ export default function CartScreen() {
             </View>
           </View>
         </View>
-
-        {/* Offers & Coupons */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Ionicons name="pricetag-outline" size={20} color="#FF6B35" />
@@ -223,6 +217,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 24,
   },
+   filterButton: {
+    padding: 4,
+  },
   emptyEmoji: {
     fontSize: 80,
     marginBottom: 16,
@@ -240,7 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   shopButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
@@ -381,7 +378,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   changeAddressText: {
-    color: "#FF6B35",
+    color: "#57ff35ff",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -426,7 +423,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#FFD700",
+    borderColor: "#b97003ff",
   },
   couponInfo: {
     flexDirection: "row",
@@ -471,7 +468,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   checkoutButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,

@@ -1,3 +1,4 @@
+import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -52,6 +53,8 @@ export default function OrderTrackingScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Order Summary */}
+                <BackButton fallbackRoute="/cart" />
+
         <View style={styles.orderSummary}>
           <Text style={styles.orderNumber}>Order {orderDetails.orderNumber}</Text>
           <Text style={styles.orderDate}>Placed on {orderDetails.placedDate}</Text>

@@ -1,3 +1,4 @@
+import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import { useState } from "react";
@@ -28,7 +29,7 @@ export default function ProductDetailScreen() {
     <View style={styles.container}>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Product Image */}
+            <BackButton />
         <View style={styles.imageContainer}>
           <Text style={styles.productEmoji}>{product.image}</Text>
         </View>
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#FF6B35",
+    color: "#328a0dff",
     marginBottom: 8,
   },
   productName: {
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#f0f0f0",
   },
   addToCartButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

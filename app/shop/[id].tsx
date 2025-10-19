@@ -1,4 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
+import BackButton from '@/components/back-button';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -47,21 +48,26 @@ export default function ShopScreen() {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
+                          
             <View style={styles.header}>
-                <Text style={styles.time}>9:41</Text>
+                 <BackButton fallbackRoute="/home" />
+                 <Text style={styles.time}>9:41</Text>
+               
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Search Bar */}
-                <View style={styles.searchContainer}>
-                    <Ionicons name="search" size={20} color="#666" />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search keywords..."
-                        placeholderTextColor="#999"
-                    />
-                </View>
+               <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Restaurant name, cuisine, or a dish..."
+            placeholderTextColor="#999"
+          />
+          <TouchableOpacity style={styles.filterButton}>
+            <Feather name="sliders" size={20} color="#666" />
+          </TouchableOpacity>
+        </View>
 
                 {/* Promo Banner */}
                 <View style={styles.promoBanner}>
@@ -126,16 +132,17 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     header: {
-        paddingTop: 50,
-        paddingHorizontal: 16,
-        paddingBottom: 8,
-        alignItems: "flex-end",
-    },
-    time: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#333",
-    },
+    flexDirection: "row",        // 👈 places items in a row
+    justifyContent: "space-between", // 👈 space between left and right
+    alignItems: "center",        // 👈 vertically center items
+    paddingTop: 10,
+    paddingHorizontal: 10,
+    paddingBottom: 8,
+  },
+  time: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
     searchContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -145,14 +152,20 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
     },
+     filterButton: {
+    padding: 4,
+  },
     searchInput: {
         flex: 1,
         marginLeft: 8,
         fontSize: 16,
         color: "#333",
     },
+      searchIcon: {
+    marginRight: 12,
+  },
     promoBanner: {
-        backgroundColor: "#FF6B35",
+        backgroundColor: "#328a0dff",
         marginHorizontal: 16,
         marginBottom: 24,
         padding: 20,
@@ -233,11 +246,11 @@ const styles = StyleSheet.create({
     productPrice: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#FF6B35",
+        color: "#328a0dff",
         marginBottom: 8,
     },
     addButton: {
-        backgroundColor: "#FF6B35",
+        backgroundColor: "#328a0dff",
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 8,

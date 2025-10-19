@@ -1,3 +1,4 @@
+import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import { useState } from "react";
@@ -33,6 +34,8 @@ export default function PaymentMethodScreen() {
 
       {/* Progress Steps */}
       <View style={styles.progressContainer}>
+                <BackButton fallbackRoute="/cart" />
+
         <View style={styles.steps}>
           <View style={styles.step}>
             <View style={styles.stepNumber}>1</View>
@@ -213,7 +216,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 4,
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
   },
   stepTextActive: {
     fontSize: 12,
-    color: "#FF6B35",
+    color: "#328a0dff",
     fontWeight: "600",
   },
   scrollView: {
@@ -248,7 +251,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   methodButtonSelected: {
-    borderColor: "#FF6B35",
+    borderColor: "#328a0dff",
     backgroundColor: "#FFF9E6",
   },
   methodText: {
@@ -257,13 +260,13 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   methodTextSelected: {
-    color: "#FF6B35",
+    color: "#328a0dff",
   },
   cardForm: {
     padding: 16,
   },
   cardPreview: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     borderTopColor: "#f0f0f0",
   },
   paymentButton: {
-    backgroundColor: "#FF6B35",
+    backgroundColor: "#328a0dff",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

@@ -1,241 +1,513 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import BackButton from '@/components/back-button';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import {
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
-export default function UserOrdersScreen() {
-  const orders = {
-    upcoming: [
-      {
-        id: 1,
-        restaurant: "Xero Degree",
-        items: "1× Narello Caramel, 1× Virgin Mojito Cooler",
-        date: "30 May 2025, 10:00 PM",
-        status: "preparing",
-        amount: 149
-      }
-    ],
-    past: [
-      {
-        id: 2,
-        restaurant: "Xero Degree",
-        items: "1× Narello Caramel, 1× Virgin Mojito Cooler",
-        date: "28 May 2025, 08:30 PM",
-        status: "delivered",
-        amount: 149
-      }
+const MyOrdersScreen = () => {
+  // Current active order with tracking
+  const activeOrder = {
+    id: '#90897',
+    date: 'October 19 2021',
+    itemsCount: '3 Items',
+    totalAmount: '$89.99',
+    status: 'shipped', // placed, confirmed, shipped, out_for_delivery, delivered
+    tracking: [
+      { stage: 'Order placed', time: '10:30 AM', completed: true },
+      { stage: 'Order confirmed', time: '10:45 AM', completed: true },
+      { stage: 'Order shipped', time: '11:30 AM', completed: true },
+      { stage: 'Out for delivery', time: '2:15 PM', completed: false },
+      { stage: 'Order delivered', time: '', completed: false },
     ]
   };
 
-  const stats = {
-    active: 149,
-    delivered: 149
+  const pastOrders = [
+    {
+      id: '#90896',
+      date: 'October 18 2021',
+      itemsCount: '2 Items',
+      totalAmount: '$45.50',
+      status: 'delivered',
+    },
+    {
+      id: '#90895',
+      date: 'October 17 2021',
+      itemsCount: '5 Items',
+      totalAmount: '$120.75',
+      status: 'delivered',
+    },
+    {
+      id: '#90894',
+      date: 'October 15 2021',
+      itemsCount: '1 Item',
+      totalAmount: '$24.99',
+      status: 'delivered',
+    },
+    {
+      id: '#90893',
+      date: 'October 12 2021',
+      itemsCount: '4 Items',
+      totalAmount: '$67.25',
+      status: 'delivered',
+    },
+  ];
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'placed':
+        return 'receipt-outline';
+      case 'confirmed':
+        return 'checkmark-circle-outline';
+      case 'shipped':
+        return 'cube-outline';
+      case 'out_for_delivery':
+        return 'bicycle-outline';
+      case 'delivered':
+        return 'checkmark-done-circle-outline';
+      default:
+        return 'receipt-outline';
+    }
   };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'placed':
+        return '#FFA500';
+      case 'confirmed':
+        return '#4CAF50';
+      case 'shipped':
+        return '#2196F3';
+      case 'out_for_delivery':
+        return '#FF6B35';
+      case 'delivered':
+        return '#4CAF50';
+      default:
+        return '#666';
+    }
+  };
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <BackButton />
+        <Text style={styles.headerTitle}>My Orders</Text>
+      </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Stats */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Active</Text>
-            <Text style={styles.statValue}>₹ {stats.active}</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Delivered</Text>
-            <Text style={styles.statValue}>₹ {stats.delivered}</Text>
-          </View>
-        </View>
-
-        {/* Upcoming Orders */}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Current Order Tracking */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Upcoming Orders</Text>
-          {orders.upcoming.map((order) => (
-            <View key={order.id} style={styles.orderCard}>
-              <View style={styles.orderHeader}>
-                <Text style={styles.restaurantName}>{order.restaurant}</Text>
-                <View style={[styles.statusBadge, styles.statusPreparing]}>
-                  <Text style={styles.statusText}>Preparing</Text>
-                </View>
+          <Text style={styles.sectionTitle}>Current Order</Text>
+          <View style={styles.orderCard}>
+            <View style={styles.orderHeader}>
+              <View>
+                <Text style={styles.orderId}>Order {activeOrder.id}</Text>
+                <Text style={styles.orderDate}>Placed on {activeOrder.date}</Text>
               </View>
-              <Text style={styles.orderItems}>{order.items}</Text>
-              <Text style={styles.orderDate}>{order.date}</Text>
-              <View style={styles.orderFooter}>
-                <Text style={styles.orderAmount}>₹ {order.amount}</Text>
-                <TouchableOpacity style={styles.primaryButton}>
-                  <Text style={styles.primaryButtonText}>Track Order</Text>
-                </TouchableOpacity>
+              <View style={styles.orderStatus}>
+                <Ionicons 
+                  name={getStatusIcon(activeOrder.status)} 
+                  size={20} 
+                  color={getStatusColor(activeOrder.status)} 
+                />
+                <Text style={[styles.statusText, { color: getStatusColor(activeOrder.status) }]}>
+                  {activeOrder.status.replace('_', ' ').toUpperCase()}
+                </Text>
               </View>
             </View>
-          ))}
+
+            <View style={styles.orderDetails}>
+              <Text style={styles.itemsText}>{activeOrder.itemsCount}</Text>
+              <Text style={styles.amountText}>{activeOrder.totalAmount}</Text>
+            </View>
+
+            {/* Tracking Timeline */}
+            <View style={styles.timeline}>
+              {activeOrder.tracking.map((step, index) => (
+                <View key={index} style={styles.timelineStep}>
+                  <View style={styles.timelineLineContainer}>
+                    <View 
+                      style={[
+                        styles.timelineDot,
+                        step.completed ? styles.completedDot : styles.pendingDot
+                      ]}
+                    />
+                    {index < activeOrder.tracking.length - 1 && (
+                      <View 
+                        style={[
+                          styles.timelineLine,
+                          step.completed ? styles.completedLine : styles.pendingLine
+                        ]}
+                      />
+                    )}
+                  </View>
+                  <View style={styles.timelineContent}>
+                    <Text 
+                      style={[
+                        styles.timelineStage,
+                        step.completed ? styles.completedText : styles.pendingText
+                      ]}
+                    >
+                      {step.stage}
+                    </Text>
+                    {step.time && (
+                      <Text style={styles.timelineTime}>{step.time}</Text>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              <TouchableOpacity style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Cancel Order</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.primaryButton}>
+                <Text style={styles.primaryButtonText}>Track Order</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         {/* Past Orders */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Past Orders</Text>
-          {orders.past.map((order) => (
-            <View key={order.id} style={styles.orderCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Order History</Text>
+            <TouchableOpacity>
+              <Text style={styles.seeAllText}>See all</Text>
+            </TouchableOpacity>
+          </View>
+
+          {pastOrders.map((order, index) => (
+            <TouchableOpacity key={index} style={styles.orderCard}>
               <View style={styles.orderHeader}>
-                <Text style={styles.restaurantName}>{order.restaurant}</Text>
-                <View style={[styles.statusBadge, styles.statusDelivered]}>
-                  <Text style={styles.statusText}>Delivered</Text>
+                <View>
+                  <Text style={styles.orderId}>Order {order.id}</Text>
+                  <Text style={styles.orderDate}>Placed on {order.date}</Text>
+                </View>
+                <View style={styles.orderStatus}>
+                  <Ionicons 
+                    name="checkmark-done-circle-outline" 
+                    size={20} 
+                    color="#4CAF50" 
+                  />
+                  <Text style={[styles.statusText, { color: '#4CAF50' }]}>
+                    DELIVERED
+                  </Text>
                 </View>
               </View>
-              <Text style={styles.orderItems}>{order.items}</Text>
-              <Text style={styles.orderDate}>{order.date}</Text>
-              <View style={styles.orderFooter}>
-                <Text style={styles.orderAmount}>₹ {order.amount}</Text>
-                <TouchableOpacity style={styles.outlineButton}>
-                  <Text style={styles.outlineButtonText}>Reorder</Text>
+
+              <View style={styles.orderDetails}>
+                <Text style={styles.itemsText}>{order.itemsCount}</Text>
+                <Text style={styles.amountText}>{order.totalAmount}</Text>
+              </View>
+
+              <View style={styles.pastOrderActions}>
+                <TouchableOpacity style={styles.pastOrderButton}>
+                  <Feather name="repeat" size={16} color="#FF6B35" />
+                  <Text style={styles.pastOrderButtonText}>Reorder</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.pastOrderButton}>
+                  <Ionicons name="star-outline" size={16} color="#FF6B35" />
+                  <Text style={styles.pastOrderButtonText}>Rate</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.pastOrderButton}>
+                  <MaterialIcons name="receipt-long" size={16} color="#FF6B35" />
+                  <Text style={styles.pastOrderButtonText}>Invoice</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
+        </View>
+
+        {/* Support Section */}
+        <View style={styles.supportSection}>
+          <View style={styles.supportCard}>
+            <Ionicons name="help-circle-outline" size={24} color="#FF6B35" />
+            <View style={styles.supportContent}>
+              <Text style={styles.supportTitle}>Need help with your order?</Text>
+              <Text style={styles.supportSubtitle}>Contact our support team</Text>
+            </View>
+            <TouchableOpacity style={styles.supportButton}>
+              <Text style={styles.supportButtonText}>Get Help</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-
+    backgroundColor: '#f8f9fa',
   },
-  backButton: {
-    padding: 4,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2ECC71",
-  },
-  placeholder: {
-    width: 32,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  statsContainer: {
-    flexDirection: "row",
-    padding: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: "#F9F9F9",
-    padding: 16,
-        marginTop:10,
-    borderRadius: 12,
-    alignItems: "center",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2ECC71",
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
   },
   section: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    marginBottom: 8,
+    paddingTop: 10,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+    paddingHorizontal: 20,
     marginBottom: 12,
   },
+  seeAllText: {
+    fontSize: 14,
+    color: '#328a0dff',
+    fontWeight: '600',
+  },
   orderCard: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    marginHorizontal: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#eee",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   orderHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
-  restaurantName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  statusPreparing: {
-    backgroundColor: "#E9F8F0",
-  },
-  statusDelivered: {
-    backgroundColor: "#E9F8E0",
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#2ECC71",
-  },
-  orderItems: {
-    fontSize: 14,
-    color: "#666",
+  orderId: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 4,
   },
   orderDate: {
+    fontSize: 14,
+    color: '#666',
+  },
+  orderStatus: {
+    alignItems: 'center',
+  },
+  statusText: {
     fontSize: 12,
-    color: "#999",
-    marginBottom: 12,
+    fontWeight: '600',
+    marginTop: 4,
   },
-  orderFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  orderDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    marginBottom: 16,
   },
-  orderAmount: {
+  itemsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  amountText: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#328a0dff',
+  },
+  timeline: {
+    marginBottom: 20,
+  },
+  timelineStep: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  timelineLineContainer: {
+    alignItems: 'center',
+    marginRight: 16,
+    width: 24,
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    zIndex: 2,
+  },
+  completedDot: {
+    backgroundColor: '#4CAF50',
+  },
+  pendingDot: {
+    backgroundColor: '#e0e0e0',
+    borderWidth: 2,
+    borderColor: '#bdbdbd',
+  },
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  completedLine: {
+    backgroundColor: '#4CAF50',
+  },
+  pendingLine: {
+    backgroundColor: '#e0e0e0',
+  },
+  timelineContent: {
+    flex: 1,
+    paddingBottom: 16,
+  },
+  timelineStage: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  completedText: {
+    color: '#333',
+  },
+  pendingText: {
+    color: '#999',
+  },
+  timelineTime: {
+    fontSize: 12,
+    color: '#666',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   primaryButton: {
-    backgroundColor: "#2ECC71",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    flex: 1,
+    backgroundColor: '#328a0dff',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#328a0dff',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryButtonText: {
-    color: "#fff",
-    fontSize: 13,
-    fontWeight: "600",
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  outlineButton: {
-    backgroundColor: "transparent",
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  secondaryButtonText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  pastOrderActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  pastOrderButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  pastOrderButtonText: {
+    color: '#328a0dff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  supportSection: {
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  supportCard: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  supportContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  supportTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  supportSubtitle: {
+    fontSize: 14,
+    color: '#666',
+  },
+  supportButton: {
+    backgroundColor: '#328a0dff',
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: 8,
     borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: "#2ECC71",
   },
-  outlineButtonText: {
-    color: "#2ECC71",
-    fontSize: 13,
-    fontWeight: "600",
+  supportButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
+
+export default MyOrdersScreen;
