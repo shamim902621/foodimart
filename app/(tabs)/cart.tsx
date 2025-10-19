@@ -1,3 +1,4 @@
+import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -61,8 +62,9 @@ export default function CartScreen() {
 
   return (
     <View style={styles.container}>
-
+ 
       <View style={styles.header}>
+       <BackButton/>
         <Text style={styles.headerTitle}>Your Cart</Text>
         <Text style={styles.itemCount}>{cartItems.length} items</Text>
       </View>
@@ -217,9 +219,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 24,
   },
-   filterButton: {
-    padding: 4,
-  },
+  
   emptyEmoji: {
     fontSize: 80,
     marginBottom: 16,
@@ -249,9 +249,9 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#fff",
-    paddingTop: 20,
+    paddingTop: 10,
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },

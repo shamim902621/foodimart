@@ -1,4 +1,4 @@
-// app/superadmin/dashboard.tsx
+
 import { StatBox } from "@/components/ui/stat-box";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -167,10 +167,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#111827",
     marginBottom: 4,
@@ -186,10 +186,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
+    marginBottom:10,
     fontWeight: "600",
     color: "#374151",
   },
@@ -216,7 +217,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   quickActionIcon: {
-    fontSize: 24,
+    fontSize: 20,
     marginBottom: 8,
   },
   quickActionText: {
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   shopName: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: "600",
     color: "#111827",
     marginBottom: 8,

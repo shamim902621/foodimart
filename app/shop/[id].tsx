@@ -1,11 +1,29 @@
 import BackButton from '@/components/back-button';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useState } from 'react';
+import {
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 
 export default function ShopScreen() {
-
     const { id } = useLocalSearchParams();
+    const [showFilterModal, setShowFilterModal] = useState(false);
+    const [filters, setFilters] = useState({
+        minPrice: '',
+        maxPrice: '',
+        rating: 0,
+        discount: false,
+        freeShipping: false,
+        fastDelivery: false
+    });
+
     const categories = [
         { id: 1, name: "Vegetables", icon: "🥦" },
         { id: 2, name: "Fruits", icon: "🍎" },
@@ -46,28 +64,66 @@ export default function ShopScreen() {
         }
     ];
 
+    const handleApplyFilters = () => {
+        console.log('Applied filters:', filters);
+        setShowFilterModal(false);
+        // Here you would typically filter your products based on the selected filters
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            minPrice: '',
+            maxPrice: '',
+            rating: 0,
+            discount: false,
+            freeShipping: false,
+            fastDelivery: false
+        });
+    };
+
+    const toggleStarRating = (rating: number) => {
+        setFilters({...filters, rating});
+    };
+
+    const renderStars = (rating: number) => {
+        return Array(5).fill(0).map((_, index) => (
+            <TouchableOpacity 
+                key={index} 
+                onPress={() => toggleStarRating(index + 1)}
+                style={styles.starButton}
+            >
+                <Ionicons 
+                    name={index < rating ? "star" : "star-outline"} 
+                    size={24} 
+                    color={index < rating ? "#FFD700" : "#666"} 
+                />
+            </TouchableOpacity>
+        ));
+    };
+
     return (
         <View style={styles.container}>
-                          
             <View style={styles.header}>
-                 <BackButton fallbackRoute="/home" />
-                 <Text style={styles.time}>9:41</Text>
-               
+                <BackButton fallbackRoute="/home" />
+                <Text style={styles.time}>9:41</Text>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Search Bar */}
-               <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Restaurant name, cuisine, or a dish..."
-            placeholderTextColor="#999"
-          />
-          <TouchableOpacity style={styles.filterButton}>
-            <Feather name="sliders" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
+                <View style={styles.searchContainer}>
+                    <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Restaurant name, cuisine, or a dish..."
+                        placeholderTextColor="#999"
+                    />
+                    <TouchableOpacity 
+                        style={styles.filterButton}
+                        onPress={() => setShowFilterModal(true)}
+                    >
+                        <Feather name="sliders" size={20} color="#666" />
+                    </TouchableOpacity>
+                </View>
 
                 {/* Promo Banner */}
                 <View style={styles.promoBanner}>
@@ -122,6 +178,123 @@ export default function ShopScreen() {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* Filter Modal */}
+            <Modal
+                visible={showFilterModal}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowFilterModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {/* Header */}
+                        <View style={styles.modalHeader}>
+                            <TouchableOpacity 
+                                onPress={() => setShowFilterModal(false)}
+                                style={styles.closeButton}
+                            >
+                                <Ionicons name="close" size={24} color="#333" />
+                            </TouchableOpacity>
+                            <Text style={styles.modalTitle}>Apply Filters</Text>
+                            <TouchableOpacity onPress={handleResetFilters}>
+                                <Text style={styles.resetText}>Reset</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={styles.filterContent} showsVerticalScrollIndicator={false}>
+                            {/* Price Range */}
+                            <View style={styles.filterSection}>
+                                <Text style={styles.filterSectionTitle}>Price Range</Text>
+                                <View style={styles.priceInputs}>
+                                    <View style={styles.priceInput}>
+                                        <Text style={styles.priceLabel}>Min.</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="0"
+                                            keyboardType="numeric"
+                                            value={filters.minPrice}
+                                            onChangeText={(text) => setFilters({...filters, minPrice: text})}
+                                        />
+                                    </View>
+                                    <View style={styles.priceInput}>
+                                        <Text style={styles.priceLabel}>Max.</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="100"
+                                            keyboardType="numeric"
+                                            value={filters.maxPrice}
+                                            onChangeText={(text) => setFilters({...filters, maxPrice: text})}
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Star Rating */}
+                            <View style={styles.filterSection}>
+                                <Text style={styles.filterSectionTitle}>Star Rating</Text>
+                                <View style={styles.ratingSection}>
+                                    <View style={styles.starsContainer}>
+                                        {renderStars(filters.rating)}
+                                    </View>
+                                    <Text style={styles.ratingText}>
+                                        {filters.rating > 0 ? `${filters.rating}+ stars` : 'Select rating'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Others */}
+                            <View style={styles.filterSection}>
+                                <Text style={styles.filterSectionTitle}>Others</Text>
+                                
+                                <TouchableOpacity 
+                                    style={styles.checkboxItem}
+                                    onPress={() => setFilters({...filters, discount: !filters.discount})}
+                                >
+                                    <View style={styles.checkbox}>
+                                        {filters.discount && (
+                                            <Ionicons name="checkmark" size={16} color="#fff" />
+                                        )}
+                                    </View>
+                                    <Text style={styles.checkboxLabel}>Discount</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={styles.checkboxItem}
+                                    onPress={() => setFilters({...filters, freeShipping: !filters.freeShipping})}
+                                >
+                                    <View style={styles.checkbox}>
+                                        {filters.freeShipping && (
+                                            <Ionicons name="checkmark" size={16} color="#fff" />
+                                        )}
+                                    </View>
+                                    <Text style={styles.checkboxLabel}>Free shipping</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                    style={styles.checkboxItem}
+                                    onPress={() => setFilters({...filters, fastDelivery: !filters.fastDelivery})}
+                                >
+                                    <View style={styles.checkbox}>
+                                        {filters.fastDelivery && (
+                                            <Ionicons name="checkmark" size={16} color="#fff" />
+                                        )}
+                                    </View>
+                                    <Text style={styles.checkboxLabel}>3 days delivery</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+
+                        {/* Apply Button */}
+                        <TouchableOpacity 
+                            style={styles.applyButton}
+                            onPress={handleApplyFilters}
+                        >
+                            <Text style={styles.applyButtonText}>Apply filter</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -132,17 +305,17 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     header: {
-    flexDirection: "row",        // 👈 places items in a row
-    justifyContent: "space-between", // 👈 space between left and right
-    alignItems: "center",        // 👈 vertically center items
-    paddingTop: 10,
-    paddingHorizontal: 10,
-    paddingBottom: 8,
-  },
-  time: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        paddingBottom: 8,
+    },
+    time: {
+        fontSize: 16,
+        fontWeight: "bold",
+    },
     searchContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -152,18 +325,18 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
     },
-     filterButton: {
-    padding: 4,
-  },
+    filterButton: {
+        padding: 4,
+    },
     searchInput: {
         flex: 1,
         marginLeft: 8,
         fontSize: 16,
         color: "#333",
     },
-      searchIcon: {
-    marginRight: 12,
-  },
+    searchIcon: {
+        marginRight: 12,
+    },
     promoBanner: {
         backgroundColor: "#328a0dff",
         marginHorizontal: 16,
@@ -261,5 +434,117 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 12,
         fontWeight: "600",
+    },
+    // Filter Modal Styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContent: {
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: "80%",
+    },
+    modalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+    },
+    closeButton: {
+        padding: 4,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#333",
+    },
+    resetText: {
+        fontSize: 16,
+        color: "#328a0dff",
+        fontWeight: "500",
+    },
+    filterContent: {
+        padding: 20,
+    },
+    filterSection: {
+        marginBottom: 30,
+    },
+    filterSectionTitle: {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#333",
+        marginBottom: 15,
+    },
+    priceInputs: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        gap: 15,
+    },
+    priceInput: {
+        flex: 1,
+    },
+    priceLabel: {
+        fontSize: 14,
+        color: "#666",
+        marginBottom: 8,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+        backgroundColor: "#f9f9f9",
+    },
+    ratingSection: {
+        alignItems: "center",
+    },
+    starsContainer: {
+        flexDirection: "row",
+        marginBottom: 10,
+    },
+    starButton: {
+        padding: 4,
+    },
+    ratingText: {
+        fontSize: 14,
+        color: "#666",
+    },
+    checkboxItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 12,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 2,
+        borderColor: "#328a0dff",
+        marginRight: 12,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#328a0dff",
+    },
+    checkboxLabel: {
+        fontSize: 16,
+        color: "#333",
+    },
+    applyButton: {
+        backgroundColor: "#328a0dff",
+        margin: 20,
+        padding: 16,
+        borderRadius: 12,
+        alignItems: "center",
+    },
+    applyButtonText: {
+        color: "#fff",
+        fontSize: 16,
+        fontWeight: "bold",
     },
 });
