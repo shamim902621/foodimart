@@ -1,4 +1,3 @@
-// hooks/useAuthChecker.ts
 import { router, usePathname } from 'expo-router';
 import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -34,7 +33,7 @@ export function useAuthChecker(requiredRole?: string[]) {
   const redirectByRole = (role: string) => {
     switch (role) {
       case 'USER':
-        router.replace('/category');
+        router.replace('/category'); //dfjkdsfgkjj
         break;
       case 'ADMIN':
         router.replace('/admin/dashboard');
