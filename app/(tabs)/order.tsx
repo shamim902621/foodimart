@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 
 const MyOrdersScreen = () => {
-  // Current active order with tracking
   const activeOrder = {
     id: '#90897',
     date: 'October 19 2021',
@@ -173,7 +172,7 @@ const MyOrdersScreen = () => {
               <TouchableOpacity style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>Cancel Order</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.primaryButton}>
+              <TouchableOpacity style={styles.primaryButton} >
                 <Text style={styles.primaryButtonText}>Track Order</Text>
               </TouchableOpacity>
             </View>

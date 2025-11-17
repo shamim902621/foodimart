@@ -3,16 +3,27 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 
-const BackButton = ({ color = '#333', size = 24 }: { color?: string; size?: number }) => {
+interface BackButtonProps {
+  color?: string;
+  size?: number;
+  fallbackRoute?: string; 
+}
+
+const BackButton: React.FC<BackButtonProps> = ({
+  color = '#333',
+  size = 24,
+  fallbackRoute = '/home', // default fallback
+}) => {
   const router = useRouter();
 
- const handlePress = () => {
-  try {
-    router.back(); // try to go back
-  } catch {
-    router.push('/home'); // fallback if no previous screen exists
-  }
-};
+  const handlePress = () => {
+    // Try to go back, if not possible, navigate to fallbackRoute
+    router.back(); 
+    // Expo Router doesn't provide history check, so we immediately push fallback as a safe option
+    setTimeout(() => {
+      router.replace(fallbackRoute);
+    }, 50); // slight delay to prevent crash if back fails
+  };
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.button}>

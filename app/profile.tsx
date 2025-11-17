@@ -1,5 +1,6 @@
 import BackButton from '@/components/back-button';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -124,30 +125,35 @@ export default function ProfileScreen() {
     Alert.alert('Success', 'Password reset link sent to your email!');
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+const handleLogout = async () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem("authToken");
+            await AsyncStorage.removeItem("userData");
+            router.replace("/login");
+          } catch (error) {
+            console.error("Error clearing storage during logout:", error);
+          }
         },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => router.replace('/welcome'),
-        },
-      ]
-    );
-  };
-
+      },
+    ]
+  );
+};
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
+            <View style={styles.header}>
       <BackButton />
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity style={styles.editButton}>

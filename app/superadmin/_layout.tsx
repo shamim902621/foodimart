@@ -1,8 +1,10 @@
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
 export default function SuperAdminLayout() {
   return (
+    <ProtectedRoute allowedRoles={["SUPERADMIN"]}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -54,5 +56,6 @@ export default function SuperAdminLayout() {
         }}
       />
     </Tabs>
+    </ProtectedRoute>
   );
 }

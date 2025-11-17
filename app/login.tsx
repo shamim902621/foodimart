@@ -1,10 +1,47 @@
+import { useAuthChecker } from "@/components/AuthChecker";
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { API_BASE_URL } from '../constants/constant';
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");
+    const [loading, setLoading] = useState(false);
+    useAuthChecker()
+ const handleSendOtp = async () => {
+    if (!phone || phone.length < 10) {
+      Alert.alert("Invalid Phone Number", "Please enter a valid 10-digit phone number.");
+      return;
+    }
 
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile: phone }),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok) {
+        Alert.alert("OTP Sent", `An OTP has been sent to ${phone}`);
+        router.push({
+          pathname: "/otp-verification",
+          params: { mobile: phone },
+        });
+      } else {
+        Alert.alert("Error", data.message || "Failed to send OTP");
+      }
+    } catch (error) {
+      setLoading(false);
+      Alert.alert("Network Error", "Unable to reach the server. Please try again later.");
+      console.error("Error sending OTP:", error);
+    }
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back 👋</Text>
@@ -17,8 +54,12 @@ export default function LoginScreen() {
         onChangeText={setPhone}
       />
 
-      <TouchableOpacity style={styles.button} onPress={() => router.replace("/category")}>
-        <Text style={styles.buttonText}>Login</Text>
+       <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Send OTP</Text>
+        )}
       </TouchableOpacity>
 
       <Text style={styles.bottomText}>

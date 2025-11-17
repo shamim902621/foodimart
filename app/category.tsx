@@ -2,13 +2,13 @@ import { Feather, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-ico
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-    Dimensions,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface IconType {
@@ -91,7 +91,7 @@ const Categories: React.FC = () => {
 
   const handleCategoryPress = (category: Category) => {
     router.push({
-      pathname: '/home',
+      pathname: '/(tabs)/home',
       params: { category: category.title },
     });
   };
@@ -112,14 +112,13 @@ const Categories: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+   
+    <View style={styles.container} >
       <StatusBar barStyle="light-content" backgroundColor="#6C63FF" />
-      
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Categories</Text>
         <Text style={styles.headerSubtitle}>Browse by category</Text>
       </View>
-
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
