@@ -30,7 +30,7 @@ export default function OTPVerificationScreen() {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    
+
     // Auto-focus next input
     if (value && index < 5) {
       inputs.current[index + 1]?.focus();
@@ -60,11 +60,11 @@ export default function OTPVerificationScreen() {
       });
 
       const result = await response.json();
-      
+
       if (result.success && result.token && result.user) {
         // Save to storage and update auth state
         await login(result.token, result.user);
-        
+
         Alert.alert('Success', result.message || 'Login successful!');
 
         // Redirect based on role
@@ -128,7 +128,7 @@ export default function OTPVerificationScreen() {
         {otp.map((digit, index) => (
           <TextInput
             key={index}
-            ref={ref => (inputs.current[index] = ref)}
+            ref={(ref: any) => (inputs.current[index] = ref)}
             style={styles.otpInput}
             value={digit}
             onChangeText={value => handleOtpChange(value, index)}

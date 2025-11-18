@@ -1,0 +1,24 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+                {
+                        "name": "Debug Android (Expo)",
+                        "request": "launch",
+                        "type": "reactnative",
+                        "platform": "android",
+                        "target": "expo"
+                },
+                {
+                        "name": "Debug iOS (Expo)",
+                        "request": "launch",
+                        "type": "reactnative",
+                        "platform": "ios",
+                        "target": "expo"
+                },
+                {
+                        "name": "Attach to React Native (Expo)",
+                        "request": "attach",
+                        "type": "reactnative"
+                }
+        ]
+}

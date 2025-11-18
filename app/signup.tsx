@@ -2,18 +2,44 @@ import { ThemedText } from '@/components/themed-text';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { API_BASE_URL } from '../constants/constant';
 
 export default function SignupScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  // const { mobile } = useLocalSearchParams();
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
+    debugger;
+    console.log("Sending mobile:", phoneNumber);
+
     if (phoneNumber.length >= 10 && name && email) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile: phoneNumber }),
+        });
+
+        const data = await response.json();
+        console.log("OTP Response:", data);
+
+        if (response.ok && data.success) {
+          Alert.alert('Success', 'OTP sent successfully!');
+        } else {
+          Alert.alert('Error', data.message || 'Failed to send OTP.');
+        }
+      } catch (error) {
+        console.error('Error sending OTP:', error);
+        Alert.alert('Error', 'Something went wrong.');
+      }
+
       router.push('/otp-verification');
     }
   };
+
 
   const handleSocialSignup = (provider: string) => {
     console.log(`Signup with ${provider}`);
@@ -134,7 +160,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 12,
     fontSize: 10,
-    margin:5,
+    margin: 5,
     backgroundColor: '#f9f9f9',
   },
   signupButton: {

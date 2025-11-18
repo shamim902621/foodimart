@@ -1,29 +1,53 @@
 // app/superadmin/shops/details.tsx
 import { StatBox } from "@/components/ui/stat-box";
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { api } from "./apiService";
 export default function ShopDetails() {
+  const { token } = useAuth();
   const { id } = useLocalSearchParams();
-  
-  const shop = {
-    id: id,
-    name: "Food Mart Indiranagar",
-    owner: "Shamim Ahmad",
-    email: "shamim@foodmart.com",
-    phone: "+91 9876543210",
-    address: "123, 100 Feet Road, Indiranagar, Bangalore",
-    category: "Grocery Store",
-    status: "active",
-    joinDate: "2024-01-15",
-    rating: 4.5,
-    totalOrders: 230,
-    monthlyOrders: 120,
-    weeklyOrders: 40,
-    totalRevenue: 1250000,
-    monthlyRevenue: 245000
+  const [shop, setShop] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetchShop();
+  }, [id]);
+
+  // const fetchShop = async () => {
+  //   try {
+  //     const response = await api(`/shops/${id}`, "GET", token ?? undefined);
+  //     const data = response.stringfy.json()
+  //     if (response?.success) {
+  //       setShop(response.shop);
+  //     }
+  //     console.log("fsdaf", response)
+  //   } catch (e) {
+  //     console.log("Fetch data error:", e);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const fetchShop = async () => {
+    try {
+      const response = await api(`/shops/${id}`, "GET", token ?? undefined);
+
+      console.log("API RAW RESPONSE:", response);
+
+      if (response?.success) {
+        setShop(response.shop);   // <-- PURE shop object
+      } else {
+        console.log("Failed:", response?.message);
+      }
+
+    } catch (e) {
+      console.log("Fetch data error:", e);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const recentOrders = [
     { id: "ORD-001", customer: "John Doe", amount: 1250, status: "delivered", time: "2 hours ago" },
@@ -49,8 +73,8 @@ export default function ShopDetails() {
             <Ionicons name="arrow-back" size={24} color="#374151" />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.shopTitle}>{shop.name}</Text>
-            <Text style={styles.shopCategory}>{shop.category}</Text>
+            <Text style={styles.shopTitle}>{shop?.name}</Text>
+            <Text style={styles.shopCategory}>{shop?.cuisineType?.join(", ")}</Text>
           </View>
           <TouchableOpacity style={styles.editButton}>
             <Text style={styles.editButtonText}>Edit</Text>
@@ -60,21 +84,21 @@ export default function ShopDetails() {
         <View style={styles.shopMeta}>
           <View style={styles.metaItem}>
             <Ionicons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.metaText}>{shop.rating}</Text>
+            <Text style={styles.metaText}>{shop?.rating}</Text>
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="calendar-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>Joined {shop.joinDate}</Text>
+            <Text style={styles.metaText}>Joined {shop?.createdAt?.slice(0, 10)}</Text>
           </View>
           <View style={[
             styles.statusBadge,
-            shop.status === 'active' ? styles.activeStatus : styles.inactiveStatus
+            shop?.status === 'active' ? styles.activeStatus : styles.inactiveStatus
           ]}>
             <Text style={[
               styles.statusText,
-              shop.status === 'active' ? styles.activeStatusText : styles.inactiveStatusText
+              shop?.status === 'active' ? styles.activeStatusText : styles.inactiveStatusText
             ]}>
-              {shop.status}
+              {shop?.isActive ? "active" : "inactive"}
             </Text>
           </View>
         </View>
@@ -84,20 +108,20 @@ export default function ShopDetails() {
       <View style={styles.content}>
         <Text style={styles.sectionTitle}>Performance Overview</Text>
         <View style={styles.statsGrid}>
-          <StatBox title="Total Orders" value={shop.totalOrders.toString()} icon="📦" />
-          <StatBox title="Monthly Orders" value={shop.monthlyOrders.toString()} icon="📊" />
-          <StatBox title="Weekly Orders" value={shop.weeklyOrders.toString()} icon="🔄" />
-          <StatBox title="Total Revenue" value={`₹${(shop.totalRevenue / 1000).toFixed(0)}K`} icon="💰" />
+          {/* <StatBox title="Total Orders" value={shop?.totalOrders.toString()} icon="📦" /> */}
+          {/* <StatBox title="Monthly Orders" value={shop?.monthlyOrders.toString()} icon="📊" /> */}
+          {/* <StatBox title="Weekly Orders" value={shop?.weeklyOrders.toString()} icon="🔄" /> */}
+          <StatBox title="Total Revenue" value={`₹${(shop?.totalRevenue / 1000).toFixed(0)}K`} icon="💰" />
         </View>
 
         {/* Shop Information */}
         <View style={styles.infoCard}>
           <Text style={styles.cardTitle}>Shop Information</Text>
           <View style={styles.infoList}>
-            <InfoRow icon="person-outline" label="Owner" value={shop.owner} />
-            <InfoRow icon="mail-outline" label="Email" value={shop.email} />
-            <InfoRow icon="call-outline" label="Phone" value={shop.phone} />
-            <InfoRow icon="location-outline" label="Address" value={shop.address} />
+            <InfoRow icon="person-outline" label="Owner" value={shop?.name} />
+            <InfoRow icon="mail-outline" label="Email" value={shop?.contact.email} />
+            <InfoRow icon="call-outline" label="Phone" value={shop?.contact.phone} />
+            <InfoRow icon="location-outline" label="Address" value={shop?.address.street + shop?.address.zipCode} />
           </View>
         </View>
 
@@ -109,7 +133,7 @@ export default function ShopDetails() {
               <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.ordersList}>
             {recentOrders.map((order) => (
               <View key={order.id} style={styles.orderItem}>
@@ -120,7 +144,7 @@ export default function ShopDetails() {
                 <View style={styles.orderDetails}>
                   <Text style={styles.orderAmount}>₹{order.amount}</Text>
                   <View style={styles.orderStatus}>
-                    <View 
+                    <View
                       style={[
                         styles.statusDot,
                         { backgroundColor: getStatusColor(order.status) }

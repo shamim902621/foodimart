@@ -1,19 +1,29 @@
 // app/superadmin/shops/create.tsx
+import { useAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { api } from "./apiService";
+
 
 export default function CreateShop() {
+  const { user, token } = useAuth();
+
   const [form, setForm] = useState({
     shopName: "",
     ownerName: "",
     ownerEmail: "",
     phone: "",
-    address: "",
+    street: "",
     city: "",
+    state: "",
+    zipCode: "",
+    lat: "",
+    lng: "",
     category: "",
     description: ""
   });
+
 
   const categories = [
     "Restaurant & Cafe",
@@ -24,20 +34,77 @@ export default function CreateShop() {
     "Beverage Shop"
   ];
 
-  const handleSubmit = () => {
-    // TODO: API call to create shop
-    console.log(form);
-    router.back();
+  const [loading, setLoading] = useState(false);
+  const handleSubmit = async () => {
+    if (
+      !form.shopName ||
+      !form.ownerName ||
+      !form.ownerEmail ||
+      !form.phone ||
+      !form.category
+    ) {
+      Alert.alert("Missing Fields", "Please fill all required fields (*)");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const payload = {
+        name: form.shopName,
+        description: form.description,
+        adminId: user?.id,
+
+        cuisineType: [form.category],
+
+        address: {
+          street: form.street,
+          city: form.city,
+          state: form.state,
+          zipCode: form.zipCode,
+          coordinates: {
+            lat: Number(form.lat) || 0,
+            lng: Number(form.lng) || 0
+          }
+        },
+
+        contact: {
+          phone: form.phone,
+          email: form.ownerEmail
+        },
+
+        ownerName: form.ownerName
+      };
+
+      console.log(payload);
+
+      const response = await api("/shops", "POST", payload, token ?? undefined);
+
+      const data = await response.json();  // <-- IMPORTANT
+
+      if (response.ok) {
+        Alert.alert("Success", data.message || "Shop created successfully!");
+        router.back();
+      } else {
+        Alert.alert("Error", data.message || "Something went wrong");
+      }
+
+    } catch (err: any) {
+      Alert.alert("Error", err.message);
+    } finally {
+      setLoading(false);
+      router.back();
+    }
   };
+
 
   return (
     <ScrollView style={styles.container}>
-     
 
       {/* Form */}
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Shop Information</Text>
-        
+
         <View style={styles.form}>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Shop Name *</Text>
@@ -45,7 +112,7 @@ export default function CreateShop() {
               style={styles.input}
               placeholder="e.g. Food Mart Indiranagar"
               value={form.shopName}
-              onChangeText={(text) => setForm({...form, shopName: text})}
+              onChangeText={(text) => setForm({ ...form, shopName: text })}
             />
           </View>
 
@@ -56,7 +123,7 @@ export default function CreateShop() {
                 style={styles.input}
                 placeholder="e.g. Shamim Ahmad"
                 value={form.ownerName}
-                onChangeText={(text) => setForm({...form, ownerName: text})}
+                onChangeText={(text) => setForm({ ...form, ownerName: text })}
               />
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
@@ -66,7 +133,7 @@ export default function CreateShop() {
                 placeholder="+91 9876543210"
                 keyboardType="phone-pad"
                 value={form.phone}
-                onChangeText={(text) => setForm({...form, phone: text})}
+                onChangeText={(text) => setForm({ ...form, phone: text })}
               />
             </View>
           </View>
@@ -78,7 +145,7 @@ export default function CreateShop() {
               placeholder="owner@shop.com"
               keyboardType="email-address"
               value={form.ownerEmail}
-              onChangeText={(text) => setForm({...form, ownerEmail: text})}
+              onChangeText={(text) => setForm({ ...form, ownerEmail: text })}
             />
           </View>
 
@@ -92,7 +159,7 @@ export default function CreateShop() {
                     styles.categoryButton,
                     form.category === category && styles.activeCategoryButton
                   ]}
-                  onPress={() => setForm({...form, category})}
+                  onPress={() => setForm({ ...form, category })}
                 >
                   <Text style={[
                     styles.categoryText,
@@ -106,16 +173,73 @@ export default function CreateShop() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>Street Address *</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Full shop address"
-              multiline
-              numberOfLines={3}
-              value={form.address}
-              onChangeText={(text) => setForm({...form, address: text})}
+              style={styles.input}
+              placeholder="e.g. 243 Indira Nagar Main Road"
+              value={form.street}
+              onChangeText={(text) => setForm({ ...form, street: text })}
             />
           </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.label}>City</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Bangalore"
+                value={form.city}
+                onChangeText={(text) => setForm({ ...form, city: text })}
+              />
+            </View>
+
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.label}>State</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. Karnataka"
+                value={form.state}
+                onChangeText={(text) => setForm({ ...form, state: text })}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Zip Code</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="560038"
+              keyboardType="number-pad"
+              value={form.zipCode}
+              onChangeText={(text) => setForm({ ...form, zipCode: text })}
+            />
+          </View>
+
+          {/* <Text style={[styles.label, { marginTop: 10 }]}>Location Coordinates (Optional)</Text>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.label}>Latitude</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 12.9716"
+                keyboardType="numeric"
+                value={form.lat}
+                onChangeText={(text) => setForm({ ...form, lat: text })}
+              />
+            </View>
+
+            <View style={[styles.inputGroup, { flex: 1 }]}>
+              <Text style={styles.label}>Longitude</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="e.g. 77.5946"
+                keyboardType="numeric"
+                value={form.lng}
+                onChangeText={(text) => setForm({ ...form, lng: text })}
+              />
+            </View>
+          </View> */}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Description</Text>
@@ -125,7 +249,7 @@ export default function CreateShop() {
               multiline
               numberOfLines={3}
               value={form.description}
-              onChangeText={(text) => setForm({...form, description: text})}
+              onChangeText={(text) => setForm({ ...form, description: text })}
             />
           </View>
         </View>
@@ -133,13 +257,13 @@ export default function CreateShop() {
 
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.cancelButton}
           onPress={() => router.back()}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.submitButton}
           onPress={handleSubmit}
         >
