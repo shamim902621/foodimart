@@ -32,7 +32,7 @@ export default function Layout() {
       {user?.role === "USER" && (
         <>
           <Stack.Screen name="shop" options={{ title: "Shop" }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="filters" options={{ title: "Filters", presentation: "modal" }} />
           <Stack.Screen name="product-detail" options={{ title: "Product Details" }} />
           <Stack.Screen name="shipping-method" options={{ title: "Shipping Method" }} />

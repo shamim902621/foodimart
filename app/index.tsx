@@ -4,7 +4,7 @@ import { useAuthChecker } from "../components/AuthChecker";
 
 export default function WelcomeScreen() {
   useAuthChecker();
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🍽️ Foodly</Text>

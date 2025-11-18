@@ -22,7 +22,7 @@ export default function SuperAdminDashboard() {
 
   const quickActions = [
     { icon: "🏪", title: "Manage Shops", route: "/superadmin/shops" },
-    { icon: "👥", title: "Manage Users", route: "/superadmin/user" },
+    { icon: "👥", title: "Manage Users", route: "/superadmin/users" },
     { icon: "📊", title: "View Reports", route: "/superadmin/reports" },
     { icon: "➕", title: "Add New Shop", route: "/superadmin/shops/create" },
   ];

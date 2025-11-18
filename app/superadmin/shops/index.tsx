@@ -1,56 +1,55 @@
 // app/superadmin/shops/index.tsx
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
+import { api } from "./apiService";
 export default function ShopsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
+  const [shops, setShops] = useState<any[]>([]);
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(true);
+ 
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const response = await api("/shops", "GET", null, token ?? undefined);
 
-  const shops = [
-    { 
-      id: 1, 
-      name: "Food Mart Indiranagar", 
-      owner: "Shamim Ahmad", 
-      orders: 230, 
-      revenue: 125000,
-      status: "active",
-      joinDate: "2024-01-15",
-      rating: 4.5
-    },
-    { 
-      id: 2, 
-      name: "Burger Hub Koramangala", 
-      owner: "Amit Kumar", 
-      orders: 145, 
-      revenue: 89000,
-      status: "active",
-      joinDate: "2024-02-01",
-      rating: 4.2
-    },
-    { 
-      id: 3, 
-      name: "Pizza Palace", 
-      owner: "Priya Sharma", 
-      orders: 89, 
-      revenue: 67000,
-      status: "inactive",
-      joinDate: "2024-01-20",
-      rating: 4.7
-    },
-  ];
+        if (response.success) {
+          setShops(response.shops);
+        } else {
+          alert(response.message || "Failed to fetch shops");
+        }
+      } catch (err: any) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredShops = shops.filter(shop => {
-    const matchesSearch = shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         shop.owner.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === "all" || shop.status === filter;
-    return matchesSearch && matchesFilter;
-  });
+    fetchShops();
+  }, []);
+
 
   const getStatusColor = (status: string) => {
     return status === 'active' ? '#10B981' : '#EF4444';
   };
+
+  const filteredShops = shops.filter(shop => {
+    const matchesSearch =
+      shop.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      shop.ownerName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "active" && shop.isActive) ||
+      (filter === "inactive" && !shop.isActive);
+
+    return matchesSearch && matchesFilter;
+  });
+
 
   return (
     <ScrollView style={styles.container}>
@@ -108,49 +107,43 @@ export default function ShopsList() {
       <View style={styles.shopsContainer}>
         {filteredShops.map((shop) => (
           <TouchableOpacity
-            key={shop.id}
+            key={shop._id}
             style={styles.shopCard}
-            onPress={() => router.push(`/superadmin/shops/details?id=${shop.id}`)}
+            onPress={() => router.push(`/superadmin/shops/details?id=${shop._id}`)}
           >
             <View style={styles.shopHeader}>
               <Text style={styles.shopCardName}>{shop.name}</Text>
-              <View 
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(shop.status) + '20' }
-                ]}
-              >
-                <Text 
-                  style={[
-                    styles.statusText,
-                    { color: getStatusColor(shop.status) }
-                  ]}
-                >
-                  {shop.status}
+
+              <View style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(shop.isActive ? "active" : "inactive") + '20' }
+              ]}>
+                <Text style={[
+                  styles.statusText,
+                  { color: getStatusColor(shop.isActive ? "active" : "inactive") }
+                ]}>
+                  {shop.isActive ? "active" : "inactive"}
                 </Text>
               </View>
             </View>
 
             <View style={styles.ownerContainer}>
               <Ionicons name="person-outline" size={16} color="#6B7280" />
-              <Text style={styles.ownerText}>{shop.owner}</Text>
+              <Text style={styles.ownerText}>{shop.ownerName}</Text>
             </View>
 
             <View style={styles.shopFooter}>
               <View style={styles.shopStats}>
                 <View style={styles.statItem}>
-                  <Ionicons name="cart-outline" size={16} color="#6B7280" />
-                  <Text style={styles.statText}>{shop.orders} orders</Text>
-                </View>
-                <View style={styles.statItem}>
                   <Ionicons name="star" size={16} color="#F59E0B" />
                   <Text style={styles.statText}>{shop.rating}</Text>
                 </View>
               </View>
-              
-              <Text style={styles.revenueText}>₹{(shop.revenue / 1000).toFixed(0)}K</Text>
+
+              <Text style={styles.revenueText}>₹0K</Text>
             </View>
           </TouchableOpacity>
+
         ))}
       </View>
 
