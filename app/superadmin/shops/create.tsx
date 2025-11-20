@@ -5,11 +5,34 @@ import { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { api } from "./apiService";
 
+type ShopForm = {
+  shopName: string;
+  ownerName: string;
+  ownerEmail: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  lat: string;
+  lng: string;
+  categories: string[];     // <--- IMPORTANT
+  description: string;
+};
+
 
 export default function CreateShop() {
   const { user, token } = useAuth();
+  const categoriess = [
+    "Restaurant & Cafe",
+    "Grocery Store",
+    "Bakery",
+    "Food Truck",
+    "Dessert Shop",
+    "Beverage Shop"
+  ];
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ShopForm>({
     shopName: "",
     ownerName: "",
     ownerEmail: "",
@@ -20,28 +43,39 @@ export default function CreateShop() {
     zipCode: "",
     lat: "",
     lng: "",
-    category: "",
+    categories: [],   // <--- Array of string
     description: ""
   });
 
 
-  const categories = [
-    "Restaurant & Cafe",
-    "Grocery Store",
-    "Bakery",
-    "Food Truck",
-    "Dessert Shop",
-    "Beverage Shop"
-  ];
+
+
 
   const [loading, setLoading] = useState(false);
+
+  const toggleCategory = (category: string) => {
+    const isSelected = form.categories.includes(category);
+
+    if (isSelected) {
+      setForm({
+        ...form,
+        categories: form.categories.filter((c) => c !== category),
+      });
+    } else {
+      setForm({
+        ...form,
+        categories: [...form.categories, category],
+      });
+    }
+  };
+
   const handleSubmit = async () => {
     if (
       !form.shopName ||
       !form.ownerName ||
       !form.ownerEmail ||
       !form.phone ||
-      !form.category
+      !form.categories
     ) {
       Alert.alert("Missing Fields", "Please fill all required fields (*)");
       return;
@@ -55,7 +89,7 @@ export default function CreateShop() {
         description: form.description,
         adminId: user?.id,
 
-        cuisineType: [form.category],
+        cuisineType: form.categories,
 
         address: {
           street: form.street,
@@ -151,26 +185,35 @@ export default function CreateShop() {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Category *</Text>
+
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  style={[
-                    styles.categoryButton,
-                    form.category === category && styles.activeCategoryButton
-                  ]}
-                  onPress={() => setForm({ ...form, category })}
-                >
-                  <Text style={[
-                    styles.categoryText,
-                    form.category === category && styles.activeCategoryText
-                  ]}>
-                    {category}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {categoriess.map((category) => {
+                const isSelected = form.categories.includes(category);
+
+                return (
+                  <TouchableOpacity
+                    key={category}
+                    style={[
+                      styles.categoryButton,
+                      isSelected && styles.activeCategoryButton
+                    ]}
+                    onPress={() => toggleCategory(category)}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryText,
+                        isSelected && styles.activeCategoryText
+                      ]}
+                    >
+                      {category}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
+
           </View>
+
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Street Address *</Text>

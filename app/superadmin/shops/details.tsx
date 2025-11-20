@@ -15,20 +15,6 @@ export default function ShopDetails() {
     fetchShop();
   }, [id]);
 
-  // const fetchShop = async () => {
-  //   try {
-  //     const response = await api(`/shops/${id}`, "GET", token ?? undefined);
-  //     const data = response.stringfy.json()
-  //     if (response?.success) {
-  //       setShop(response.shop);
-  //     }
-  //     console.log("fsdaf", response)
-  //   } catch (e) {
-  //     console.log("Fetch data error:", e);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const fetchShop = async () => {
     try {
       const response = await api(`/shops/${id}`, "GET", token ?? undefined);
@@ -36,7 +22,7 @@ export default function ShopDetails() {
       console.log("API RAW RESPONSE:", response);
 
       if (response?.success) {
-        setShop(response.shop);   // <-- PURE shop object
+        setShop(response.data);   // <-- PURE shop object
       } else {
         console.log("Failed:", response?.message);
       }
@@ -76,9 +62,13 @@ export default function ShopDetails() {
             <Text style={styles.shopTitle}>{shop?.name}</Text>
             <Text style={styles.shopCategory}>{shop?.cuisineType?.join(", ")}</Text>
           </View>
-          <TouchableOpacity style={styles.editButton}>
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => router.push(`/superadmin/shops/edit?id=${id}`)}
+          >
             <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>
+
         </View>
 
         <View style={styles.shopMeta}>
