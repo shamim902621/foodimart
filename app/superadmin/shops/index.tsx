@@ -129,7 +129,7 @@ export default function ShopsList() {
 
             <View style={styles.ownerContainer}>
               <Ionicons name="person-outline" size={16} color="#6B7280" />
-              <Text style={styles.ownerText}>{shop.ownerName}</Text>
+              <Text style={styles.ownerText}>{shop.cuisineType.join(", ")}</Text>
             </View>
 
             <View style={styles.shopFooter}>
@@ -140,7 +140,7 @@ export default function ShopsList() {
                 </View>
               </View>
 
-              <Text style={styles.revenueText}>₹0K</Text>
+              <Text style={styles.revenueText}>{shop.totalRevenue}</Text>
             </View>
           </TouchableOpacity>
 
