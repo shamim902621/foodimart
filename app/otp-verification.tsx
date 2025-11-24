@@ -70,13 +70,16 @@ export default function OTPVerificationScreen() {
         // Redirect based on role
         switch (result.user.role) {
           case 'USER':
-            router.replace('/category');
+            // router.replace('/category');
+            router.push("/category");
             break;
           case 'ADMIN':
-            router.replace('/admin/dashboard');
+            // router.replace('/admin/dashboard');
+            router.push("/admin/dashboard");
             break;
           case 'SUPERADMIN':
-            router.replace('/superadmin/dashboard');
+            // router.replace('/superadmin/dashboard');
+            router.push("/superadmin/dashboard");
             break;
           default:
             router.replace('/category');

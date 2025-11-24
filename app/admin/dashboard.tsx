@@ -20,7 +20,7 @@ export default function Dashboard() {
     { id: "#ORD004", customer: "Emma L.", amount: 450, status: "pending", time: "Yesterday" }
   ]);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status:any) => {
     switch(status) {
       case 'pending': return '#FFA500';
       case 'completed': return '#2ECC71';
@@ -29,7 +29,7 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusText = (status) => {
+  const getStatusText = (status:any) => {
     switch(status) {
       case 'pending': return 'Pending';
       case 'completed': return 'Completed';

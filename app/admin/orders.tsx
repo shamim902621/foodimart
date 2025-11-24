@@ -17,7 +17,7 @@ export default function Orders() {
 
   const [activeTab, setActiveTab] = useState("All");
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status:any) => {
     switch (status) {
       case "Pending":
         return "#FFA500";
@@ -32,7 +32,7 @@ export default function Orders() {
     }
   };
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status:any) => {
     switch (status) {
       case "Pending":
         return "⏳";
@@ -100,7 +100,7 @@ export default function Orders() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push(`/order-details/${item.id}`)}
+            // onPress={() => router.push(`/order-details/${item.id}`)}
           >
             <View style={styles.cardHeader}>
               <View style={styles.orderInfo}>
@@ -140,7 +140,7 @@ export default function Orders() {
                 <Text style={styles.total}>₹{item.total}</Text>
                 <TouchableOpacity
                   style={styles.viewBtn}
-                  onPress={() => router.push(`/order-details/${item.id}`)}
+                  // onPress={() => router.push(`/order-details/${item.id}`)}
                 >
                   <Text style={styles.viewText}>View Details</Text>
                   <Ionicons name="chevron-forward" size={16} color="#fff" />

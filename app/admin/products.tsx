@@ -12,14 +12,14 @@ import {
   View
 } from "react-native";
 
-const ProductCard = ({ item }) => {
-  const getStockColor = (stock, status) => {
+const ProductCard = (item: any) => {
+  const getStockColor = (stock: any, status: any) => {
     if (status === 'out-of-stock') return '#FF6B6B';
     if (stock < 10) return '#FFA500';
     return '#4CAF50';
   };
 
-  const getStockText = (stock, status) => {
+  const getStockText = (stock: any, status: any) => {
     if (status === 'out-of-stock') return 'Out of Stock';
     if (stock < 10) return 'Low Stock';
     return 'Available';
@@ -34,12 +34,12 @@ const ProductCard = ({ item }) => {
           <Text style={styles.ratingText}>{item.rating}</Text>
         </View>
       </View>
-      
+
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
         <Text style={styles.productCategory}>{item.category}</Text>
         <Text style={styles.productPrice}>₹{item.price}</Text>
-        
+
         <View style={styles.productStats}>
           <View style={styles.statItem}>
             <Ionicons name="trending-up" size={12} color="#666" />
@@ -51,7 +51,7 @@ const ProductCard = ({ item }) => {
             </Text>
           </View>
         </View>
-        
+
         <Text style={styles.stockCount}>{item.stock} units</Text>
       </View>
 
@@ -71,9 +71,9 @@ export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [products, setProducts] = useState([
-    { 
-      id: "1", 
-      name: "Veg Supreme Burger", 
+    {
+      id: "1",
+      name: "Veg Supreme Burger",
       price: 120,
       category: "Fast Food",
       stock: 15,
@@ -82,9 +82,9 @@ export default function Products() {
       rating: 4.5,
       sales: 124
     },
-    { 
-      id: "2", 
-      name: "Margherita Pizza", 
+    {
+      id: "2",
+      name: "Margherita Pizza",
       price: 240,
       category: "Italian",
       stock: 8,
@@ -93,9 +93,9 @@ export default function Products() {
       rating: 4.8,
       sales: 89
     },
-    { 
-      id: "3", 
-      name: "Chocolate Milkshake", 
+    {
+      id: "3",
+      name: "Chocolate Milkshake",
       price: 90,
       category: "Beverages",
       stock: 0,
@@ -104,9 +104,9 @@ export default function Products() {
       rating: 4.3,
       sales: 67
     },
-    { 
-      id: "4", 
-      name: "Crispy French Fries", 
+    {
+      id: "4",
+      name: "Crispy French Fries",
       price: 60,
       category: "Snacks",
       stock: 22,
@@ -115,9 +115,9 @@ export default function Products() {
       rating: 4.2,
       sales: 156
     },
-    { 
-      id: "5", 
-      name: "Grilled Chicken Sandwich", 
+    {
+      id: "5",
+      name: "Grilled Chicken Sandwich",
       price: 180,
       category: "Fast Food",
       stock: 5,
@@ -126,9 +126,9 @@ export default function Products() {
       rating: 4.6,
       sales: 92
     },
-    { 
-      id: "6", 
-      name: "Fresh Fruit Salad", 
+    {
+      id: "6",
+      name: "Fresh Fruit Salad",
       price: 110,
       category: "Healthy",
       stock: 12,
@@ -140,7 +140,7 @@ export default function Products() {
   ]);
 
   const categories = ["All", "Fast Food", "Italian", "Beverages", "Snacks", "Healthy"];
-  
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
@@ -157,7 +157,7 @@ export default function Products() {
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.title}>Products Management</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.addBtn}
             onPress={() => router.push("/add-product")}
           >
@@ -249,11 +249,11 @@ export default function Products() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#F5F5F5", 
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
   },
-  header: { 
+  header: {
     backgroundColor: "#FFFFFF",
     paddingTop: 20,
     paddingBottom: 16,
@@ -266,13 +266,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  title: { 
-    fontSize: 24, 
-    fontWeight: "600", 
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
     color: "#333333",
   },
-  addBtn: { 
-    backgroundColor: "#4CAF50", 
+  addBtn: {
+    backgroundColor: "#4CAF50",
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -398,20 +398,20 @@ const styles = StyleSheet.create({
   productInfo: {
     flex: 1,
   },
-  productName: { 
-    fontSize: 14, 
-    fontWeight: "500", 
+  productName: {
+    fontSize: 14,
+    fontWeight: "500",
     color: "#333333",
     marginBottom: 2,
   },
-  productCategory: { 
-    fontSize: 11, 
+  productCategory: {
+    fontSize: 11,
     color: "#666666",
     marginBottom: 4,
   },
-  productPrice: { 
-    fontSize: 16, 
-    fontWeight: "bold", 
+  productPrice: {
+    fontSize: 16,
+    fontWeight: "bold",
     color: "#4CAF50",
     marginBottom: 6,
   },
@@ -444,8 +444,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#666666",
   },
-  actionBtns: { 
-    flexDirection: "row", 
+  actionBtns: {
+    flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 8,
     paddingTop: 8,

@@ -11,6 +11,7 @@ export default function Layout() {
   const isPublic = publicRoutes.includes(pathname);
 
   useEffect(() => {
+    debugger
     if (!loading) {
       if (!user && !isPublic) {
         router.replace("/login");

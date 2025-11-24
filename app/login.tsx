@@ -6,9 +6,9 @@ import { API_BASE_URL } from '../constants/constant';
 
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");
-    const [loading, setLoading] = useState(false);
-    useAuthChecker()
- const handleSendOtp = async () => {
+  const [loading, setLoading] = useState(false);
+  useAuthChecker()
+  const handleSendOtp = async () => {
     if (!phone || phone.length < 10) {
       Alert.alert("Invalid Phone Number", "Please enter a valid 10-digit phone number.");
       return;
@@ -54,7 +54,7 @@ export default function LoginScreen() {
         onChangeText={setPhone}
       />
 
-       <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
+      <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
@@ -75,16 +75,16 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ffffffff", justifyContent: "center", padding: 24 },
   title: { fontSize: 28, fontWeight: "bold", color: "#2ECC71", marginBottom: 24 },
-   input: {
+  input: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 5,
     padding: 12,
     fontSize: 10,
-    margin:5,
+    margin: 5,
     backgroundColor: '#f9f9f9',
   },
-   button: {
+  button: {
     backgroundColor: '#2ECC71',
     padding: 12,
     borderRadius: 5,
