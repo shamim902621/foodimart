@@ -4,7 +4,7 @@ import { Tabs } from "expo-router";
 
 export default function SuperAdminLayout() {
   return (
-    <ProtectedRoute allowedRoles={["SUPER_ADMIN"]}>
+    <ProtectedRoute allowedRoles={["SUPERADMIN"]}>
       <Tabs
         screenOptions={{
           headerShown: false,

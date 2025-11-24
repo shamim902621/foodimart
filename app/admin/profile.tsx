@@ -97,8 +97,13 @@ export default function Profile() {
     </ScrollView>
   );
 }
+type InfoRowProps = {
+  icon: string;        // emoji hamesha string hota
+  label: string;
+  value: string | number;
+};
 
-const InfoRow = ({ icon, label, value }) => (
+const InfoRow = ({ icon, label, value }: InfoRowProps) => (
   <View style={styles.infoRow}>
     <View style={styles.infoLabel}>
       <Text style={styles.infoIcon}>{icon}</Text>
@@ -107,12 +112,11 @@ const InfoRow = ({ icon, label, value }) => (
     <Text style={styles.infoValue}>{value}</Text>
   </View>
 );
-
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#F8F9FA", 
-    padding: 16 
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F9FA",
+    padding: 16
   },
   header: {
     flexDirection: "row",
@@ -144,9 +148,9 @@ const styles = StyleSheet.create({
   headerInfo: {
     flex: 1,
   },
-  title: { 
-    fontSize: 20, 
-    fontWeight: "bold", 
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
     color: "#2C3E50",
     marginBottom: 2,
   },
