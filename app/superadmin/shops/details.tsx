@@ -17,7 +17,7 @@ export default function ShopDetails() {
 
   const fetchShop = async () => {
     try {
-      const response = await api(`/shops/${id}`, "GET", token ?? undefined);
+      const response = await api(`/shops/${id}`, "GET", undefined, token ?? undefined);
 
       console.log("API RAW RESPONSE:", response);
 
@@ -34,6 +34,7 @@ export default function ShopDetails() {
     }
   };
 
+  console.log("resposexx data", shop);
 
   const recentOrders = [
     { id: "ORD-001", customer: "John Doe", amount: 1250, status: "delivered", time: "2 hours ago" },
@@ -55,11 +56,8 @@ export default function ShopDetails() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#374151" />
-          </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.shopTitle}>{shop?.name}</Text>
+            <Text style={styles.shopTitle}>{shop?.shop.name || "shop name"}</Text>
             <Text style={styles.shopCategory}>{shop?.cuisineType?.join(", ")}</Text>
           </View>
           <TouchableOpacity
@@ -98,20 +96,20 @@ export default function ShopDetails() {
       <View style={styles.content}>
         <Text style={styles.sectionTitle}>Performance Overview</Text>
         <View style={styles.statsGrid}>
-          {/* <StatBox title="Total Orders" value={shop?.totalOrders.toString()} icon="📦" /> */}
-          {/* <StatBox title="Monthly Orders" value={shop?.monthlyOrders.toString()} icon="📊" /> */}
-          {/* <StatBox title="Weekly Orders" value={shop?.weeklyOrders.toString()} icon="🔄" /> */}
-          <StatBox title="Total Revenue" value={`₹${(shop?.totalRevenue / 1000).toFixed(0)}K`} icon="💰" />
+          <StatBox title="Total Orders" value={shop?.shop.totalOrders.toString()} icon="📦" />
+          <StatBox title="Monthly Orders" value={shop?.shop.monthlyOrders.toString()} icon="📊" />
+          <StatBox title="Weekly Orders" value={shop?.shop.weeklyOrders.toString()} icon="🔄" />
+          <StatBox title="Total Revenue" value={`₹${(shop?.shop.totalRevenue / 1000).toFixed(0)}K`} icon="💰" />
         </View>
 
         {/* Shop Information */}
         <View style={styles.infoCard}>
           <Text style={styles.cardTitle}>Shop Information</Text>
           <View style={styles.infoList}>
-            <InfoRow icon="person-outline" label="Owner" value={shop?.name} />
-            <InfoRow icon="mail-outline" label="Email" value={shop?.contact.email} />
-            <InfoRow icon="call-outline" label="Phone" value={shop?.contact.phone} />
-            <InfoRow icon="location-outline" label="Address" value={shop?.address.street + shop?.address.zipCode} />
+            <InfoRow icon="person-outline" label="Owner" value={shop?.user.fullName} />
+            <InfoRow icon="mail-outline" label="Email" value={shop?.user.email} />
+            <InfoRow icon="call-outline" label="Phone" value={shop?.user.mobile} />
+            <InfoRow icon="location-outline" label="Address" value={shop?.address.city + " " + shop?.address.zipCode} />
           </View>
         </View>
 

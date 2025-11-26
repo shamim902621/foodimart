@@ -1,7 +1,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/hooks/useAuth';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { API_BASE_URL } from '../constants/constant';
@@ -12,7 +12,7 @@ export default function OTPVerificationScreen() {
   const [loading, setLoading] = useState(false);
   const inputs = useRef<Array<TextInput | null>>([]);
   const { login } = useAuth();
-
+  const router = useRouter();
   // Add the missing handleOtpChange function
   const handleOtpChange = (value: string, index: number) => {
     if (value.length > 1) {
@@ -61,7 +61,14 @@ export default function OTPVerificationScreen() {
 
       const result = await response.json();
 
-      if (result.success && result.token && result.user) {
+      // --- AUTO REFRESH FUNCTION ---
+      const refreshPage = (path: any) => {
+        router.push({ pathname: path, params: { refresh: Date.now() } });
+      };
+
+
+
+      if (result.success) {
         // Save to storage and update auth state
         await login(result.token, result.user);
 
@@ -71,18 +78,18 @@ export default function OTPVerificationScreen() {
         switch (result.user.role) {
           case 'USER':
             // router.replace('/category');
-            router.push("/category");
+            refreshPage("/category");
             break;
           case 'ADMIN':
-            // router.replace('/admin/dashboard');
-            router.push("/admin/dashboard");
+            // refreshPage.replace('/admin/dashboard');
+            refreshPage("/admin/dashboard");
             break;
           case 'SUPERADMIN':
-            // router.replace('/superadmin/dashboard');
-            router.push("/superadmin/dashboard");
+            // refreshPage.replace('/superadmin/dashboard');
+            refreshPage("/superadmin/dashboard");
             break;
           default:
-            router.replace('/category');
+            refreshPage('/category');
         }
       } else {
         Alert.alert('Error', result.message || 'Invalid OTP');

@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "../../../constants/constant";
 
 export async function api(path: string, method = "POST", body?: any, token?: string) {
+        debugger
         const headers: any = { "Content-Type": "application/json" };
         if (token) headers.Authorization = `Bearer ${token}`;
         console.log(API_BASE_URL);

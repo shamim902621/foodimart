@@ -1,49 +1,97 @@
 // app/superadmin/users/index.tsx
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState, useMemo } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { api } from "./shops/apiService";
+
+export interface IUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  shop: string | null;
+  status: string;
+  joinDate: string;
+  lastLogin: string;
+  address?: string | null;
+}
+export interface IUsersResponse {
+  success: boolean;
+  users: IUser[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  message?: string;
+}
+
 
 export default function ManageUsers() {
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const users = [
-    { 
-      id: 1, 
-      name: "Shamim Ahmad", 
-      email: "shamim@foodmart.com", 
-      shop: "Food Mart Indiranagar",
-      phone: "+91 9876543210",
-      status: "active",
-      joinDate: "2024-01-15",
-      lastLogin: "2 hours ago"
-    },
-    { 
-      id: 2, 
-      name: "Amit Kumar", 
-      email: "amit@burgerhub.com", 
-      shop: "Burger Hub Koramangala",
-      phone: "+91 9876543211",
-      status: "active",
-      joinDate: "2024-02-01",
-      lastLogin: "1 day ago"
-    },
-    { 
-      id: 3, 
-      name: "Priya Sharma", 
-      email: "priya@pizzapalace.com", 
-      shop: "Pizza Palace",
-      phone: "+91 9876543212",
-      status: "inactive",
-      joinDate: "2024-01-20",
-      lastLogin: "1 week ago"
-    },
-  ];
+  const [loading, setLoading] = useState<boolean>(false);
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [limit] = useState<number>(20);
+  // const { user, token, isAuthenticated } = useAuth();
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.shop.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // console.log(user);
+  // console.log("tokrtehfdr", token);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const [token, user] = await Promise.all([
+      AsyncStorage.getItem('authToken'),
+      AsyncStorage.getItem('userData'),
+    ]);
+
+    try {
+      const response: IUsersResponse = await api(
+        `/superadmin/users`,
+        "GET",
+        undefined,
+        token ?? undefined
+      );
+
+      console.log("API RAW RESPONSE:", response);
+
+      if (response?.success) {
+        setUsers(response.users);
+      } else {
+        console.log("Failed:", response?.message);
+      }
+
+    } catch (error) {
+      console.log("Fetch users error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, [page]);
+
+
+  const filteredUsers = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    if (!q) return users; // No search → return all users
+
+    return users.filter((u) => {
+      return (
+        u?.name?.toLowerCase().includes(q) ||
+        u?.email?.toLowerCase().includes(q) ||
+        u?.phone?.toLowerCase().includes(q) ||
+        u?.shop?.toLowerCase().includes(q) ||
+        u?.status?.toLowerCase().includes(q)
+      );
+    });
+  }, [users, searchQuery]);
+
 
   const getStatusColor = (status: string) => {
     return status === 'active' ? '#10B981' : '#EF4444';
@@ -55,7 +103,7 @@ export default function ManageUsers() {
       <View style={styles.header}>
         <Text style={styles.title}>Manage Users</Text>
         <Text style={styles.subtitle}>Manage shopkeeper accounts and permissions</Text>
-        
+
         {/* Search */}
         <View style={styles.searchContainer}>
           <TextInput
@@ -74,15 +122,15 @@ export default function ManageUsers() {
             <View style={styles.userHeader}>
               <View style={styles.userInfo}>
                 <Text style={styles.userName}>{user.name}</Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
+                <Text style={styles.userEmail}>{user.email || "No email provided"}</Text>
               </View>
-              <View 
+              <View
                 style={[
                   styles.statusBadge,
                   { backgroundColor: getStatusColor(user.status) + '20' }
                 ]}
               >
-                <Text 
+                <Text
                   style={[
                     styles.statusText,
                     { color: getStatusColor(user.status) }
@@ -94,7 +142,7 @@ export default function ManageUsers() {
             </View>
 
             <View style={styles.userDetails}>
-              <Text style={styles.userShop}>{user.shop}</Text>
+              <Text style={styles.userShop}>{user.shop || "No shop provided"}</Text>
               <Text style={styles.userPhone}>{user.phone}</Text>
             </View>
 
@@ -109,7 +157,7 @@ export default function ManageUsers() {
                   <Text style={styles.metaText}>Last login: {user.lastLogin}</Text>
                 </View>
               </View>
-              
+
               <View style={styles.actionButtons}>
                 <TouchableOpacity style={styles.editButton}>
                   <Ionicons name="create-outline" size={16} color="#3B82F6" />
@@ -123,6 +171,7 @@ export default function ManageUsers() {
         ))}
       </View>
 
+
       {/* Empty State */}
       {filteredUsers.length === 0 && (
         <View style={styles.emptyState}>
@@ -131,6 +180,24 @@ export default function ManageUsers() {
           <Text style={styles.emptyStateText}>
             {searchQuery ? "Try adjusting your search query" : "No shopkeeper users yet"}
           </Text>
+        </View>
+      )}
+      {/* PAGINATION */}
+      {!loading && users.length > 0 && (
+        <View style={styles.pagination}>
+          <TouchableOpacity
+            onPress={() => setPage((p) => Math.max(1, p - 1))}
+            style={styles.pageButton}
+          >
+            <Text style={styles.pageButtonText}>Previous</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setPage((p) => p + 1)}
+            style={styles.pageButton}
+          >
+            <Text style={styles.pageButtonText}>Next</Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>
@@ -232,7 +299,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   userMeta: {
-    flexDirection: "row",
+    flexDirection: "column",
     gap: 16,
   },
   metaItem: {
@@ -248,6 +315,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+  pagination: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  pageButton: {
+    flex: 1,
+    backgroundColor: "#3B82F6",
+    padding: 12,
+    borderRadius: 10,
+    marginHorizontal: 6,
+  },
+  pageButtonText: { color: "white", textAlign: "center", fontWeight: "600" },
   editButton: {
     padding: 8,
     backgroundColor: "#EFF6FF",
