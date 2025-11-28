@@ -53,6 +53,7 @@ export default function OTPVerificationScreen() {
 
     setLoading(true);
     try {
+      debugger
       const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -60,7 +61,7 @@ export default function OTPVerificationScreen() {
       });
 
       const result = await response.json();
-
+      console.log('OTP Verification Response:', result.user, result.user.role);
       // --- AUTO REFRESH FUNCTION ---
       const refreshPage = (path: any) => {
         router.push({ pathname: path, params: { refresh: Date.now() } });
@@ -69,31 +70,34 @@ export default function OTPVerificationScreen() {
 
 
       if (result.success) {
-        // Save to storage and update auth state
-        await login(result.token, result.user);
+        await login(result.token, result.user); // save state first
+
+        // setTimeout(() => {
+        //   router.replace('/login');
+        // }, 100);
+
 
         Alert.alert('Success', result.message || 'Login successful!');
 
-        // Redirect based on role
-        switch (result.user.role) {
+        // Then navigate
+        switch (result?.user.role) {
           case 'USER':
-            // router.replace('/category');
-            refreshPage("/category");
+            router.replace('/category');
             break;
           case 'ADMIN':
-            // refreshPage.replace('/admin/dashboard');
-            refreshPage("/admin/dashboard");
+            router.replace('/admin/dashboard');
             break;
           case 'SUPERADMIN':
-            // refreshPage.replace('/superadmin/dashboard');
-            refreshPage("/superadmin/dashboard");
+            router.replace('/superadmin/dashboard');
             break;
           default:
-            refreshPage('/category');
+            router.replace('/category');
         }
-      } else {
-        Alert.alert('Error', result.message || 'Invalid OTP');
       }
+
+
+
+
     } catch (error) {
       console.error('OTP Verification Error:', error);
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -101,6 +105,8 @@ export default function OTPVerificationScreen() {
       setLoading(false);
     }
   };
+  // --- AUTO REFRESH FUNCTION ---
+
 
   const handleResend = async () => {
     try {

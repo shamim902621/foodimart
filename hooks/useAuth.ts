@@ -7,6 +7,7 @@ export interface User {
   role: 'USER' | 'ADMIN' | 'SUPERADMIN';
   name?: string;
   email?: string;
+  userUUID?: string;
 }
 
 export interface AuthState {
@@ -14,6 +15,7 @@ export interface AuthState {
   token: string | null;
   loading: boolean;
   isAuthenticated: boolean;
+  userUUID?: string;
 }
 
 export function useAuth() {
@@ -22,6 +24,7 @@ export function useAuth() {
     token: null,
     loading: true,
     isAuthenticated: false,
+    userUUID: undefined,
   });
 
   useEffect(() => {
