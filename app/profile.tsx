@@ -87,7 +87,7 @@ export default function ProfileScreen() {
     { label: 'Reviews', value: '7', icon: 'star' },
   ];
 
-  const handleEditField = (field, value) => {
+  const handleEditField = (field: any, value: any) => {
     setEditField(field);
     setEditValue(value);
     setShowEditModal(true);
@@ -125,36 +125,36 @@ export default function ProfileScreen() {
     Alert.alert('Success', 'Password reset link sent to your email!');
   };
 
-const handleLogout = async () => {
-  Alert.alert(
-    "Logout",
-    "Are you sure you want to logout?",
-    [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem("authToken");
-            await AsyncStorage.removeItem("userData");
-            router.replace("/login");
-          } catch (error) {
-            console.error("Error clearing storage during logout:", error);
-          }
+  const handleLogout = async () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-      },
-    ]
-  );
-};
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem("authToken");
+              await AsyncStorage.removeItem("userData");
+              router.replace("/login");
+            } catch (error) {
+              console.error("Error clearing storage during logout:", error);
+            }
+          },
+        },
+      ]
+    );
+  };
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-            <View style={styles.header}>
-      <BackButton />
+      <View style={styles.header}>
+        <BackButton />
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity style={styles.editButton}>
           <Feather name="edit-3" size={20} color="#328a0dff" />
@@ -173,10 +173,10 @@ const handleLogout = async () => {
               <Feather name="camera" size={16} color="#fff" />
             </TouchableOpacity>
           </View>
-          
+
           <Text style={styles.userName}>{user.name}</Text>
           <Text style={styles.userEmail}>{user.email}</Text>
-          
+
           {/* Stats Grid */}
           <View style={styles.statsContainer}>
             {stats.map((stat, index) => (
@@ -193,7 +193,7 @@ const handleLogout = async () => {
 
         {/* Quick Info Cards */}
         <View style={styles.cardsSection}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.infoCard}
             onPress={() => handleEditField('name', user.name)}
           >
@@ -207,7 +207,7 @@ const handleLogout = async () => {
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.infoCard}
             onPress={() => handleEditField('email', user.email)}
           >
@@ -221,7 +221,7 @@ const handleLogout = async () => {
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.infoCard}
             onPress={() => handleEditField('phone', user.phone)}
           >
@@ -252,7 +252,7 @@ const handleLogout = async () => {
                 </View>
                 <Switch
                   value={value}
-                  onValueChange={(newValue) => 
+                  onValueChange={(newValue) =>
                     setNotifications(prev => ({ ...prev, [key]: newValue }))
                   }
                   trackColor={{ false: '#f0f0f0', true: '#328a0dff' }}
@@ -324,13 +324,13 @@ const handleLogout = async () => {
               placeholder={`Enter your ${editField}`}
             />
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalCancelButton}
                 onPress={() => setShowEditModal(false)}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalSaveButton}
                 onPress={handleSaveEdit}
               >
@@ -363,13 +363,13 @@ const handleLogout = async () => {
               autoCapitalize="none"
             />
             <View style={styles.modalButtons}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalCancelButton}
                 onPress={() => setShowForgotPasswordModal(false)}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalSaveButton}
                 onPress={handleForgotPassword}
               >

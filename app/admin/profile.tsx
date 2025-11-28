@@ -1,18 +1,45 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { useAuth } from "../../hooks/useAuth";
+import { api } from "../superadmin/shops/apiService";
 export default function Profile() {
-  const shopInfo = {
-    name: "Green Café",
-    owner: "Shamim Ahmad",
-    location: "Mumbai, Maharashtra",
-    phone: "+91 9876543210",
-    email: "contact@greencafe.com",
-    openingHours: "8:00 AM - 11:00 PM",
-    rating: "4.5",
-    totalOrders: 156,
-    joinedDate: "Jan 15, 2024"
+
+
+  const { token, user } = useAuth();
+  // const { id } = useLocalSearchParams();
+  const userUUID = user?.userUUID;
+  const [shop, setShop] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchShop();
+  }, [userUUID]);
+
+  const fetchShop = async () => {
+    try {
+      // debugger;
+      const response = await api(`/shops/useruuidshop?userUUID=${userUUID}`, "GET", undefined, token ?? undefined);
+
+      console.log("API RAW RESPONSE:", response);
+
+      if (response?.success) {
+        setShop(response.data);   // <-- PURE shop object
+      } else {
+        console.log("Failed:", response?.message);
+      }
+
+    } catch (e) {
+      console.log("Fetch data error:", e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  console.log("resposexx data", shop);
 
   const quickActions = [
     { icon: "🏪", title: "Shop Settings", description: "Update shop information" },
@@ -20,6 +47,26 @@ export default function Profile() {
     { icon: "📦", title: "Delivery Settings", description: "Set delivery areas" },
     { icon: "📊", title: "Business Reports", description: "View sales analytics" },
   ];
+  const navigation = useNavigation();
+  const router = useRouter();
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      // navigation.reset({
+      //   index: 0,
+      //   routes: [{ name: 'Login' }],
+      // });
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+
+
+
+
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -29,11 +76,11 @@ export default function Profile() {
           <Text style={styles.avatarText}>GC</Text>
         </View>
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>{shopInfo.name}</Text>
-          <Text style={styles.subtitle}>Managed by {shopInfo.owner}</Text>
+          <Text style={styles.title}>{shop?.shop.name || "shop name"}</Text>
+          <Text style={styles.subtitle}>Managed by {shop?.shop.ownerName || "owner name"}</Text>
           <View style={styles.rating}>
-            <Text style={styles.ratingText}>⭐ {shopInfo.rating}</Text>
-            <Text style={styles.ordersText}>• {shopInfo.totalOrders} orders</Text>
+            <Text style={styles.ratingText}>⭐ {shop?.shop.rating}/5</Text>
+            <Text style={styles.ordersText}> | {shop?.shop.totalOrders} orders</Text>
           </View>
         </View>
       </View>
@@ -41,14 +88,26 @@ export default function Profile() {
       {/* Shop Information */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🏪 Shop Information</Text>
+
         <View style={styles.infoCard}>
-          <InfoRow icon="📍" label="Location" value={shopInfo.location} />
-          <InfoRow icon="📞" label="Phone" value={shopInfo.phone} />
-          <InfoRow icon="📧" label="Email" value={shopInfo.email} />
-          <InfoRow icon="🕒" label="Opening Hours" value={shopInfo.openingHours} />
-          <InfoRow icon="📅" label="Joined" value={shopInfo.joinedDate} />
+          <InfoRow icon="🏷️" label="Shop Name" value={shop?.shop.name} />
+          <InfoRow icon="👤" label="Owner" value={shop?.shop.ownerName} />
+          <InfoRow icon="📄" label="Description" value={shop?.shop.description || "N/A"} />
+
+          <InfoRow icon="📍" label="Address"
+            value={`${shop?.address.addressLine1}, ${shop?.address.city}`} />
+
+          <InfoRow icon="📞" label="Phone" value={shop?.user.mobile} />
+          <InfoRow icon="📧" label="Email" value={shop?.user.email} />
+
+          <InfoRow icon="⏰" label="Opening Hours" value={shop?.shop.openingHours || "N/A"} />
+          <InfoRow icon="🗓️" label="Weekly Off" value={shop?.shop.weeklyOff || "None"} />
+
+          <InfoRow icon="🧾" label="GST Number" value={shop?.documents?.gst || "Not Uploaded"} />
+          <InfoRow icon="🥘" label="FSSAI License" value={shop?.documents?.fssai || "Not Uploaded"} />
         </View>
       </View>
+
 
       {/* Quick Actions */}
       <View style={styles.section}>
@@ -89,7 +148,7 @@ export default function Profile() {
           <Ionicons name="create-outline" size={18} color="#fff" />
           <Text style={styles.primaryButtonText}>Edit Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.secondaryButton}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={18} color="#E74C3C" />
           <Text style={styles.secondaryButtonText}>Logout</Text>
         </TouchableOpacity>
