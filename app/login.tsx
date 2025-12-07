@@ -1,4 +1,3 @@
-import { useAuthChecker } from "@/components/AuthChecker";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -7,7 +6,6 @@ import { API_BASE_URL } from '../constants/constant';
 export default function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  useAuthChecker()
   const handleSendOtp = async () => {
     if (!phone || phone.length < 10) {
       Alert.alert("Invalid Phone Number", "Please enter a valid 10-digit phone number.");
@@ -51,8 +49,15 @@ export default function LoginScreen() {
         placeholder="Phone number"
         keyboardType="phone-pad"
         value={phone}
-        onChangeText={setPhone}
+        maxLength={10}  // extra safety
+        onChangeText={(text) => {
+          const cleaned = text.replace(/[^0-9]/g, ""); // remove non-numeric
+          if (cleaned.length <= 10) {
+            setPhone(cleaned);
+          }
+        }}
       />
+
 
       <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
         {loading ? (

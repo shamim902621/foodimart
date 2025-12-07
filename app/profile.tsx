@@ -1,6 +1,8 @@
 import BackButton from '@/components/back-button';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { useNavigation } from "@react-navigation/native";
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -16,14 +18,29 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from "../hooks/useAuth";
+import { api, apiFormData } from './lib/apiService';
 
 export default function ProfileScreen() {
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-  });
+  const { user, token, isAuthenticated } = useAuth();
+  console.log(user);
+
+  const updateProfileField = async () => {
+    try {
+      const formData = new FormData();
+      formData.append(editField, editValue);
+
+      const res = await apiFormData("/profile", "PUT", formData, token ?? "");
+
+      Alert.alert("Success", "Profile updated!");
+      setShowEditModal(false);
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Failed to update profile");
+    }
+  };
+
+
 
   const [notifications, setNotifications] = useState({
     push: true,
@@ -93,11 +110,49 @@ export default function ProfileScreen() {
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    setUser(prev => ({ ...prev, [editField]: editValue }));
-    setShowEditModal(false);
-    Alert.alert('Success', 'Profile updated successfully!');
+  // const handleSaveEdit = () => {
+  //   // setUser(prev => ({ ...prev, [editField]: editValue }));
+  //   setShowEditModal(false);
+  //   Alert.alert('Success', 'Profile updated successfully!');
+  // };
+  const handleSaveEdit = updateProfileField;
+  const pickImageAndUpload = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+
+    if (result.canceled) return;
+
+    const file = result.assets[0];
+
+    const formData = new FormData();
+    // formData.append("profilePic", {
+    //   uri: file.uri,
+    //   name: "profile.jpg",
+    //   type: "image/jpeg",
+    // });
+
+    try {
+      const res = await apiFormData("/profile", "PUT", formData);
+      Alert.alert("Success", "Profile image updated!");
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Error", "Failed to update");
+    }
   };
+  const [profile, setProfile] = useState(null);
+
+  const getProfile = async () => {
+    try {
+      const res = await api("/auth/profile", "GET", undefined, token ?? "");
+      setProfile(res.user);
+      console.log("PROFILE data:", res.user);
+    } catch (error: any) {
+      console.log("GET PROFILE ERROR:", error.message);
+    }
+  };
+  getProfile();
 
   const handleSecurity = () => {
     Alert.alert(
@@ -125,10 +180,10 @@ export default function ProfileScreen() {
     Alert.alert('Success', 'Password reset link sent to your email!');
   };
 
-  const handleLogout = async () => {
+  const phandleLogout = () => {
     Alert.alert(
       "Logout",
-      "Are you sure you want to logout?",
+      "Are you sure you want to log out?",
       [
         {
           text: "Cancel",
@@ -141,15 +196,26 @@ export default function ProfileScreen() {
             try {
               await AsyncStorage.removeItem("authToken");
               await AsyncStorage.removeItem("userData");
-              router.replace("/login");
+
+              router.replace("/login"); // Redirect to login
             } catch (error) {
-              console.error("Error clearing storage during logout:", error);
+              console.error("Error during logout:", error);
             }
           },
         },
       ]
     );
   };
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
@@ -166,7 +232,7 @@ export default function ProfileScreen() {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{ uri: user.avatar }}
+              source={{ uri: user?.profilePicUrl }}
               style={styles.avatar}
             />
             <TouchableOpacity style={styles.cameraButton}>
@@ -174,8 +240,8 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userEmail}>{user.email}</Text>
+          <Text style={styles.userName}>{user?.name}</Text>
+          <Text style={styles.userEmail}>{user?.email}</Text>
 
           {/* Stats Grid */}
           <View style={styles.statsContainer}>
@@ -195,42 +261,42 @@ export default function ProfileScreen() {
         <View style={styles.cardsSection}>
           <TouchableOpacity
             style={styles.infoCard}
-            onPress={() => handleEditField('name', user.name)}
+            onPress={() => handleEditField('name', user?.name)}
           >
             <View style={styles.cardIcon}>
               <Ionicons name="person" size={20} color="#328a0dff" />
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>Full Name</Text>
-              <Text style={styles.cardValue}>{user.name}</Text>
+              <Text style={styles.cardValue}>{user?.name}</Text>
             </View>
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.infoCard}
-            onPress={() => handleEditField('email', user.email)}
+            onPress={() => handleEditField('email', user?.email)}
           >
             <View style={styles.cardIcon}>
               <Ionicons name="mail" size={20} color="#328a0dff" />
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>Email Address</Text>
-              <Text style={styles.cardValue}>{user.email}</Text>
+              <Text style={styles.cardValue}>{user?.email}</Text>
             </View>
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.infoCard}
-            onPress={() => handleEditField('phone', user.phone)}
+            onPress={() => handleEditField('phone', user?.mobile)}
           >
             <View style={styles.cardIcon}>
               <Ionicons name="call" size={20} color="#328a0dff" />
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>Phone Number</Text>
-              <Text style={styles.cardValue}>{user.phone}</Text>
+              <Text style={styles.cardValue}>{user?.mobile}</Text>
             </View>
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>
@@ -281,6 +347,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             ))}
           </View>
+
         </View>
 
         {/* Support Card */}

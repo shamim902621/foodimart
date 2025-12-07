@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { api } from "./apiService";
+import { api } from "../../lib/apiService";
 export default function ShopsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");

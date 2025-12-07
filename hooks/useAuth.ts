@@ -6,7 +6,12 @@ export interface User {
   mobile: string;
   role: 'USER' | 'ADMIN' | 'SUPERADMIN';
   name?: string;
+  firstName: string;
+  lastName: string;
+  dob: Date;
+  gender: string;
   email?: string;
+  profilePicUrl: string;
   userUUID?: string;
 }
 

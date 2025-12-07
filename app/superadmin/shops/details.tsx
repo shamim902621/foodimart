@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { api } from "./apiService";
+import { api } from "../../lib/apiService";
 export default function ShopDetails() {
   const { token } = useAuth();
   const { id } = useLocalSearchParams();

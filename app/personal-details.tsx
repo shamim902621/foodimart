@@ -1,119 +1,158 @@
 import BackButton from '@/components/back-button';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { useAuth } from "../hooks/useAuth";
+import { api } from "./lib/apiService"; // YOUR API helper
 
 export default function PersonalDetails() {
+
+  const { user, token } = useAuth();
+
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    dateOfBirth: '1990-05-15',
-    gender: 'Male',
+    firstName: "",
+    lastName: "",
+    email: "",
+    mobile: "",
+    dob: "",
+    gender: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const updateField = (field, value) => {
+  // -------------------------------
+  // 🔵 GET PROFILE (ON SCREEN LOAD)
+  // -------------------------------
+  const fetchProfile = async () => {
+    try {
+      const res = await api("/profile", "GET", undefined, token ?? "");
+
+      setFormData({
+        firstName: res.user.firstName || "",
+        lastName: res.user.lastName || "",
+        email: res.user.email || "",
+        mobile: res.user.mobile || "",
+        dob: res.user.dob ? res.user.dob.split("T")[0] : "",
+        gender: res.user.gender || "",
+      });
+
+    } catch (error: any) {
+      console.log("GET profile error:", error);
+      Alert.alert("Error", error.message || "Failed to fetch profile");
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  // -------------------------------
+  // 🔵 UPDATE FIELD LOCALLY
+  // -------------------------------
+  const updateField = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Save logic here
-    alert('Personal details updated successfully!');
+  // -------------------------------
+  // 🔥 SAVE CHANGES → PUT /profile
+  // -------------------------------
+  const handleSave = async () => {
+    try {
+      const body = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        mobile: formData.mobile,
+        dob: formData.dob,
+        gender: formData.gender,
+      };
+
+      const res = await api("/profile", "PUT", body, token ?? "");
+
+      Alert.alert("Success", "Personal details updated!");
+      setIsEditing(false);
+
+      fetchProfile(); // refresh UI
+
+    } catch (error: any) {
+      console.log("UPDATE profile error:", error);
+      Alert.alert("Error", error.message || "Update failed");
+    }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-         <BackButton  />
-
+        <BackButton />
         <Text style={styles.headerTitle}>Personal Details</Text>
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.editButton}
           onPress={() => setIsEditing(!isEditing)}
         >
           <Text style={styles.editButtonText}>
-            {isEditing ? 'Cancel' : 'Edit'}
+            {isEditing ? "Cancel" : "Edit"}
           </Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Photo */}
-        <View style={styles.photoSection}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {formData.firstName[0]}{formData.lastName[0]}
-              </Text>
-            </View>
-            <TouchableOpacity style={styles.cameraButton}>
-              <Ionicons name="camera" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.photoText}>Tap to change photo</Text>
-        </View>
 
-        {/* Form Fields */}
+        {/* FORM */}
         <View style={styles.formSection}>
+
           <View style={styles.fieldRow}>
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>First Name</Text>
               <TextInput
                 style={[styles.input, !isEditing && styles.disabledInput]}
                 value={formData.firstName}
-                onChangeText={(text) => updateField('firstName', text)}
+                onChangeText={(text) => updateField("firstName", text)}
                 editable={isEditing}
-                placeholder="First Name"
               />
             </View>
+
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>Last Name</Text>
               <TextInput
                 style={[styles.input, !isEditing && styles.disabledInput]}
                 value={formData.lastName}
-                onChangeText={(text) => updateField('lastName', text)}
+                onChangeText={(text) => updateField("lastName", text)}
                 editable={isEditing}
-                placeholder="Last Name"
               />
             </View>
           </View>
 
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Email Address</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
               style={[styles.input, !isEditing && styles.disabledInput]}
               value={formData.email}
-              onChangeText={(text) => updateField('email', text)}
+              onChangeText={(text) => updateField("email", text)}
               editable={isEditing}
               keyboardType="email-address"
-              placeholder="Email Address"
             />
           </View>
 
           <View style={styles.fieldContainer}>
-            <Text style={styles.label}>Phone Number</Text>
+            <Text style={styles.label}>Phone</Text>
             <TextInput
               style={[styles.input, !isEditing && styles.disabledInput]}
-              value={formData.phone}
-              onChangeText={(text) => updateField('phone', text)}
+              value={formData.mobile}
+              onChangeText={(text) => updateField("mobile", text)}
               editable={isEditing}
               keyboardType="phone-pad"
-              placeholder="Phone Number"
             />
           </View>
 
@@ -122,23 +161,24 @@ export default function PersonalDetails() {
               <Text style={styles.label}>Date of Birth</Text>
               <TextInput
                 style={[styles.input, !isEditing && styles.disabledInput]}
-                value={formData.dateOfBirth}
-                onChangeText={(text) => updateField('dateOfBirth', text)}
+                value={formData.dob}
+                onChangeText={(text) => updateField("dob", text)}
                 editable={isEditing}
                 placeholder="YYYY-MM-DD"
               />
             </View>
+
             <View style={styles.fieldContainer}>
               <Text style={styles.label}>Gender</Text>
               <TextInput
                 style={[styles.input, !isEditing && styles.disabledInput]}
                 value={formData.gender}
-                onChangeText={(text) => updateField('gender', text)}
+                onChangeText={(text) => updateField("gender", text)}
                 editable={isEditing}
-                placeholder="Gender"
               />
             </View>
           </View>
+
         </View>
 
         {/* Save Button */}
@@ -148,30 +188,11 @@ export default function PersonalDetails() {
           </TouchableOpacity>
         )}
 
-        {/* Additional Options */}
-        <View style={styles.optionsSection}>
-          <TouchableOpacity style={styles.optionItem}>
-            <Ionicons name="lock-closed-outline" size={22} color="#666" />
-            <Text style={styles.optionText}>Change Password</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={22} color="#999" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.optionItem}>
-            <Ionicons name="mail-outline" size={22} color="#666" />
-            <Text style={styles.optionText}>Email Preferences</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={22} color="#999" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.optionItem}>
-            <Ionicons name="notifications-outline" size={22} color="#666" />
-            <Text style={styles.optionText}>Notification Settings</Text>
-            <MaterialIcons name="keyboard-arrow-right" size={22} color="#999" />
-          </TouchableOpacity>
-        </View>
       </ScrollView>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

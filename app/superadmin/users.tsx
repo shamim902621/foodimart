@@ -1,9 +1,13 @@
 // app/superadmin/users/index.tsx
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState, useMemo } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { api } from "./shops/apiService";
+import { useAuth } from "../../hooks/useAuth";
+import { api } from "../lib/apiService";
+
 
 export interface IUser {
   id: string;
@@ -31,12 +35,14 @@ export interface IUsersResponse {
 
 
 export default function ManageUsers() {
+  const navigation = useNavigation();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [users, setUsers] = useState<IUser[]>([]);
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(20);
-  // const { user, token, isAuthenticated } = useAuth();
+  const { user, token, isAuthenticated } = useAuth();
 
   // console.log(user);
   // console.log("tokrtehfdr", token);
@@ -97,12 +103,40 @@ export default function ManageUsers() {
     return status === 'active' ? '#10B981' : '#EF4444';
   };
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      // navigation.reset({
+      //   index: 0,
+      //   routes: [{ name: 'Login' }],
+      // });
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  };
+
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Manage Users</Text>
-        <Text style={styles.subtitle}>Manage shopkeeper accounts and permissions</Text>
+
+        <View style={styles.headerTop}>
+
+          {/* Title Section */}
+          <View style={styles.headerLeft}>
+            <Text style={styles.title}>Manage Users</Text>
+            <Text style={styles.subtitle}>Manage shopkeeper accounts and permissions</Text>
+          </View>
+
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+
+        </View>
 
         {/* Search */}
         <View style={styles.searchContainer}>
@@ -113,7 +147,10 @@ export default function ManageUsers() {
             style={styles.searchInput}
           />
         </View>
+
       </View>
+
+
 
       {/* Users List */}
       <View style={styles.usersList}>
@@ -205,6 +242,33 @@ export default function ManageUsers() {
 }
 
 const styles = StyleSheet.create({
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  headerLeft: {
+    flexShrink: 1,   // <-- prevents title area from expanding too much
+    marginRight: 10,
+  },
+
+  logoutBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "#EF4444",
+    borderRadius: 8,
+    flexShrink: 0,   // <-- ensures button never grows in width
+    alignSelf: "flex-start",
+  },
+
+  logoutText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
