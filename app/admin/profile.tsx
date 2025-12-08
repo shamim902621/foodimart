@@ -91,7 +91,7 @@ export default function Profile() {
         <Text style={styles.sectionTitle}>🏪 Shop Information</Text>
 
         <View style={styles.infoCard}>
-          <InfoRow icon="🏷️" label="Shop Name" value={shop?.shop.name} />
+          {/* <InfoRow icon="🏷️" label="Shop Name" value={shop?.shop.name} /> */}
           <InfoRow icon="👤" label="Owner" value={shop?.shop.ownerName} />
           <InfoRow icon="📄" label="Description" value={shop?.shop.description || "N/A"} />
 

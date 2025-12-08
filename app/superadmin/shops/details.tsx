@@ -17,7 +17,7 @@ export default function ShopDetails() {
 
   const fetchShop = async () => {
     try {
-      const response = await api(`/shops/${id}`, "GET", undefined, token ?? undefined);
+      const response = await api(`/shops/idshop/${id}`, "GET", undefined, token ?? undefined);
 
       console.log("API RAW RESPONSE:", response);
 
@@ -86,7 +86,8 @@ export default function ShopDetails() {
               styles.statusText,
               shop?.status === 'active' ? styles.activeStatusText : styles.inactiveStatusText
             ]}>
-              {shop?.isActive ? "active" : "inactive"}
+              {/* If status exists, show it. If empty, show "pending" */}
+              {shop?.status || "pending"}
             </Text>
           </View>
         </View>

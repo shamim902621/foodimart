@@ -248,7 +248,7 @@ export default function ProfileScreen() {
             {stats.map((stat, index) => (
               <View key={index} style={styles.statItem}>
                 <View style={styles.statIcon}>
-                  <Ionicons name={stat.icon} size={20} color="#FF6B35" />
+                  <Ionicons size={20} color="#FF6B35" />
                 </View>
                 <Text style={styles.statNumber}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
@@ -340,7 +340,7 @@ export default function ProfileScreen() {
                 onPress={item.action}
               >
                 <View style={styles.menuLeft}>
-                  <Ionicons name={item.icon} size={22} color="#666" />
+                  <Ionicons size={22} color="#666" />
                   <Text style={styles.menuText}>{item.name}</Text>
                 </View>
                 <MaterialIcons name="keyboard-arrow-right" size={22} color="#999" />

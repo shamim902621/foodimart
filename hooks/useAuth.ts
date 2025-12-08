@@ -89,17 +89,23 @@ export function useAuth() {
 
   const logout = async () => {
     try {
+      // 1. Remove data from phone storage
       await Promise.all([
         AsyncStorage.removeItem('authToken'),
         AsyncStorage.removeItem('userData'),
       ]);
 
+      // 2. Update the App State (This is the code you showed me)
       setAuthState({
         user: null,
         token: null,
         loading: false,
         isAuthenticated: false,
       });
+
+      // 3. OPTIONAL: You can navigate here, OR in the UI component
+      // router.replace('/login'); 
+
     } catch (error) {
       console.error('Error during logout:', error);
     }
