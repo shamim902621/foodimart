@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { api } from "./apiService";
+import { api } from "../../lib/apiService";
 
 type ShopForm = {
   shopName: string;

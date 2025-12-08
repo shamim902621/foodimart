@@ -5,9 +5,10 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../hooks/useAuth";
-import { api } from "../superadmin/shops/apiService";
+import { api } from "../lib/apiService";
 export default function Profile() {
-
+  const navigation = useNavigation();
+  const router = useRouter();
 
   const { token, user } = useAuth();
   // const { id } = useLocalSearchParams();
@@ -47,8 +48,8 @@ export default function Profile() {
     { icon: "📦", title: "Delivery Settings", description: "Set delivery areas" },
     { icon: "📊", title: "Business Reports", description: "View sales analytics" },
   ];
-  const navigation = useNavigation();
-  const router = useRouter();
+
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('authToken');
@@ -90,7 +91,7 @@ export default function Profile() {
         <Text style={styles.sectionTitle}>🏪 Shop Information</Text>
 
         <View style={styles.infoCard}>
-          <InfoRow icon="🏷️" label="Shop Name" value={shop?.shop.name} />
+          {/* <InfoRow icon="🏷️" label="Shop Name" value={shop?.shop.name} /> */}
           <InfoRow icon="👤" label="Owner" value={shop?.shop.ownerName} />
           <InfoRow icon="📄" label="Description" value={shop?.shop.description || "N/A"} />
 

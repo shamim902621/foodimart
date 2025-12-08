@@ -2,16 +2,54 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { api } from "./apiService";
+import { useEffect, useRef, useState } from "react"; // 1. Import useRef
+import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"; // 2. Import Animated
+import { api } from "../../lib/apiService";
+
+// --- SHOP SKELETON COMPONENT ---
+const ShopSkeleton = () => {
+  const opacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <View style={styles.shopCard}>
+      {/* Header Skeleton (Name + Status Badge) */}
+      <View style={styles.shopHeader}>
+        <Animated.View style={[styles.skeletonBox, { width: '50%', height: 20, opacity }]} />
+        <Animated.View style={[styles.skeletonBox, { width: 60, height: 24, borderRadius: 12, opacity }]} />
+      </View>
+
+      {/* Cuisine/Owner Skeleton */}
+      <View style={styles.ownerContainer}>
+        <Animated.View style={[styles.skeletonBox, { width: 20, height: 20, borderRadius: 10, opacity }]} />
+        <Animated.View style={[styles.skeletonBox, { width: '40%', height: 14, marginLeft: 8, opacity }]} />
+      </View>
+
+      {/* Footer Skeleton (Rating + Revenue) */}
+      <View style={styles.shopFooter}>
+        <Animated.View style={[styles.skeletonBox, { width: 50, height: 16, opacity }]} />
+        <Animated.View style={[styles.skeletonBox, { width: 80, height: 18, opacity }]} />
+      </View>
+    </View>
+  );
+};
+
+// --- MAIN COMPONENT ---
 export default function ShopsList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [shops, setShops] = useState<any[]>([]);
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
- 
+
   useEffect(() => {
     const fetchShops = async () => {
       try {
@@ -103,52 +141,59 @@ export default function ShopsList() {
         </View>
       </View>
 
-      {/* Shops List */}
+      {/* Shops List OR Skeleton Loader */}
       <View style={styles.shopsContainer}>
-        {filteredShops.map((shop) => (
-          <TouchableOpacity
-            key={shop._id}
-            style={styles.shopCard}
-            onPress={() => router.push(`/superadmin/shops/details?id=${shop._id}`)}
-          >
-            <View style={styles.shopHeader}>
-              <Text style={styles.shopCardName}>{shop.name}</Text>
+        {loading ? (
+          // 3. Render 5 Shop Skeletons while loading
+          Array.from({ length: 5 }).map((_, index) => (
+            <ShopSkeleton key={index} />
+          ))
+        ) : (
+          // Render Actual Data
+          filteredShops.map((shop) => (
+            <TouchableOpacity
+              key={shop._id}
+              style={styles.shopCard}
+              onPress={() => router.push(`/superadmin/shops/details?id=${shop._id}`)}
+            >
+              <View style={styles.shopHeader}>
+                <Text style={styles.shopCardName}>{shop.name}</Text>
 
-              <View style={[
-                styles.statusBadge,
-                { backgroundColor: getStatusColor(shop.isActive ? "active" : "inactive") + '20' }
-              ]}>
-                <Text style={[
-                  styles.statusText,
-                  { color: getStatusColor(shop.isActive ? "active" : "inactive") }
+                <View style={[
+                  styles.statusBadge,
+                  { backgroundColor: getStatusColor(shop.isActive ? "active" : "inactive") + '20' }
                 ]}>
-                  {shop.isActive ? "active" : "inactive"}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.ownerContainer}>
-              <Ionicons name="person-outline" size={16} color="#6B7280" />
-              <Text style={styles.ownerText}>{shop.cuisineType.join(", ")}</Text>
-            </View>
-
-            <View style={styles.shopFooter}>
-              <View style={styles.shopStats}>
-                <View style={styles.statItem}>
-                  <Ionicons name="star" size={16} color="#F59E0B" />
-                  <Text style={styles.statText}>{shop.rating}</Text>
+                  <Text style={[
+                    styles.statusText,
+                    { color: getStatusColor(shop.isActive ? "active" : "inactive") }
+                  ]}>
+                    {shop.isActive ? "active" : "inactive"}
+                  </Text>
                 </View>
               </View>
 
-              <Text style={styles.revenueText}>{shop.totalRevenue}</Text>
-            </View>
-          </TouchableOpacity>
+              <View style={styles.ownerContainer}>
+                <Ionicons name="person-outline" size={16} color="#6B7280" />
+                <Text style={styles.ownerText}>{shop.cuisineType.join(", ")}</Text>
+              </View>
 
-        ))}
+              <View style={styles.shopFooter}>
+                <View style={styles.shopStats}>
+                  <View style={styles.statItem}>
+                    <Ionicons name="star" size={16} color="#F59E0B" />
+                    <Text style={styles.statText}>{shop.rating}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.revenueText}>{shop.totalRevenue}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
       </View>
 
-      {/* Empty State */}
-      {filteredShops.length === 0 && (
+      {/* Empty State (Only show if not loading) */}
+      {!loading && filteredShops.length === 0 && (
         <View style={styles.emptyState}>
           <Ionicons name="storefront-outline" size={64} color="#D1D5DB" />
           <Text style={styles.emptyStateTitle}>No shops found</Text>
@@ -162,179 +207,42 @@ export default function ShopsList() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-    padding: 16,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#111827",
-  },
-  addButton: {
-    backgroundColor: "#2563EB",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  addButtonText: {
-    color: "white",
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  input: {
-    padding: 12,
-    fontSize: 16,
-    color: "#374151",
-  },
-  filterButton: {
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  filterTabs: {
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  filterTab: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: "center",
-    borderRadius: 8,
-  },
-  activeFilterTab: {
-    backgroundColor: "#2563EB",
-  },
-  filterTabText: {
-    fontSize: 14,
-    color: "#6B7280",
-    fontWeight: "500",
-    textTransform: "capitalize",
-  },
-  activeFilterTabText: {
-    color: "#FFFFFF",
-  },
-  shopsContainer: {
-    gap: 12,
-  },
-  shopCard: {
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  shopHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  shopCardName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#111827",
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "500",
-    textTransform: "capitalize",
-  },
-  ownerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  ownerText: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginLeft: 8,
-  },
-  shopFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  shopStats: {
-    flexDirection: "row",
-    gap: 16,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statText: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginLeft: 4,
-  },
-  revenueText: {
-    color: "#10B981",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 48,
-  },
-  emptyStateTitle: {
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#6B7280",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: "#9CA3AF",
-    textAlign: "center",
-  },
+  // ... All your existing styles ...
+  container: { flex: 1, backgroundColor: "#F9FAFB", padding: 16 },
+  header: { marginBottom: 24 },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
+  title: { fontSize: 28, fontWeight: "bold", color: "#111827" },
+  addButton: { backgroundColor: "#2563EB", flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12 },
+  addButtonText: { color: "white", fontWeight: "600", marginLeft: 8 },
+  searchContainer: { flexDirection: "row", gap: 12, marginBottom: 16 },
+  searchInput: { flex: 1, backgroundColor: "#FFFFFF", borderRadius: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  input: { padding: 12, fontSize: 16, color: "#374151" },
+  filterButton: { backgroundColor: "#FFFFFF", padding: 12, borderRadius: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  filterTabs: { flexDirection: "row", backgroundColor: "#FFFFFF", borderRadius: 12, padding: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  filterTab: { flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 8 },
+  activeFilterTab: { backgroundColor: "#2563EB" },
+  filterTabText: { fontSize: 14, color: "#6B7280", fontWeight: "500", textTransform: "capitalize" },
+  activeFilterTabText: { color: "#FFFFFF" },
+  shopsContainer: { gap: 12 },
+  shopCard: { backgroundColor: "#FFFFFF", padding: 16, borderRadius: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  shopHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },
+  shopCardName: { fontSize: 18, fontWeight: "600", color: "#111827", flex: 1 },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  statusText: { fontSize: 12, fontWeight: "500", textTransform: "capitalize" },
+  ownerContainer: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  ownerText: { fontSize: 14, color: "#6B7280", marginLeft: 8 },
+  shopFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  shopStats: { flexDirection: "row", gap: 16 },
+  statItem: { flexDirection: "row", alignItems: "center" },
+  statText: { fontSize: 14, color: "#6B7280", marginLeft: 4 },
+  revenueText: { color: "#10B981", fontWeight: "600", fontSize: 16 },
+  emptyState: { alignItems: "center", paddingVertical: 48 },
+  emptyStateTitle: { fontSize: 18, fontWeight: "500", color: "#6B7280", marginTop: 16, marginBottom: 8 },
+  emptyStateText: { fontSize: 14, color: "#9CA3AF", textAlign: "center" },
+
+  // --- NEW SKELETON STYLE ---
+  skeletonBox: {
+    backgroundColor: '#E5E7EB', // Gray-200
+    borderRadius: 4,
+  }
 });
