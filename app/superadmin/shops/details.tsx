@@ -16,8 +16,9 @@ export default function ShopDetails() {
   }, [id]);
 
   const fetchShop = async () => {
+    console.log("idekm.", token);
     try {
-      const response = await api(`/shops/idshop/${id}`, "GET", undefined, token ?? undefined);
+      const response = await api(`/superadmin/shops/getShopById/${id}`, "GET", undefined, token ?? undefined);
 
       console.log("API RAW RESPONSE:", response);
 

@@ -127,7 +127,7 @@ export default function EditShop() {
                 },
             };
 
-            const response = await api(`/shops/${id}`, "PUT", payload, token ?? undefined);
+            const response = await api(`/supperadmin/shops/editShop/${id}`, "PUT", payload, token ?? undefined);
 
             if (response.success) {
                 Alert.alert("Success", "Shop updated successfully!");

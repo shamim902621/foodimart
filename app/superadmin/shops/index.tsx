@@ -53,7 +53,7 @@ export default function ShopsList() {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const response = await api("/shops", "GET", null, token ?? undefined);
+        const response = await api("/superadmin/getAllShops", "GET", null, token ?? undefined);
 
         if (response.success) {
           setShops(response.shops);
