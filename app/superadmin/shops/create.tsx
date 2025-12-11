@@ -112,7 +112,7 @@ export default function CreateShop() {
 
       console.log(payload);
 
-      const response = await api("/shops", "POST", payload, token ?? undefined);
+      const response = await api("/superadmin/shops/createShop", "POST", payload, token ?? undefined);
 
       const data = await response.json();  // <-- IMPORTANT
 

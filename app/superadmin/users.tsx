@@ -2,16 +2,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { Switch, Alert } from "react-native"; // Add Switch and Alert
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Animated, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native"; // Add Switch and Alert
 import { useAuth } from "../../hooks/useAuth";
 import { api } from "../lib/apiService";
 
 // --- INTERFACES ---
 export interface IUser {
-  id: string;
+  // id: string;
+  userUUID?: string | null;
   name: string;
   email: string;
   phone: string;
@@ -110,7 +110,7 @@ export default function ManageUsers() {
       // await new Promise(resolve => setTimeout(resolve, 2000)); 
 
       const response: IUsersResponse = await api(
-        `/superadmin/users`,
+        `/superadmin/getAllUsers`,
         "GET",
         undefined,
         token ?? undefined
@@ -146,7 +146,8 @@ export default function ManageUsers() {
         u?.email?.toLowerCase().includes(q) ||
         u?.phone?.toLowerCase().includes(q) ||
         u?.shop?.toLowerCase().includes(q) ||
-        u?.status?.toLowerCase().includes(q)
+        u?.status?.toLowerCase().includes(q) ||
+        u?.userUUID?.includes(q)
       );
     });
   }, [users, searchQuery]);
@@ -171,21 +172,21 @@ export default function ManageUsers() {
       console.error('Error during logout:', error);
     }
   };
-  const handleToggleStatus = async (userId: string, currentStatus: string) => {
+  const handleToggleStatus = async (userUUID: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 
     // 1. Optimistic Update: Update UI immediately
     setUsers((prevUsers) =>
       prevUsers.map((u) =>
-        u.id === userId ? { ...u, status: newStatus } : u
+        u.userUUID === userUUID ? { ...u, status: newStatus } : u
       )
     );
-
+    // const id = userUUID
     try {
       // 2. Call API to update backend
       // Assuming your endpoint is PUT /superadmin/users/:id
       const response = await api(
-        `/superadmin/users/${userId}`,
+        `/superadmin/users/toggle-status/${userUUID}`,
         "PUT",
         { status: newStatus },
         token ?? undefined
@@ -209,7 +210,7 @@ export default function ManageUsers() {
       Alert.alert("Error", "Failed to update status");
       setUsers((prevUsers) =>
         prevUsers.map((u) =>
-          u.id === userId ? { ...u, status: currentStatus } : u
+          u.userUUID === userUUID ? { ...u, status: currentStatus } : u
         )
       );
     }
@@ -250,7 +251,7 @@ export default function ManageUsers() {
           // Render Actual Data when loaded
           <>
             {filteredUsers.map((user) => (
-              <View key={user.id} style={styles.userCard}>
+              <View key={user.userUUID} style={styles.userCard}>
                 <View style={styles.userHeader}>
                   <View style={styles.userInfo}>
                     <Text style={styles.userName}>{user.name}</Text>
@@ -264,7 +265,7 @@ export default function ManageUsers() {
                       trackColor={{ false: "#767577", true: "#81b0ff" }}
                       thumbColor={user.status === 'active' ? "#2563EB" : "#f4f3f4"}
                       ios_backgroundColor="#3e3e3e"
-                      onValueChange={() => handleToggleStatus(user.id, user.status)}
+                      onValueChange={() => handleToggleStatus(user?.userUUID || "", user.status)}
                       value={user.status === 'active'}
                     />
 

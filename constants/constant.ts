@@ -1,5 +1,6 @@
-const API_BASE_URL = "http://localhost:5000/api";
-// const API_BASE_URL = "https://ungrudged-elisa-prefectural.ngrok-free.dev/api";
+// const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+// const EXPO_PUBLIC_API_BASE_URL = "https://ungrudged-elisa-prefectural.ngrok-free.dev/api";
 // const API_BASE_URL= "http://10.104.108.4:5000/api"
 
 
