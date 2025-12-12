@@ -9,7 +9,7 @@ import { API_BASE_URL } from '../constants/constant';
 export default function OTPVerificationScreen() {
   const { mobile } = useLocalSearchParams();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [showotp, setShowotp] = useState("")
+  const [showotp, setShowotp] = useState(null)
   const [loading, setLoading] = useState(false);
   const inputs = useRef<Array<TextInput | null>>([]);
   const { login } = useAuth();
@@ -62,45 +62,30 @@ export default function OTPVerificationScreen() {
 
       const result = await response.json();
       console.log('OTP Verification Response:', result.user, result.user.role);
-      // --- AUTO REFRESH FUNCTION ---
-      // const refreshPage = (path: any) => {
-      //   router.push({ pathname: path, params: { refresh: Date.now() } });
-      // };
-
 
       if (result.success) {
         await login(result.token, result.user); // save state first
 
-
-
+        Alert.alert('Success', result.message || 'Login successful!');
         setTimeout(() => {
-          Alert.alert('Success', result.message || 'Login successful!');
           // router.replace('/category');
         }, 500);
         // Then navigate
         switch (result?.user.role) {
           case 'USER':
-            // setTimeout(() => {
             router.replace('/category');
-            // }, 500);
             break;
 
           case 'ADMIN':
-            // setTimeout(() => {
             router.replace('/admin/dashboard');
-            // }, 500);
             break;
 
           case 'SUPERADMIN':
-            // setTimeout(() => {
             router.replace('/superadmin/dashboard');
-            // }, 500);
             break;
 
           default:
-            // setTimeout(() => {
             router.replace('/category');
-          // }, 500);
         }
       }
 
@@ -117,27 +102,38 @@ export default function OTPVerificationScreen() {
   // --- AUTO REFRESH FUNCTION ---
 
 
+
   const handleResend = async () => {
+    if (!mobile || mobile.length < 10) {
+      Alert.alert("Invalid Phone Number", "Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile }),
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile: mobile }),
       });
+
       const data = await response.json();
-      setShowotp(data)
-
-
-      if (response.ok && data.success) {
-        Alert.alert('Success', 'OTP resent successfully!');
+      setLoading(false);
+      if (data.otp) {
+        setShowotp(data.otp);
       } else {
-        Alert.alert('Error', data.message || 'Failed to resend OTP.');
+        setShowotp(null); // handle case where OTP might not be in response
       }
+
     } catch (error) {
-      console.error('Error resending OTP:', error);
-      Alert.alert('Error', 'Something went wrong.');
+      setLoading(false);
+      Alert.alert("Network Error", "Unable to reach the server. Please try again later.");
+      console.error("Error sending OTP:", error);
     }
   };
+  console.log("show otp", showotp);
 
   const isOtpComplete = otp.join('').length === 6;
 
@@ -145,7 +141,7 @@ export default function OTPVerificationScreen() {
     <ThemedView style={styles.container} lightColor="#fff">
       <View style={styles.header} >
         <ThemedText type="title" style={styles.title}>
-          OTP Verification {showotp}
+          OTP Verification "{showotp}"
         </ThemedText>
         <ThemedText style={styles.subtitle}>
           Enter the 6-digit code sent to {mobile}
