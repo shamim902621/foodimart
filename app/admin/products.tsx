@@ -159,7 +159,7 @@ export default function Products() {
           <Text style={styles.title}>Products Management</Text>
           <TouchableOpacity
             style={styles.addBtn}
-            onPress={() => router.push("/add-product")}
+            onPress={() => router.push("/admin/add-product")}
           >
             <Ionicons name="add" size={20} color="#fff" />
           </TouchableOpacity>

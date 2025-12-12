@@ -18,8 +18,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useAuth } from "../hooks/useAuth";
-import { api, apiFormData } from './lib/apiService';
+import { useAuth } from "../../hooks/useAuth";
+import { api, apiFormData } from '../lib/apiService';
 
 export default function ProfileScreen() {
   const { user, token, isAuthenticated } = useAuth();
@@ -58,7 +58,7 @@ export default function ProfileScreen() {
     {
       icon: 'person-outline',
       name: 'Personal Details',
-      action: () => router.push('/personal-details'),
+      action: () => router.push('/user/personal-details'),
     },
     {
       icon: 'location-outline',
