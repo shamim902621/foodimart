@@ -1,35 +1,11 @@
 import { router } from "expo-router";
-import { useEffect } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import { useAuthChecker } from "../components/AuthChecker";
-import { useAuth } from '../hooks/useAuth';
+// import { useAuth } from '../hooks/useAuth';
 
 
 export default function WelcomeScreen() {
-  // useAuthChecker();
-  const { user, isAuthenticated, loading } = useAuth();
 
-  useEffect(() => {
-    // This will run once when the component mounts
-    if (!loading) {
-      if (isAuthenticated && user) {
-        // Redirect based on user role
-        switch (user.role) {
-          case 'USER':
-            router.replace('/category');
-            break;
-          case 'ADMIN':
-            router.replace('/admin/dashboard');
-            break;
-          case 'SUPERADMIN':
-            router.replace('/superadmin/dashboard');
-            break;
-          default:
-            router.replace('/login');
-        }
-      }
-    }
-  }, [isAuthenticated, loading, user]);
 
   return (
     <View style={styles.container}>

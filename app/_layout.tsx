@@ -1,4 +1,4 @@
-import { Stack, router, usePathname } from "expo-router";
+import { router, Stack, usePathname } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../hooks/useAuth";
@@ -10,15 +10,34 @@ export default function Layout() {
   const publicRoutes = ["/login", "/signup", "/otp-verification", "/welcome"];
   const isPublic = publicRoutes.includes(pathname);
 
+
   useEffect(() => {
-    debugger
+    // This will run once when the component mounts
     if (!loading) {
-      if (!user && !isPublic) {
-        router.replace("/login");
+      if (user) {
+        // Redirect based on user role
+        switch (user.role) {
+          case 'USER':
+            router.replace('/category');
+            break;
+          case 'ADMIN':
+            router.replace('/admin/dashboard');
+            break;
+          case 'SUPERADMIN':
+            router.replace('/superadmin/dashboard');
+            break;
+          default:
+            router.replace('/');
+        }
+      }
+      else if (!user) {
+        router.replace('/');
+      }
+      else {
+        router.replace('/login')
       }
     }
-  }, [user, loading, pathname]);
-
+  }, [loading, user]);
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

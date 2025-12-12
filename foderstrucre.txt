@@ -1,0 +1,96 @@
+foodimart/
+│
+├── app/                      # Expo Router (recommended)
+│   ├── (auth)/               # Auth Routes
+│   │   ├── login.tsx
+│   │   ├── otp.tsx
+│   │   └── register.tsx
+│   │
+│   ├── (superadmin)/         # Super Admin Routes
+│   │   ├── dashboard.tsx
+│   │   ├── admins/
+│   │   │   ├── index.tsx
+│   │   │   ├── create.tsx
+│   │   │   └── [id].tsx
+│   │   └── settings.tsx
+│   │
+│   ├── (admin)/              # Admin (Shopkeeper) Routes
+│   │   ├── dashboard.tsx
+│   │   ├── products/
+│   │   │   ├── index.tsx
+│   │   │   ├── create.tsx
+│   │   │   └── [id].tsx
+│   │   ├── orders/
+│   │   │   ├── index.tsx
+│   │   │   └── [id].tsx
+│   │   └── profile.tsx
+│   │
+│   ├── (user)/               # Customer/User App
+│   │   ├── home.tsx
+│   │   ├── categories.tsx
+│   │   ├── cart.tsx
+│   │   └── profile.tsx
+│   │
+│   ├── _layout.tsx           # Root Layout
+│   ├── index.tsx             # Default landing (redirect logic)
+│   └── +not-found.tsx
+│
+├── components/
+│   ├── ui/                   # Buttons, Inputs, Cards
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   └── Loader.tsx
+│   ├── modals/
+│   │   ├── ConfirmModal.tsx
+│   │   └── ProductModal.tsx
+│   ├── cards/
+│   │   ├── ProductCard.tsx
+│   │   └── OrderCard.tsx
+│   └── layout/
+│       └── Header.tsx
+│
+├── config/
+│   ├── api.config.ts         # BASE_URLs
+│   ├── storage.config.ts     # AsyncStorage Keys
+│   └── theme.ts              # Colors, Fonts
+│
+├── hooks/
+│   ├── useAuth.ts
+│   ├── useFetch.ts
+│   └── useDebounce.ts
+│
+├── lib/
+│   ├── axios.ts              # Axios instance
+│   ├── auth.ts               # Token helpers
+│   └── permissions.ts        # Role-based access
+│
+├── services/
+│   ├── auth.service.ts
+│   ├── user.service.ts
+│   ├── admin.service.ts
+│   ├── product.service.ts
+│   └── order.service.ts
+│
+├── store/                    # Zustand or Redux
+│   ├── authStore.ts
+│   ├── userStore.ts
+│   ├── productStore.ts
+│   └── orderStore.ts
+│
+├── utils/
+│   ├── validators.ts
+│   ├── helpers.ts
+│   └── toaster.ts
+│
+├── assets/
+│   ├── images/
+│   ├── icons/
+│   └── fonts/
+│
+├── constants/
+│   ├── roles.ts
+│   └── messages.ts
+│
+├── .env
+├── app.config.js
+└── package.json
