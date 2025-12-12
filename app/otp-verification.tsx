@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../constants/constant';
 export default function OTPVerificationScreen() {
   const { mobile } = useLocalSearchParams();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [showotp, setShowotp] = useState("")
   const [loading, setLoading] = useState(false);
   const inputs = useRef<Array<TextInput | null>>([]);
   const { login } = useAuth();
@@ -53,7 +54,6 @@ export default function OTPVerificationScreen() {
 
     setLoading(true);
     try {
-      debugger
       const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,35 +63,44 @@ export default function OTPVerificationScreen() {
       const result = await response.json();
       console.log('OTP Verification Response:', result.user, result.user.role);
       // --- AUTO REFRESH FUNCTION ---
-      const refreshPage = (path: any) => {
-        router.push({ pathname: path, params: { refresh: Date.now() } });
-      };
-
+      // const refreshPage = (path: any) => {
+      //   router.push({ pathname: path, params: { refresh: Date.now() } });
+      // };
 
 
       if (result.success) {
         await login(result.token, result.user); // save state first
 
-        // setTimeout(() => {
-        //   router.replace('/login');
-        // }, 100);
 
 
-        Alert.alert('Success', result.message || 'Login successful!');
-
+        setTimeout(() => {
+          Alert.alert('Success', result.message || 'Login successful!');
+          // router.replace('/category');
+        }, 500);
         // Then navigate
         switch (result?.user.role) {
           case 'USER':
+            // setTimeout(() => {
             router.replace('/category');
+            // }, 500);
             break;
+
           case 'ADMIN':
+            // setTimeout(() => {
             router.replace('/admin/dashboard');
+            // }, 500);
             break;
+
           case 'SUPERADMIN':
+            // setTimeout(() => {
             router.replace('/superadmin/dashboard');
+            // }, 500);
             break;
+
           default:
+            // setTimeout(() => {
             router.replace('/category');
+          // }, 500);
         }
       }
 
@@ -116,6 +125,9 @@ export default function OTPVerificationScreen() {
         body: JSON.stringify({ mobile }),
       });
       const data = await response.json();
+      setShowotp(data)
+
+
       if (response.ok && data.success) {
         Alert.alert('Success', 'OTP resent successfully!');
       } else {
@@ -133,7 +145,7 @@ export default function OTPVerificationScreen() {
     <ThemedView style={styles.container} lightColor="#fff">
       <View style={styles.header} >
         <ThemedText type="title" style={styles.title}>
-          OTP Verification
+          OTP Verification {showotp}
         </ThemedText>
         <ThemedText style={styles.subtitle}>
           Enter the 6-digit code sent to {mobile}
