@@ -43,13 +43,24 @@ export default function ShopDetails() {
     { id: "ORD-003", customer: "Bob Johnson", amount: 2100, status: "pending", time: "6 hours ago" },
   ];
 
-  const getStatusColor = (status: string) => {
+  const pgetStatusColor = (status: string) => {
     const colors = {
       delivered: '#10B981',
       preparing: '#F59E0B',
       pending: '#EF4444'
     };
     return colors[status as keyof typeof colors] || '#6B7280';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return '#10B981';      // Green
+      case 'inactive': return '#6B7280';    // Gray
+      case 'onboarding': return '#3B82F6';  // Blue
+      case 'maintenance': return '#F59E0B'; // Orange/Yellow
+      case 'banned': return '#EF4444';      // Red
+      default: return '#6B7280';
+    }
   };
 
   return (
@@ -77,18 +88,18 @@ export default function ShopDetails() {
           </View>
           <View style={styles.metaItem}>
             <Ionicons name="calendar-outline" size={16} color="#6B7280" />
-            <Text style={styles.metaText}>Joined {shop?.createdAt?.slice(0, 10)}</Text>
+            <Text style={styles.metaText}>Joined {shop?.shop.updatedAt?.slice(0, 10)} </Text>
           </View>
+
           <View style={[
             styles.statusBadge,
-            shop?.status === 'active' ? styles.activeStatus : styles.inactiveStatus
+            { backgroundColor: getStatusColor(shop?.shop.status) + '20' } // '20' adds transparency
           ]}>
             <Text style={[
               styles.statusText,
-              shop?.status === 'active' ? styles.activeStatusText : styles.inactiveStatusText
+              { color: getStatusColor(shop?.shop.status) }
             ]}>
-              {/* If status exists, show it. If empty, show "pending" */}
-              {shop?.status || "pending"}
+              {shop?.shop.status || "pending"} {/* Ye automatic capitalize ho jayega agar style me textTransform h to */}
             </Text>
           </View>
         </View>
@@ -233,6 +244,31 @@ const styles = StyleSheet.create({
   inactiveStatus: {
     backgroundColor: "#FEE2E2",
   },
+  filterTab: {
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6", // Default background
+    borderWidth: 1,
+    borderColor: "transparent",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  activeFilterTab: {
+    // backgroundColor: "transparent",
+    // borderColor: "#E5E7EB",
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 1 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 2,
+    // elevation: 2,
+  },
+
   statusText: {
     fontSize: 12,
     fontWeight: "500",

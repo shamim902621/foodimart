@@ -130,7 +130,7 @@ export default function AddProduct() {
 
       // Append Tags (Stringified array is safest for FormData)
       formData.append('tags', JSON.stringify(selectedTags));
-
+      debugger
       // 4. Append Images (FIXED TYPE ERROR HERE)
       images.forEach((image, index) => {
         const fileType = image.mimeType ?? 'image/jpeg';
