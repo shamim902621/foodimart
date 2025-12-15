@@ -6,8 +6,8 @@ import { Tabs } from "expo-router";
 export default function AdminLayout() {
   return (
     <ProtectedRoute allowedRoles={["ADMIN", "SUPERADMIN"]}>
-      <Tabs screenOptions={{ 
-        headerShown: false, 
+      <Tabs screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: "#2ECC71",
         tabBarStyle: {
           backgroundColor: "#ffffff",

@@ -17,8 +17,8 @@ import {
 } from "react-native";
 
 // Import your hooks/constants
-import { API_BASE_URL } from "../../constants/constant";
-import { useAuth } from "../../hooks/useAuth";
+import { API_BASE_URL } from "../constants/constant";
+import { useAuth } from "../hooks/useAuth";
 
 // --- INTERFACES FOR TYPE SAFETY ---
 interface ProductForm {
@@ -41,6 +41,7 @@ interface ImageAsset {
   uri: string;
   name?: string | null;
   mimeType?: string | null;
+  base64?: string | null;
   type?: 'image' | 'video'; // Expo ImagePicker uses 'type' for media type
 }
 
@@ -86,6 +87,7 @@ export default function AddProduct() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
+      base64: Platform.OS === "web",
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -95,6 +97,7 @@ export default function AddProduct() {
         uri: asset.uri,
         name: asset.fileName,
         mimeType: asset.mimeType,
+        base64: asset.base64 ?? null,
         type: 'image'
       }]);
     }
@@ -130,23 +133,38 @@ export default function AddProduct() {
 
       // Append Tags (Stringified array is safest for FormData)
       formData.append('tags', JSON.stringify(selectedTags));
-      debugger
       // 4. Append Images (FIXED TYPE ERROR HERE)
       images.forEach((image, index) => {
-        const fileType = image.mimeType ?? 'image/jpeg';
+        const fileType = image.mimeType ?? "image/jpeg";
         const fileName = image.name ?? `photo_${Date.now()}_${index}.jpg`;
 
-        // The object structure React Native expects for file uploads:
-        const fileToUpload = {
-          uri: Platform.OS === 'ios' ? image.uri.replace('file://', '') : image.uri,
-          name: fileName,
-          type: fileType,
-        };
+        // 🌐 WEB
+        if (Platform.OS === "web") {
+          if (!image.base64) return;
 
-        // TypeScript Fix: cast to 'any' because standard FormData expects Blob, 
-        // but RN expects this specific object.
-        formData.append('files', fileToUpload as any);
+          formData.append(
+            "files",
+            new Blob(
+              [Uint8Array.from(atob(image.base64), c => c.charCodeAt(0))],
+              { type: fileType }
+            ),
+            fileName
+          );
+        }
+
+        // 📱 ANDROID / IOS
+        else {
+          formData.append("files", {
+            uri:
+              Platform.OS === "ios"
+                ? image.uri.replace("file://", "")
+                : image.uri,
+            name: fileName,
+            type: fileType,
+          } as any);
+        }
       });
+
 
       console.log("Sending FormData to Backend...");
 
