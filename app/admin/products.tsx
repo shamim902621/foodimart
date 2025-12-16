@@ -1,37 +1,66 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
+  RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
-const ProductCard = (item: any) => {
-  const getStockColor = (stock: any, status: any) => {
-    if (status === 'out-of-stock') return '#FF6B6B';
-    if (stock < 10) return '#FFA500';
-    return '#4CAF50';
+import { API_BASE_URL } from "../../constants/constant";
+import { useAuth } from "../../hooks/useAuth";
+
+// --- 1. TYPE DEFINITIONS ---
+interface Product {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  images: string[];
+  rating: number;
+  totalOrders: number;
+  availability: boolean;
+  description?: string;
+}
+
+// --- 2. PRODUCT CARD COMPONENT ---
+const ProductCard = ({ item, onDelete }: { item: Product, onDelete: (id: string) => void }) => {
+  const getStatus = (stock: number, availability: boolean) => {
+    if (!availability || stock === 0) return 'out-of-stock';
+    if (stock < 10) return 'low-stock';
+    return 'available';
   };
 
-  const getStockText = (stock: any, status: any) => {
-    if (status === 'out-of-stock') return 'Out of Stock';
-    if (stock < 10) return 'Low Stock';
-    return 'Available';
+  const status = getStatus(item.stock, item.availability);
+
+  const getStockColor = (currentStatus: string) => {
+    switch (currentStatus) {
+      case 'out-of-stock': return '#FF5252';
+      case 'low-stock': return '#FF9800';
+      default: return '#4CAF50';
+    }
   };
+
+  const imageUrl = item.images && item.images.length > 0
+    ? item.images[0]
+    : "https://via.placeholder.com/150";
 
   return (
     <View style={styles.productCard}>
       <View style={styles.productImageContainer}>
-        <Image source={{ uri: item.image }} style={styles.productImage} />
+        <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="cover" />
         <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={12} color="#FFD700" />
-          <Text style={styles.ratingText}>{item.rating}</Text>
+          <Ionicons name="star" size={10} color="#FFD700" />
+          <Text style={styles.ratingText}>{item.rating?.toFixed(1) || "0.0"}</Text>
         </View>
       </View>
 
@@ -41,465 +70,352 @@ const ProductCard = (item: any) => {
         <Text style={styles.productPrice}>₹{item.price}</Text>
 
         <View style={styles.productStats}>
-          <View style={styles.statItem}>
-            <Ionicons name="trending-up" size={12} color="#666" />
-            <Text style={styles.statText}>{item.sales} sold</Text>
+          <View style={[styles.stockBadge, { backgroundColor: getStockColor(status) }]}>
+            <Text style={styles.stockText}>{status === 'out-of-stock' ? 'Sold Out' : status}</Text>
           </View>
-          <View style={[styles.stockBadge, { backgroundColor: getStockColor(item.stock, item.status) }]}>
-            <Text style={styles.stockText}>
-              {getStockText(item.stock, item.status)}
-            </Text>
-          </View>
+          <Text style={styles.stockCount}>{item.stock} left</Text>
         </View>
-
-        <Text style={styles.stockCount}>{item.stock} units</Text>
       </View>
 
       <View style={styles.actionBtns}>
-        <TouchableOpacity style={styles.editBtn}>
-          <Ionicons name="create-outline" size={18} color="#666" />
+        <TouchableOpacity
+          style={styles.editBtn}
+          onPress={() => {
+            // Navigate to Edit Screen and pass current data
+            router.push({
+              pathname: "/product/edit/[id]", // Ensure this path matches your file structure
+              params: {
+                id: item._id,
+                productData: JSON.stringify(item) // Pass the whole object to pre-fill form
+              }
+            });
+          }}
+        >
+          <Ionicons name="create-outline" size={20} color="#666" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.deleteBtn}>
-          <Ionicons name="trash-outline" size={18} color="#666" />
+
+        {/* DELETE BUTTON */}
+        <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item._id)}>
+          <Ionicons name="trash-outline" size={20} color="#FF5252" />
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
+// --- 3. MAIN COMPONENT ---
 export default function Products() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [products, setProducts] = useState([
-    {
-      id: "1",
-      name: "Veg Supreme Burger",
-      price: 120,
-      category: "Fast Food",
-      stock: 15,
-      image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&h=300&fit=crop",
-      status: "available",
-      rating: 4.5,
-      sales: 124
-    },
-    {
-      id: "2",
-      name: "Margherita Pizza",
-      price: 240,
-      category: "Italian",
-      stock: 8,
-      image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&h=300&fit=crop",
-      status: "available",
-      rating: 4.8,
-      sales: 89
-    },
-    {
-      id: "3",
-      name: "Chocolate Milkshake",
-      price: 90,
-      category: "Beverages",
-      stock: 0,
-      image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=300&h=300&fit=crop",
-      status: "out-of-stock",
-      rating: 4.3,
-      sales: 67
-    },
-    {
-      id: "4",
-      name: "Crispy French Fries",
-      price: 60,
-      category: "Snacks",
-      stock: 22,
-      image: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=300&h=300&fit=crop",
-      status: "available",
-      rating: 4.2,
-      sales: 156
-    },
-    {
-      id: "5",
-      name: "Grilled Chicken Sandwich",
-      price: 180,
-      category: "Fast Food",
-      stock: 5,
-      image: "https://images.unsplash.com/photo-1606755962773-d324e74534a2?w=300&h=300&fit=crop",
-      status: "available",
-      rating: 4.6,
-      sales: 92
-    },
-    {
-      id: "6",
-      name: "Fresh Fruit Salad",
-      price: 110,
-      category: "Healthy",
-      stock: 12,
-      image: "https://images.unsplash.com/photo-1564093497595-593b96d80180?w=300&h=300&fit=crop",
-      status: "available",
-      rating: 4.4,
-      sales: 78
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const categories = ["All", "Fast Food", "Italian", "Beverages", "Snacks", "Healthy"];
+  // Metrics State (Calculated from fetched data)
+  const [metrics, setMetrics] = useState({ revenue: 0, rating: "0.0", sales: 0 });
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const { token, user } = useAuth();
+  const categories = ["All", "Fast Food", "Italian", "Beverages", "Snacks", "Healthy", "Desserts"];
 
-  const totalRevenue = products.reduce((sum, product) => sum + (product.price * product.sales), 0);
-  const averageRating = (products.reduce((sum, product) => sum + product.rating, 0) / products.length).toFixed(1);
+  // --- NEW: HANDLE DELETE FUNCTION ---
+  const handleDelete = async (id: string) => {
+    if (!user?.userUUID) return;
+    debugger
+    console.log("Deleting product with ID:", id);
+    Alert.alert(
+      "Delete Product",
+      "Are you sure you want to delete this product? This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // 1. Optimistic Update (Remove from UI immediately)
+              const previousProducts = [...products];
+              setProducts(products.filter(p => p._id !== id));
+
+              // 2. Call API
+              const response = await fetch(`${API_BASE_URL}/admin/shop/product/deleteProduct/${id}?userUUID=${user?.userUUID}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                // If failed, revert UI
+                setProducts(previousProducts);
+                Alert.alert("Error", data.message || "Failed to delete product");
+              } else {
+                // Success - Recalculate metrics
+                calculateMetrics(products.filter(p => p._id !== id));
+              }
+            } catch (error) {
+              console.error("Delete Error:", error);
+              Alert.alert("Error", "Network error while deleting");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  // --- SERVER SIDE FETCH FUNCTION ---
+  // Accepts arguments to ensure we fetch with the LATEST values, not stale state
+  const fetchProducts = useCallback(async (query = "", category = "All") => {
+    if (!user?.userUUID) return;
+
+    setLoading(true);
+    try {
+      // Build Query Parameters
+      const queryParams = new URLSearchParams();
+
+      // Only append search if it's not empty
+      if (query.trim()) {
+        queryParams.append("search", query.trim());
+      }
+
+      // Only append category if it's not "All"
+      if (category !== "All") {
+        queryParams.append("category", category);
+      }
+
+      // Append default params
+      queryParams.append("limit", "10"); // Fetch reasonable amount
+      queryParams.append("sortBy", "createdAt");
+
+      const url = `${API_BASE_URL}/admin/shop/product/getProduct/${user.userUUID}?${queryParams.toString()}`;
+
+      console.log("Fetching URL:", url); // Debugging
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const productList = data.products || [];
+        setProducts(productList);
+        calculateMetrics(productList);
+      } else {
+        setProducts([]); // Clear list if error/empty
+      }
+    } catch (error: any) {
+      console.error("Network Error:", error);
+      Alert.alert("Error", "Failed to load products.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [token, user?.userUUID]);
+
+  // --- METRICS CALCULATION (Client Side on Filtered Data) ---
+  const calculateMetrics = (items: Product[]) => {
+    const totalRev = items.reduce((sum, p) => sum + (p.price * (p.totalOrders || 0)), 0);
+    const totalSale = items.reduce((sum, p) => sum + (p.totalOrders || 0), 0);
+    const avgRating = items.length > 0
+      ? (items.reduce((sum, p) => sum + (p.rating || 0), 0) / items.length).toFixed(1)
+      : "0.0";
+
+    setMetrics({ revenue: totalRev, sales: totalSale, rating: avgRating });
+  }
+
+  // Initial Load
+  useEffect(() => {
+    fetchProducts(searchQuery, selectedCategory);
+  }, []); // Run once on mount
+
+  // --- HANDLERS ---
+
+  // 1. Handle "Enter" Key or Search Button Click
+  const handleSearchSubmit = () => {
+    fetchProducts(searchQuery, selectedCategory);
+  };
+
+  // 2. Handle Category Click (Instant Fetch)
+  const handleCategorySelect = (cat: string) => {
+    setSelectedCategory(cat);
+    // Pass 'cat' directly to ensure we fetch with the new category immediately
+    // Pass 'searchQuery' to keep the current search term active while changing category
+    fetchProducts(searchQuery, cat);
+  };
+
+  // 3. Pull to Refresh (Refreshes with current filters)
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchProducts(searchQuery, selectedCategory);
+  }, [fetchProducts, searchQuery, selectedCategory]);
+
+
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
-          <Text style={styles.title}>Products Management</Text>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => router.push("/admin/add-product")}
-          >
-            <Ionicons name="add" size={20} color="#fff" />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Products</Text>
+          </View>
+          <TouchableOpacity style={styles.addBtn} onPress={() => router.push("/add-product")}>
+            <Ionicons name="add" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Search Bar */}
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#4CAF50"]} />}
+      >
+        {/* SEARCH & CATEGORY TABS (Same as before) */}
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          <TouchableOpacity onPress={handleSearchSubmit}>
+            <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+          </TouchableOpacity>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search products..."
+            placeholder="Search..."
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
+            onSubmitEditing={handleSearchSubmit}
+            returnKeyType="search"
           />
         </View>
 
-        {/* Quick Stats */}
-        <View style={styles.quickStats}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{products.filter(p => p.status === 'available').length}</Text>
-            <Text style={styles.statLabel}>Available</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{products.filter(p => p.stock < 10 && p.status !== 'out-of-stock').length}</Text>
-            <Text style={styles.statLabel}>Low Stock</Text>
-          </View>
-
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{products.filter(p => p.status === 'out-of-stock').length}</Text>
-            <Text style={styles.statLabel}>Out of Stock</Text>
-          </View>
+        <View style={{ marginBottom: 16 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat}
+                style={[styles.categoryTab, selectedCategory === cat && styles.categoryTabActive]}
+                onPress={() => handleCategorySelect(cat)}
+              >
+                <Text style={[styles.categoryText, selectedCategory === cat && styles.categoryTextActive]}>{cat}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
-        {/* Products Section Header */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>All Products ({filteredProducts.length})</Text>
-          <TouchableOpacity style={styles.sortBtn}>
-            <Text style={styles.sortText}>Sort</Text>
-            <Ionicons name="chevron-down" size={16} color="#666" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
-          <View style={styles.emptyState}>
-            <MaterialIcons name="inventory-2" size={60} color="#E0E0E0" />
-            <Text style={styles.emptyTitle}>No products found</Text>
-            <Text style={styles.emptyText}>
-              {searchQuery ? 'Try adjusting your search terms' : 'No products match the selected category'}
-            </Text>
-          </View>
+        {/* LOADING & GRID */}
+        {loading ? (
+          <View style={{ padding: 40 }}><ActivityIndicator size="large" color="#4CAF50" /></View>
         ) : (
           <View style={styles.productsGrid}>
-            {filteredProducts.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))}
+            {products.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyText}>No products found</Text>
+              </View>
+            ) : (
+              products.map((item) => (
+                <ProductCard
+                  key={item._id}
+                  item={item}
+                  onDelete={handleDelete} // Pass the function here
+                />
+              ))
+            )}
           </View>
         )}
 
-        {/* Performance Metrics */}
-        <View style={styles.metricsSection}>
-          <Text style={styles.sectionTitle}>Performance Metrics</Text>
-          <View style={styles.metricsGrid}>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>₹{totalRevenue.toLocaleString()}</Text>
-              <Text style={styles.metricLabel}>Total Revenue</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>{averageRating}</Text>
-              <Text style={styles.metricLabel}>Avg Rating</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>
-                {products.reduce((sum, product) => sum + product.sales, 0)}
-              </Text>
-              <Text style={styles.metricLabel}>Total Sales</Text>
+        {/* METRICS & BOTTOM PADDING */}
+        {products.length > 0 && !loading && (
+          <View style={styles.metricsSection}>
+            <Text style={styles.sectionTitle}>Overview</Text>
+            <View style={styles.metricsGrid}>
+              <View style={styles.metricCard}><Text style={styles.metricValue}>{metrics.sales}</Text><Text style={styles.metricLabel}>Orders</Text></View>
+              <View style={styles.metricCard}><Text style={styles.metricValue}>{metrics.rating}</Text><Text style={styles.metricLabel}>Rating</Text></View>
+              <View style={styles.metricCard}><Text style={styles.metricValue}>₹{metrics.revenue}</Text><Text style={styles.metricLabel}>Revenue</Text></View>
             </View>
           </View>
-        </View>
+        )}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  header: {
-    backgroundColor: "#FFFFFF",
-    paddingTop: 20,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  headerContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#333333",
-  },
-  addBtn: {
-    backgroundColor: "#4CAF50",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  content: {
-    flex: 1,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    margin: 16,
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: "#333",
-  },
-  quickStats: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 4,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#666666",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333333",
-  },
-  sortBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  sortText: {
-    fontSize: 14,
-    color: "#666666",
-    marginRight: 4,
-  },
-  productsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 12,
-    justifyContent: "space-between",
-  },
-  productCard: {
-    width: "48%",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    marginBottom: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  productImageContainer: {
-    position: "relative",
-    width: "100%",
-    height: 100,
-    borderRadius: 6,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  productImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 6,
-  },
-  ratingBadge: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.7)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  ratingText: {
-    color: "#FFFFFF",
-    fontSize: 10,
-    fontWeight: "600",
-    marginLeft: 2,
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#333333",
-    marginBottom: 2,
-  },
-  productCategory: {
-    fontSize: 11,
-    color: "#666666",
-    marginBottom: 4,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#4CAF50",
-    marginBottom: 6,
-  },
-  productStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statText: {
-    fontSize: 10,
-    color: "#666666",
-    marginLeft: 2,
-  },
-  stockBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  stockText: {
-    fontSize: 9,
-    color: "#FFFFFF",
-    fontWeight: "600",
-  },
-  stockCount: {
-    fontSize: 10,
-    color: "#666666",
-  },
-  actionBtns: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  editBtn: {
-    padding: 6,
-  },
-  deleteBtn: {
-    padding: 6,
-  },
-  metricsSection: {
-    backgroundColor: "#FFFFFF",
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  metricsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  metricCard: {
-    alignItems: "center",
-    flex: 1,
-  },
-  metricValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 4,
-  },
-  metricLabel: {
-    fontSize: 12,
-    color: "#666666",
-    textAlign: "center",
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#666666",
-    marginTop: 12,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: "#999999",
-    textAlign: "center",
-  },
+  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  center: { justifyContent: 'center', alignItems: 'center' },
+
+  // Header
+  header: { backgroundColor: "#FFFFFF", paddingTop: 40, paddingBottom: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: "#E0E0E0", elevation: 2 },
+  headerContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  title: { fontSize: 20, fontWeight: "700", color: "#333" },
+  addBtn: { backgroundColor: "#4CAF50", width: 40, height: 40, borderRadius: 20, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+
+  content: { flex: 1 },
+
+  // Search
+  searchContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", margin: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: "#E0E0E0", height: 48 },
+  searchIcon: { marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 16, color: "#333", paddingVertical: 12, },
+
+  // Categories
+  categoryTab: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: "#FFF", borderWidth: 1, borderColor: "#E0E0E0", marginRight: 0 },
+  categoryTabActive: { backgroundColor: "#4CAF50", borderColor: "#4CAF50" },
+  categoryText: { fontSize: 13, color: "#666", fontWeight: "500" },
+  categoryTextActive: { color: "#FFF", fontWeight: "600" },
+
+  // Stats
+  quickStats: { flexDirection: "row", paddingHorizontal: 16, marginBottom: 20 },
+  statCard: { flex: 1, backgroundColor: "#FFFFFF", paddingVertical: 12, borderRadius: 12, marginHorizontal: 4, alignItems: "center", shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 5, elevation: 1 },
+  statNumber: { fontSize: 18, fontWeight: "bold", marginBottom: 2 },
+  statLabel: { fontSize: 11, color: "#888" },
+
+  // Section Header
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#333" },
+
+  // Grid
+  productsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 10, justifyContent: "space-between" },
+  productCard: { width: "48%", backgroundColor: "#FFFFFF", borderRadius: 12, marginBottom: 16, padding: 10, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, borderWidth: 1, borderColor: "#F0F0F0" },
+
+  // Card Content
+  productImageContainer: { position: "relative", width: "100%", height: 110, borderRadius: 8, marginBottom: 8, overflow: "hidden", backgroundColor: '#f0f0f0' },
+  productImage: { width: "100%", height: "100%" },
+  ratingBadge: { position: "absolute", top: 6, right: 6, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,0,0,0.7)", paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+  ratingText: { color: "#FFFFFF", fontSize: 10, fontWeight: "600", marginLeft: 3 },
+
+  productInfo: { flex: 1 },
+  productName: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 2, height: 36 },
+  productCategory: { fontSize: 11, color: "#888", marginBottom: 6 },
+  productPrice: { fontSize: 15, fontWeight: "700", color: "#4CAF50", marginBottom: 6 },
+
+  productStats: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  statItem: { flexDirection: "row", alignItems: "center" },
+  statText: { fontSize: 10, color: "#666", marginLeft: 2 },
+
+  stockBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  stockText: { fontSize: 9, color: "#FFFFFF", fontWeight: "700" },
+  stockCount: { fontSize: 10, color: "#999", marginTop: 2 },
+
+  // Actions
+  actionBtns: { flexDirection: "row", justifyContent: "space-around", marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: "#F5F5F5" },
+  editBtn: { padding: 4 },
+  deleteBtn: { padding: 4 },
+
+  // Metrics
+  metricsSection: { backgroundColor: "#FFFFFF", margin: 16, padding: 16, borderRadius: 12, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  metricsGrid: { flexDirection: "row", justifyContent: "space-between" },
+  metricCard: { alignItems: "center", flex: 1 },
+  metricValue: { fontSize: 18, fontWeight: "bold", color: "#333", marginBottom: 4 },
+  metricLabel: { fontSize: 12, color: "#666" },
+
+  // Empty State
+  emptyState: { alignItems: "center", paddingVertical: 40, paddingHorizontal: 20 },
+  emptyTitle: { fontSize: 18, fontWeight: "600", color: "#666", marginTop: 12, marginBottom: 8 },
+  emptyText: { fontSize: 14, color: "#999", textAlign: "center" },
 });

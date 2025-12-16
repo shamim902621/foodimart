@@ -29,7 +29,7 @@ export default function ProductDetailScreen() {
     <View style={styles.container}>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-            <BackButton />
+        <BackButton />
         <View style={styles.imageContainer}>
           <Text style={styles.productEmoji}>{product.image}</Text>
         </View>
@@ -64,14 +64,14 @@ export default function ProductDetailScreen() {
           <View style={styles.quantitySection}>
             <Text style={styles.quantityLabel}>Quantity</Text>
             <View style={styles.quantitySelector}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.quantityButton}
                 onPress={() => updateQuantity(-1)}
               >
                 <Ionicons name="remove" size={20} color="#333" />
               </TouchableOpacity>
               <Text style={styles.quantity}>{quantity}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.quantityButton}
                 onPress={() => updateQuantity(1)}
               >
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: 50,
+    paddingTop: 30,
     paddingHorizontal: 16,
     paddingBottom: 16,
   },

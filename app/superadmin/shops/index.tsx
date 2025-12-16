@@ -2,27 +2,68 @@ import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Animated,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
+} from "react-native";
 import { api } from "../../lib/apiService";
 
-// --- SHOP CARD COMPONENT (Prevent Re-renders) ---
-const ShopCard = React.memo(({ shop }: { shop: any }) => {
-  // const getStatusColor = (isActive: boolean) => isActive ? '#10B981' : '#EF4444';
-  // Is function ko replace karo
+// --- 1. INTERFACES DEFINED (Type Safety ke liye) ---
+
+// Shop ka structure define kiya
+interface Shop {
+  _id: string;
+  name: string;
+  status: 'active' | 'inactive' | 'onboarding' | 'maintenance' | 'banned'; // Specific strings
+  cuisineType?: string[];
+  rating?: number;
+  totalRevenue?: number;
+}
+
+// ShopCard ke props ka type
+interface ShopCardProps {
+  shop: Shop;
+  onEditStatus: (shop: Shop) => void;
+}
+
+// Status Modal ke props ka type
+interface StatusModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSelect: (status: string) => void;
+  currentStatus?: string;
+}
+
+// --- CONSTANTS ---
+const STATUS_OPTIONS = ['active', 'inactive', 'onboarding', 'maintenance', 'banned'];
+
+// --- SHOP CARD COMPONENT ---
+const ShopCard = React.memo<ShopCardProps>(({ shop, onEditStatus }) => {
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return '#10B981';      // Green
-      case 'inactive': return '#6B7280';    // Gray
-      case 'onboarding': return '#3B82F6';  // Blue
-      case 'maintenance': return '#F59E0B'; // Orange/Yellow
-      case 'banned': return '#EF4444';      // Red
+      case 'active': return '#10B981';
+      case 'inactive': return '#6B7280';
+      case 'onboarding': return '#3B82F6';
+      case 'maintenance': return '#F59E0B';
+      case 'banned': return '#EF4444';
       default: return '#6B7280';
     }
   };
+
   return (
     <TouchableOpacity
       style={styles.shopCard}
-      onPress={() => router.push(`/superadmin/shops/details?id=${shop._id}`)}
+      onPress={() => router.push({ pathname: "/superadmin/shops/details", params: { id: shop._id } })}
       activeOpacity={0.7}
     >
       <View style={styles.shopHeader}>
@@ -30,24 +71,28 @@ const ShopCard = React.memo(({ shop }: { shop: any }) => {
           {shop.name}
         </Text>
 
-        {/* Status Badge */}
-        <View style={[
-          styles.statusBadge,
-          { backgroundColor: getStatusColor(shop.status) + '20' } // '20' adds transparency
-        ]}>
+        {/* Status Badge - Clickable */}
+        <TouchableOpacity
+          style={[
+            styles.statusBadge,
+            { backgroundColor: getStatusColor(shop.status) + '20', flexDirection: 'row', alignItems: 'center', gap: 4 }
+          ]}
+          onPress={() => onEditStatus(shop)}
+        >
           <Text style={[
             styles.statusText,
             { color: getStatusColor(shop.status) }
           ]}>
-            {shop.status} {/* Ye automatic capitalize ho jayega agar style me textTransform h to */}
+            {shop.status}
           </Text>
-        </View>
+          <Ionicons name="create-outline" size={12} color={getStatusColor(shop.status)} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.ownerContainer}>
         <Ionicons name="restaurant-outline" size={14} color="#6B7280" />
         <Text style={styles.ownerText} numberOfLines={1}>
-          {shop.cuisineType ? shop.cuisineType.join(", ") : "Multi-cuisine"}
+          {shop.cuisineType && shop.cuisineType.length > 0 ? shop.cuisineType.join(", ") : "Multi-cuisine"}
         </Text>
       </View>
 
@@ -90,13 +135,57 @@ const ShopSkeleton = () => {
   );
 };
 
+// --- STATUS EDIT MODAL ---
+const StatusModal: React.FC<StatusModalProps> = ({ visible, onClose, onSelect, currentStatus }) => {
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Update Status</Text>
+            {STATUS_OPTIONS.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[
+                  styles.statusOption,
+                  currentStatus === status && styles.statusOptionActive
+                ]}
+                onPress={() => onSelect(status)}
+              >
+                <Text style={[
+                  styles.statusOptionText,
+                  currentStatus === status && styles.statusOptionTextActive
+                ]}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Text>
+                {currentStatus === status && (
+                  <Ionicons name="checkmark-circle" size={20} color="#2563EB" />
+                )}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+};
+
 // --- MAIN COMPONENT ---
 export default function ShopsList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState("all"); // 'all' | 'active' | 'inactive'
-  const [shops, setShops] = useState<any[]>([]);
+  const [filter, setFilter] = useState("all");
+
+  // Type change: any[] se Shop[] kar diya
+  const [shops, setShops] = useState<Shop[]>([]);
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
+
+  // Status Modal State (Type Safe)
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -107,7 +196,6 @@ export default function ShopsList() {
   const fetchShops = useCallback(async (query = "", statusFilter = "all", pageNum = 1) => {
     setLoading(true);
     try {
-      // Query Params for Backend
       const queryParams = new URLSearchParams({
         page: pageNum.toString(),
         limit: limit.toString(),
@@ -124,21 +212,59 @@ export default function ShopsList() {
       } else {
         setShops([]);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.log("Fetch Error:", err);
     } finally {
       setLoading(false);
     }
   }, [token]);
 
+  // --- API LOGIC: UPDATE STATUS ---
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!selectedShop) return;
+
+    setModalVisible(false);
+
+    // Optimistic Update
+    const previousShops = [...shops];
+
+    // Type checking ke liye 'as Shop[]' use kiya hai taaki TS error na de
+    setShops(currentShops =>
+      currentShops.map(shop =>
+        shop._id === selectedShop._id ? { ...shop, status: newStatus as Shop['status'] } : shop
+      )
+    );
+    const id = selectedShop._id;
+    try {
+      const response = await api(`/superadmin/shops/updateShopStatus/${id}`, 'PUT', {
+        // shopId: selectedShop._id,
+        status: newStatus
+      }, token ?? undefined);
+
+      if (!response.success) {
+        throw new Error(response.message || "Failed to update");
+      }
+    } catch (error: any) {
+      setShops(previousShops);
+      Alert.alert("Error", error.message || "Could not update status");
+    } finally {
+      setSelectedShop(null);
+    }
+  };
+
+  const openStatusModal = useCallback((shop: Shop) => {
+    setSelectedShop(shop);
+    setModalVisible(true);
+  }, []);
+
   // --- DEBOUNCE SEARCH ---
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1); // Reset to page 1 on new search
+      setPage(1);
       fetchShops(searchQuery, filter, 1);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchQuery, filter]); // Re-run if search OR filter changes
+  }, [searchQuery, filter]);
 
   // --- PAGINATION HANDLERS ---
   const handlePageChange = (newPage: number) => {
@@ -148,7 +274,6 @@ export default function ShopsList() {
     }
   };
 
-  // --- RENDER FOOTER (Pagination) ---
   const renderFooter = () => {
     if (loading) return null;
     if (shops.length === 0) return (
@@ -156,7 +281,7 @@ export default function ShopsList() {
         <Ionicons name="storefront-outline" size={64} color="#D1D5DB" />
         <Text style={styles.emptyStateTitle}>No shops found</Text>
         <Text style={styles.emptyStateText}>
-          {searchQuery ? "Try adjusting your search query" : "No shops available in this category"}
+          {searchQuery ? "Try adjusting your search query" : "No shops available"}
         </Text>
       </View>
     );
@@ -184,9 +309,8 @@ export default function ShopsList() {
 
   return (
     <View style={styles.container}>
-      {/* --- STICKY HEADER (Outside ScrollView) --- */}
+      {/* HEADER */}
       <View style={styles.headerContainer}>
-        {/* Title Row */}
         <View style={styles.headerRow}>
           <Text style={styles.title}>All Shops</Text>
           <TouchableOpacity
@@ -198,7 +322,6 @@ export default function ShopsList() {
           </TouchableOpacity>
         </View>
 
-        {/* Search Input */}
         <View style={styles.searchWrapper}>
           <View style={styles.searchInputContainer}>
             <Ionicons name="search" size={20} color="#9CA3AF" />
@@ -217,20 +340,19 @@ export default function ShopsList() {
           </View>
         </View>
 
-        {/* Filter Tabs - Horizontal Scroll ke sath */}
         <View style={{ marginBottom: 16 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
           >
-            {['all', 'active', 'inactive', 'onboarding', 'maintenance', 'banned'].map((tab) => (
+            {['all', ...STATUS_OPTIONS].map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={[
                   styles.filterTab,
                   filter === tab && styles.activeFilterTab,
-                  { minWidth: 80, paddingHorizontal: 16 } // Thoda width badhaya
+                  { minWidth: 80, paddingHorizontal: 16 }
                 ]}
                 onPress={() => setFilter(tab)}
               >
@@ -246,17 +368,31 @@ export default function ShopsList() {
         </View>
       </View>
 
-      {/* --- FLATLIST (Performance) --- */}
+      {/* LIST */}
       <FlatList
         data={loading ? Array.from({ length: 5 }) : shops}
-        keyExtractor={(item, index) => loading ? `skeleton-${index}` : item._id}
-        renderItem={({ item }) => {
+        // keyExtractor mein type check fix kiya
+        keyExtractor={(item: any, index) => loading ? `skeleton-${index}` : item._id}
+        renderItem={({ item }: { item: Shop | any }) => {
           if (loading) return <ShopSkeleton />;
-          return <ShopCard shop={item} />;
+          return (
+            <ShopCard
+              shop={item}
+              onEditStatus={openStatusModal}
+            />
+          );
         }}
         contentContainerStyle={{ paddingBottom: 20, paddingTop: 10 }}
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
+      />
+
+      {/* STATUS CHANGE MODAL */}
+      <StatusModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSelect={handleStatusUpdate}
+        currentStatus={selectedShop?.status}
       />
     </View>
   );
@@ -268,7 +404,7 @@ const styles = StyleSheet.create({
   // Header Styles
   headerContainer: {
     backgroundColor: '#FFFFFF',
-    paddingTop: 20, // Adjust for status bar
+    paddingTop: 20,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderBottomLeftRadius: 24,
@@ -285,7 +421,7 @@ const styles = StyleSheet.create({
   addButton: { backgroundColor: "#2563EB", flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
   addButtonText: { color: "white", fontWeight: "600", marginLeft: 4, fontSize: 14 },
 
-  // Search Styles
+  // Search
   searchWrapper: { marginBottom: 16 },
   searchInputContainer: {
     flexDirection: "row", alignItems: "center", backgroundColor: "#F3F4F6",
@@ -293,13 +429,12 @@ const styles = StyleSheet.create({
   },
   input: { flex: 1, marginLeft: 10, fontSize: 16, color: "#374151", paddingVertical: 12, paddingHorizontal: 12 },
 
-  // Filter Tab Styles
-  // Naye Styles for Individual Tab
+  // Filter Tabs
   filterTab: {
     paddingVertical: 8,
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#F3F4F6", // Default background
+    backgroundColor: "#F3F4F6",
     borderWidth: 1,
     borderColor: "transparent"
   },
@@ -312,16 +447,18 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  // filterTab: { flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 8 },
   filterTabText: { fontSize: 13, color: "#6B7280", fontWeight: "600", textTransform: "capitalize" },
-  activeFilterTabText: { color: "#2563EB" }, // Blue text when active
+  activeFilterTabText: { color: "#2563EB" },
 
-  // List Item Styles
+  // Card
   shopCard: { backgroundColor: "#FFFFFF", padding: 16, borderRadius: 16, marginHorizontal: 16, marginBottom: 12, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
   shopHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
   shopCardName: { fontSize: 17, fontWeight: "700", color: "#111827", flex: 1, marginRight: 8 },
+
+  // Badge Updated
   statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   statusText: { fontSize: 11, fontWeight: "600", textTransform: "capitalize" },
+
   ownerContainer: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
   ownerText: { fontSize: 13, color: "#6B7280", marginLeft: 6 },
   shopFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12 },
@@ -338,4 +475,15 @@ const styles = StyleSheet.create({
   emptyStateTitle: { fontSize: 18, fontWeight: "600", color: "#374151", marginTop: 16, marginBottom: 8 },
   emptyStateText: { fontSize: 14, color: "#9CA3AF", textAlign: "center" },
   skeletonBox: { backgroundColor: '#E5E7EB', borderRadius: 4 },
+
+  // Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { backgroundColor: 'white', width: '100%', borderRadius: 20, padding: 20, alignItems: 'center', elevation: 5 },
+  modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, color: '#111827' },
+  statusOption: { width: '100%', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, marginBottom: 8, backgroundColor: '#F9FAFB', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  statusOptionActive: { backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE' },
+  statusOptionText: { fontSize: 16, color: '#374151', fontWeight: '500' },
+  statusOptionTextActive: { color: '#2563EB', fontWeight: '700' },
+  cancelButton: { marginTop: 10, paddingVertical: 10 },
+  cancelButtonText: { color: '#6B7280', fontSize: 16, fontWeight: '600' },
 });
