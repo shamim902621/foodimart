@@ -61,6 +61,7 @@ const UpdateAddress = () => {
               style={styles.input}
               value={field.value}
               placeholderTextColor="#999"
+              
             />
           </View>
         ))}

@@ -1,7 +1,7 @@
 import BackButton from '@/components/back-button';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Modal,
     ScrollView,
@@ -11,9 +11,61 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { api } from '../lib/apiService';
+
+interface Product {
+    _id: string;
+    name: string;
+    price: number;
+    unit: string;
+    category: string;
+    image?: string;
+    rating?: number;
+}
+// 🔹 Get shop + owner + address + products
+export async function getShopById(shopId: string) {
+    const res: any = await api(`/users/shops/products/${shopId}`);
+    if (!res.success) throw new Error(res.message);
+    return res.data; // ✅ { shop, owner, address, products, meta }
+}
+
+// 🔹 Get ONLY products by shopId + filters
+export async function getProductsByShop({
+    shopId,
+    category,
+    minPrice,
+    maxPrice,
+    rating,
+}: {
+    shopId: string;
+    category?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    rating?: number;
+}) {
+    const query = new URLSearchParams({
+        ...(category && { category }),
+        ...(minPrice && { minPrice }),
+        ...(maxPrice && { maxPrice }),
+        ...(rating && { rating: String(rating) }),
+    }).toString();
+
+    const res: any = await api(
+        `/users/shops/products/${shopId}${query ? `?${query}` : ""}`
+    );
+
+    if (!res.success) throw new Error(res.message);
+
+    return res.data.products; // ✅ products array
+}
 
 export default function ShopScreen() {
-    const { id } = useLocalSearchParams();
+    const { id: shopId } = useLocalSearchParams<{ id: string }>();
+
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [filters, setFilters] = useState({
         minPrice: '',
@@ -24,6 +76,33 @@ export default function ShopScreen() {
         fastDelivery: false
     });
 
+
+    useEffect(() => {
+        if (!shopId) return;
+        loadProducts();
+    }, [shopId, activeCategory, filters]);
+
+    const loadProducts = async () => {
+        try {
+            setLoading(true);
+
+            const data = await getProductsByShop({
+                shopId,
+                category: activeCategory || undefined,
+                minPrice: filters.minPrice || undefined,
+                maxPrice: filters.maxPrice || undefined,
+                rating: filters.rating || undefined,
+            });
+
+            setProducts(data);
+        } catch (err) {
+            console.log("❌ Failed to load products", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const categories = [
         { id: 1, name: "Vegetables", icon: "🥦" },
         { id: 2, name: "Fruits", icon: "🍎" },
@@ -33,41 +112,9 @@ export default function ShopScreen() {
         { id: 6, name: "Household", icon: "🏠" }
     ];
 
-    const featuredProducts = [
-        {
-            id: 1,
-            name: "Fresh Peach",
-            price: 8.00,
-            unit: "dioxon",
-            image: "🍑"
-        },
-        {
-            id: 2,
-            name: "Avocado",
-            price: 8.90,
-            unit: "2.0 lbs",
-            image: "🥑"
-        },
-        {
-            id: 3,
-            name: "Pineapple",
-            price: 7.00,
-            unit: "1.50 lbs",
-            image: "🍍"
-        },
-        {
-            id: 4,
-            name: "Black Grapes",
-            price: 7.05,
-            unit: "5.0 lbs",
-            image: "🍇"
-        }
-    ];
-
     const handleApplyFilters = () => {
-        console.log('Applied filters:', filters);
         setShowFilterModal(false);
-        // Here you would typically filter your products based on the selected filters
+        loadProducts(); // API re-call
     };
 
     const handleResetFilters = () => {
@@ -82,20 +129,20 @@ export default function ShopScreen() {
     };
 
     const toggleStarRating = (rating: number) => {
-        setFilters({...filters, rating});
+        setFilters({ ...filters, rating });
     };
 
     const renderStars = (rating: number) => {
         return Array(5).fill(0).map((_, index) => (
-            <TouchableOpacity 
-                key={index} 
+            <TouchableOpacity
+                key={index}
                 onPress={() => toggleStarRating(index + 1)}
                 style={styles.starButton}
             >
-                <Ionicons 
-                    name={index < rating ? "star" : "star-outline"} 
-                    size={24} 
-                    color={index < rating ? "#FFD700" : "#666"} 
+                <Ionicons
+                    name={index < rating ? "star" : "star-outline"}
+                    size={24}
+                    color={index < rating ? "#FFD700" : "#666"}
                 />
             </TouchableOpacity>
         ));
@@ -117,7 +164,7 @@ export default function ShopScreen() {
                         placeholder="Restaurant name, cuisine, or a dish..."
                         placeholderTextColor="#999"
                     />
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.filterButton}
                         onPress={() => setShowFilterModal(true)}
                     >
@@ -135,48 +182,53 @@ export default function ShopScreen() {
                     <Text style={styles.sectionTitle}>Categories</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                         {categories.map((category) => (
-                            <TouchableOpacity key={category.id} style={styles.categoryCard}>
+                            <TouchableOpacity
+                                key={category.id}
+                                style={styles.categoryCard}
+                                onPress={() => setActiveCategory(category.name)}
+                            >
                                 <Text style={styles.categoryIcon}>{category.icon}</Text>
                                 <Text style={styles.categoryName}>{category.name}</Text>
                             </TouchableOpacity>
                         ))}
+
                     </ScrollView>
                 </View>
 
-                {/* Featured Products */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Featured products</Text>
-                    <View style={styles.productsGrid}>
-                        {featuredProducts.map((product) => (
-                            <TouchableOpacity
-                                key={product.id}
-                                style={styles.productCard}
-                                onPress={() =>
-                                    router.push({
-                                        pathname: '/product/[id]',
-                                        params: {
-                                            id: product.id,
-                                            name: product.name,
-                                            price: product.price,
-                                            unit: product.unit,
-                                            image: product.image,
-                                        },
-                                    })
-                                }
-                            >
-                                <View style={styles.productImage}>
-                                    <Text style={styles.productEmoji}>{product.image}</Text>
-                                </View>
-                                <Text style={styles.productName}>{product.name}</Text>
-                                <Text style={styles.productUnit}>{product.unit}</Text>
-                                <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
-                                <TouchableOpacity style={styles.addButton}>
-                                    <Text style={styles.addButtonText}>Add to cart</Text>
-                                </TouchableOpacity>
+                <View style={styles.productsGrid}>
+                    {loading && <Text>Loading products...</Text>}
+
+                    {!loading && products.length === 0 && (
+                        <Text>No products found</Text>
+                    )}
+
+                    {products.map((product) => (
+                        <TouchableOpacity
+                            key={product._id}
+                            style={styles.productCard}
+                            onPress={() =>
+                                router.push(`/product/${product._id}`)
+                            }
+                        >
+                            <View style={styles.productImage}>
+                                <Text style={styles.productEmoji}>
+                                    🛒
+                                </Text>
+                            </View>
+
+                            <Text style={styles.productName}>{product.name}</Text>
+                            <Text style={styles.productUnit}>{product.unit}</Text>
+                            <Text style={styles.productPrice}>
+                                ₹{product.price}
+                            </Text>
+
+                            <TouchableOpacity style={styles.addButton}>
+                                <Text style={styles.addButtonText}>Add to cart</Text>
                             </TouchableOpacity>
-                        ))}
-                    </View>
+                        </TouchableOpacity>
+                    ))}
                 </View>
+
             </ScrollView>
 
             {/* Filter Modal */}
@@ -190,7 +242,7 @@ export default function ShopScreen() {
                     <View style={styles.modalContent}>
                         {/* Header */}
                         <View style={styles.modalHeader}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={() => setShowFilterModal(false)}
                                 style={styles.closeButton}
                             >
@@ -213,8 +265,9 @@ export default function ShopScreen() {
                                             style={styles.input}
                                             placeholder="0"
                                             keyboardType="numeric"
+                                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                                             value={filters.minPrice}
-                                            onChangeText={(text) => setFilters({...filters, minPrice: text})}
+                                            onChangeText={(text) => setFilters({ ...filters, minPrice: text })}
                                         />
                                     </View>
                                     <View style={styles.priceInput}>
@@ -223,8 +276,9 @@ export default function ShopScreen() {
                                             style={styles.input}
                                             placeholder="100"
                                             keyboardType="numeric"
+                                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                                             value={filters.maxPrice}
-                                            onChangeText={(text) => setFilters({...filters, maxPrice: text})}
+                                            onChangeText={(text) => setFilters({ ...filters, maxPrice: text })}
                                         />
                                     </View>
                                 </View>
@@ -246,10 +300,10 @@ export default function ShopScreen() {
                             {/* Others */}
                             <View style={styles.filterSection}>
                                 <Text style={styles.filterSectionTitle}>Others</Text>
-                                
-                                <TouchableOpacity 
+
+                                <TouchableOpacity
                                     style={styles.checkboxItem}
-                                    onPress={() => setFilters({...filters, discount: !filters.discount})}
+                                    onPress={() => setFilters({ ...filters, discount: !filters.discount })}
                                 >
                                     <View style={styles.checkbox}>
                                         {filters.discount && (
@@ -259,9 +313,9 @@ export default function ShopScreen() {
                                     <Text style={styles.checkboxLabel}>Discount</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.checkboxItem}
-                                    onPress={() => setFilters({...filters, freeShipping: !filters.freeShipping})}
+                                    onPress={() => setFilters({ ...filters, freeShipping: !filters.freeShipping })}
                                 >
                                     <View style={styles.checkbox}>
                                         {filters.freeShipping && (
@@ -271,9 +325,9 @@ export default function ShopScreen() {
                                     <Text style={styles.checkboxLabel}>Free shipping</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.checkboxItem}
-                                    onPress={() => setFilters({...filters, fastDelivery: !filters.fastDelivery})}
+                                    onPress={() => setFilters({ ...filters, fastDelivery: !filters.fastDelivery })}
                                 >
                                     <View style={styles.checkbox}>
                                         {filters.fastDelivery && (
@@ -286,7 +340,7 @@ export default function ShopScreen() {
                         </ScrollView>
 
                         {/* Apply Button */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.applyButton}
                             onPress={handleApplyFilters}
                         >

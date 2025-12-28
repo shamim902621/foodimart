@@ -97,17 +97,17 @@ export default function Help() {
     },
   ];
 
-  const toggleSection = (sectionId) => {
+  const toggleSection = (sectionId: any) => {
     setExpandedSection(expandedSection === sectionId ? null : sectionId);
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+
       {/* Header */}
       <View style={styles.header}>
-       <BackButton/>
+        <BackButton />
         <Text style={styles.headerTitle}>Help & Support</Text>
         <View style={styles.headerRight} />
       </View>
@@ -119,9 +119,9 @@ export default function Help() {
           <TextInput
             style={styles.searchInput}
             placeholder="Search for help..."
+            placeholderTextColor="rgba(211, 211, 211, 0.4)"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholderTextColor="#999"
           />
         </View>
 

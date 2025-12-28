@@ -50,6 +50,8 @@ export default function LoginScreen() {
         style={styles.input}
         placeholder="Phone number"
         keyboardType="phone-pad"
+        placeholderTextColor="rgba(63, 69, 78, 0.4)"
+        maxLength={10}
         value={phone}
         onChangeText={setPhone}
       />

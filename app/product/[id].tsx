@@ -1,66 +1,92 @@
 import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from "expo-router";
-import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { api } from "../lib/apiService";
+
+export async function getProductById(id: string) {
+  const res: any = await api(`/users/shops/products/product/${id}`);
+  if (!res.success) throw new Error(res.message);
+  return res.data; // { product, shop, owner, address }
+}
 
 export default function ProductDetailScreen() {
-  const [quantity, setQuantity] = useState(3);
+  const { id } = useLocalSearchParams<{ id: string }>();
 
-  const product = {
-    name: "Organic lemons",
-    price: 2.22,
-    unit: "150 lbs",
-    rating: 4.5,
-    reviews: 89,
-    description: "Organic Mountain works as a seller for many organic growers of organic lemons. Organic lemons are easy to spot in your produce atlas. They are just like regular lemons, but they will usually have a few more scars on the outside of the lemon skin. Organic lemons are considered to be the world's finest lemon for juicing move.",
-    image: "🍋"
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<any>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    loadProduct();
+  }, [id]);
+
+  const loadProduct = async () => {
+    try {
+      setLoading(true);
+      const data = await getProductById(id);
+      setProduct(data.product);
+    } catch (err) {
+      console.log("❌ Failed to load product", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const updateQuantity = (change: number) => {
     setQuantity(Math.max(1, quantity + change));
   };
 
-  const addToCart = () => {
-    router.push('/cart');
-  };
+  if (loading) {
+    return <Text style={{ marginTop: 50, textAlign: "center" }}>Loading...</Text>;
+  }
+
+  if (!product) {
+    return <Text>No product found</Text>;
+  }
 
   return (
     <View style={styles.container}>
-
       <ScrollView showsVerticalScrollIndicator={false}>
         <BackButton />
+
         <View style={styles.imageContainer}>
-          <Text style={styles.productEmoji}>{product.image}</Text>
+          <Text style={styles.productEmoji}>🛒</Text>
         </View>
 
-        {/* Product Info */}
         <View style={styles.infoContainer}>
-          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.price}>₹{product.price}</Text>
           <Text style={styles.productName}>{product.name}</Text>
-          <Text style={styles.unit}>{product.unit}</Text>
+          <Text style={styles.unit}>{product.weight}</Text>
 
           {/* Rating */}
           <View style={styles.ratingContainer}>
-            <View style={styles.stars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Ionicons
-                  key={star}
-                  name={star <= Math.floor(product.rating) ? "star" : "star-outline"}
-                  size={16}
-                  color="#FFD700"
-                />
-              ))}
-            </View>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Ionicons
+                key={i}
+                name={i <= Math.floor(product.rating) ? "star" : "star-outline"}
+                size={16}
+                color="#FFD700"
+              />
+            ))}
             <Text style={styles.ratingText}>
-              {product.rating}★★★★★ ({product.reviews} reviews)
+              {product.rating || 4.0}
             </Text>
           </View>
 
-          {/* Description */}
-          <Text style={styles.description}>{product.description}</Text>
+          <Text style={styles.description}>
+            {product.description}
+          </Text>
 
-          {/* Quantity Selector */}
+          {/* Quantity */}
           <View style={styles.quantitySection}>
             <Text style={styles.quantityLabel}>Quantity</Text>
             <View style={styles.quantitySelector}>
@@ -68,29 +94,31 @@ export default function ProductDetailScreen() {
                 style={styles.quantityButton}
                 onPress={() => updateQuantity(-1)}
               >
-                <Ionicons name="remove" size={20} color="#333" />
+                <Ionicons name="remove" size={20} />
               </TouchableOpacity>
+
               <Text style={styles.quantity}>{quantity}</Text>
+
               <TouchableOpacity
                 style={styles.quantityButton}
                 onPress={() => updateQuantity(1)}
               >
-                <Ionicons name="add" size={20} color="#333" />
+                <Ionicons name="add" size={20} />
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      {/* Add to Cart Button */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.addToCartButton} onPress={addToCart}>
+        <TouchableOpacity style={styles.addToCartButton}>
           <Text style={styles.addToCartText}>Add to cart</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
