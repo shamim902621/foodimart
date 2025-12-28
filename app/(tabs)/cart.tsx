@@ -1,53 +1,132 @@
 import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { api } from "../lib/apiService";
+
+
+// ✅ Get Cart
+export async function getCart() {
+  const res: any = await api("/users/cart/getcart");
+  if (!res.success) throw new Error(res.message);
+  return res.cart;
+}
+
+// ✅ Add to Cart
+export async function addToCart(payload: {
+  productId: string;
+  quantity: number;
+  customizations?: string;
+}) {
+  const res: any = await api("/users/cart/addcart", "POST", payload);
+  if (!res.success) throw new Error(res.message);
+  return res.cart;
+}
+
+// ✅ Update Quantity
+export async function updateCartItem(productId: string, quantity: number) {
+  const res: any = await api("/users/cart/item", "PATCH", {
+    productId,
+    quantity,
+  });
+  if (!res.success) throw new Error(res.message);
+  return res.cart;
+}
+
+// ✅ Remove Item
+export async function removeCartItem(productId: string) {
+  const res: any = await api(`/users/cart/remove/${productId}`, "DELETE");
+  if (!res.success) throw new Error(res.message);
+  return res.cart;
+}
+
+// ✅ Clear Cart
+export async function clearCart() {
+  const res: any = await api("/users/cart/clear", "DELETE");
+  if (!res.success) throw new Error(res.message);
+}
+
 
 export default function CartScreen() {
-  const cartItems = [
-    {
-      id: 1,
-      name: "Chicken Burger Meal",
-      restaurant: "Burger King",
-      price: 300,
-      quantity: 2,
-      image: "🍔",
-      customization: "Extra cheese, No onions"
-    },
-    {
-      id: 2,
-      name: "Margherita Pizza",
-      restaurant: "Pizza Palace",
-      price: 450,
-      quantity: 1,
-      image: "🍕",
-      customization: "Thin crust"
-    },
-    {
-      id: 3,
-      name: "Fresh Fruit Smoothie",
-      restaurant: "Healthy Bites",
-      price: 180,
-      quantity: 1,
-      image: "🥤",
-      customization: ""
+  // const cartItems = [
+  //   {
+  //     id: 1,
+  //     name: "Chicken Burger Meal",
+  //     restaurant: "Burger King",
+  //     price: 300,
+  //     quantity: 2,
+  //     image: "🍔",
+  //     customization: "Extra cheese, No onions"
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Margherita Pizza",
+  //     restaurant: "Pizza Palace",
+  //     price: 450,
+  //     quantity: 1,
+  //     image: "🍕",
+  //     customization: "Thin crust"
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Fresh Fruit Smoothie",
+  //     restaurant: "Healthy Bites",
+  //     price: 180,
+  //     quantity: 1,
+  //     image: "🥤",
+  //     customization: ""
+  //   }
+  // ];
+
+  const [cart, setCart] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const loadCart = async () => {
+    try {
+      setLoading(true);
+      const data = await getCart();
+      setCart(data);
+    } catch (e) {
+      console.log("Failed to load cart", e);
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = 40;
-  const tax = subtotal * 0.05; // 5% tax
-  const total = subtotal + deliveryFee + tax;
-
-  const updateQuantity = (id: number, change: number) => {
-    console.log(`Update item ${id} quantity by ${change}`);
   };
 
-  const removeItem = (id: number) => {
-    console.log(`Remove item ${id}`);
-  };
 
-  if (cartItems.length === 0) {
+  // const subtotal = cart.reduce((sum: any, item: any) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart?.subtotal || 0;
+  const deliveryFee = cart?.deliveryFee || 0;
+  const tax = cart?.tax || 0;
+  const total = cart?.total || 0;
+
+
+  const updateQuantity = async (productId: string, change: number) => {
+    try {
+      const item = cart.items.find((i: any) => i.productId === productId);
+      const newQty = item.quantity + change;
+
+      const updatedCart = await updateCartItem(productId, newQty);
+      setCart(updatedCart);
+    } catch (e) {
+      console.log("Quantity update failed", e);
+    }
+  };
+  // const addItemToCart = async () => {
+  //   await addToCart({
+  //     productId,
+  //     quantity,
+  //   });
+  //   router.push("/cart");
+  // };
+
+
+
+  if (!loading && (!cart || cart.items.length === 0)) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyEmoji}>🛒</Text>
@@ -56,62 +135,66 @@ export default function CartScreen() {
         <TouchableOpacity style={styles.shopButton}>
           <Text style={styles.shopButtonText}>Start Shopping</Text>
         </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={addItemToCart}>
+          <Text>Add Item to Cart</Text>
+        </TouchableOpacity> */}
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
- 
+
       <View style={styles.header}>
-       <BackButton/>
+        <BackButton />
         <Text style={styles.headerTitle}>Your Cart</Text>
-        <Text style={styles.itemCount}>{cartItems.length} items</Text>
+        {/* <Text style={styles.itemCount}>{cart.item.length} items</Text> */}
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Cart Items */}
         <View style={styles.itemsContainer}>
-          {cartItems.map((item) => (
-            <View key={item.id} style={styles.cartItem}>
+          {cart?.items.map((item: any) => (
+            <View key={item.productId} style={styles.cartItem}>
               <View style={styles.itemImage}>
                 <Text style={styles.itemEmoji}>{item.image}</Text>
               </View>
-              
+
               <View style={styles.itemDetails}>
                 <Text style={styles.itemName}>{item.name}</Text>
                 <Text style={styles.restaurantName}>{item.restaurant}</Text>
-                
+
                 {item.customization ? (
                   <Text style={styles.customization}>{item.customization}</Text>
                 ) : null}
-                
+
                 <View style={styles.itemActions}>
                   <View style={styles.quantityContainer}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, -1)}
                     >
                       <Ionicons name="remove" size={16} color="#FF6B35" />
                     </TouchableOpacity>
-                    
+
                     <Text style={styles.quantityText}>{item.quantity}</Text>
-                    
-                    <TouchableOpacity 
+
+                    <TouchableOpacity
                       style={styles.quantityButton}
                       onPress={() => updateQuantity(item.id, 1)}
                     >
                       <Ionicons name="add" size={16} color="#FF6B35" />
                     </TouchableOpacity>
                   </View>
-                  
+
                   <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
                 </View>
               </View>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.removeButton}
-                onPress={() => removeItem(item.id)}
+                onPress={() => removeCartItem(item.id)}
               >
                 <Ionicons name="trash-outline" size={20} color="#FF3B30" />
               </TouchableOpacity>
@@ -143,28 +226,28 @@ export default function CartScreen() {
             <Ionicons name="receipt-outline" size={20} color="#FF6B35" />
             <Text style={styles.sectionTitle}>Bill Details</Text>
           </View>
-          
+
           <View style={styles.billDetails}>
             <View style={styles.billRow}>
               <Text style={styles.billLabel}>Item Total</Text>
               <Text style={styles.billValue}>₹{subtotal}</Text>
             </View>
-            
+
             <View style={styles.billRow}>
               <Text style={styles.billLabel}>Delivery Fee</Text>
               <Text style={styles.billValue}>₹{deliveryFee}</Text>
             </View>
-            
+
             <View style={styles.billRow}>
               <Text style={styles.billLabel}>Taxes & Charges</Text>
               <Text style={styles.billValue}>₹{tax.toFixed(2)}</Text>
             </View>
-            
+
             <View style={styles.billRow}>
               <Text style={styles.billLabel}>Platform Fee</Text>
               <Text style={styles.billValue}>₹5</Text>
             </View>
-            
+
             <View style={[styles.billRow, styles.totalRow]}>
               <Text style={styles.totalLabel}>Total Amount</Text>
               <Text style={styles.totalValue}>₹{(total + 5).toFixed(2)}</Text>
@@ -176,7 +259,7 @@ export default function CartScreen() {
             <Ionicons name="pricetag-outline" size={20} color="#FF6B35" />
             <Text style={styles.sectionTitle}>Offers & Coupons</Text>
           </View>
-          
+
           <TouchableOpacity style={styles.couponCard}>
             <View style={styles.couponInfo}>
               <View style={styles.couponBadge}>
@@ -195,13 +278,15 @@ export default function CartScreen() {
           <Text style={styles.footerTotalLabel}>Total</Text>
           <Text style={styles.footerTotalAmount}>₹{(total + 5).toFixed(2)}</Text>
         </View>
-        
-       <TouchableOpacity
-  style={styles.checkoutButton}
-  onPress={() => router.push("/shiping-method")}
->
-  <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-</TouchableOpacity>
+
+        <TouchableOpacity
+          disabled={!cart || cart.items.length === 0}
+          style={styles.checkoutButton}
+          onPress={() => router.push("/shiping-method")}
+        >
+
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -219,7 +304,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 24,
   },
-  
+
   emptyEmoji: {
     fontSize: 80,
     marginBottom: 16,

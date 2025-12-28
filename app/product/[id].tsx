@@ -1,6 +1,6 @@
 import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ScrollView,
@@ -16,7 +16,16 @@ export async function getProductById(id: string) {
   if (!res.success) throw new Error(res.message);
   return res.data; // { product, shop, owner, address }
 }
-
+// ✅ Add to Cart
+export async function addToCart(payload: {
+  productId: string;
+  quantity: number;
+  customizations?: string;
+}) {
+  const res: any = await api("/users/cart/addcart/add", "POST", payload);
+  if (!res.success) throw new Error(res.message);
+  return res.cart;
+}
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -52,6 +61,13 @@ export default function ProductDetailScreen() {
   if (!product) {
     return <Text>No product found</Text>;
   }
+  const addItemToCart = async () => {
+    await addToCart({
+      productId: product.productId,
+      quantity,
+    });
+    router.push("/cart");
+  };
 
   return (
     <View style={styles.container}>
@@ -111,7 +127,7 @@ export default function ProductDetailScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.addToCartButton}>
+        <TouchableOpacity style={styles.addToCartButton} onPress={addItemToCart}>
           <Text style={styles.addToCartText}>Add to cart</Text>
         </TouchableOpacity>
       </View>
