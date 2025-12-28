@@ -371,7 +371,7 @@ export default function PersonalDetails() {
   const [showPicker, setShowPicker] = useState(false);
   const fetchProfile = async () => {
     try {
-      const res = await api("/profile", "GET", undefined, token ?? "");
+      const res: any = await api("/profile", "GET", undefined);
       setFormData({
         firstName: res.user.firstName || "",
         lastName: res.user.lastName || "",
@@ -405,7 +405,7 @@ export default function PersonalDetails() {
         gender: formData.gender,
       };
 
-      const res = await api("/profile", "PUT", body, token ?? "");
+      const res: any = await api("/profile", "PUT", body,);
       Alert.alert("Success", "Personal details updated!");
       setIsEditing(false);
       fetchProfile();
@@ -458,6 +458,7 @@ export default function PersonalDetails() {
                   // FIX 2: Added disabled style logic here
                   style={[styles.input, !isEditing && styles.disabledInput]}
                   value={formData.firstName}
+
                   onChangeText={(text) => updateField("firstName", text)}
                   editable={isEditing}
                   placeholderTextColor="#999" // Added placeholder color

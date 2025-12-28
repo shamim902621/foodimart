@@ -38,6 +38,7 @@ export default function FiltersScreen() {
                   style={styles.input}
                   placeholder="0"
                   keyboardType="numeric"
+                  placeholderTextColor="rgba(63, 69, 78, 0.4)"
                   value={minPrice}
                   onChangeText={setMinPrice}
                 />
@@ -51,6 +52,7 @@ export default function FiltersScreen() {
                   style={styles.input}
                   placeholder="100"
                   keyboardType="numeric"
+                  placeholderTextColor="rgba(73, 74, 77, 0.4)"
                   value={maxPrice}
                   onChangeText={setMaxPrice}
                 />

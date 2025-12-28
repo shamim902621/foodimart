@@ -126,3 +126,32 @@ export async function apiFormData<T>(
 
   return data;
 }
+
+
+type ShopQuery = {
+  category?: string;
+  filter?: string;
+};
+
+export async function getShops(query?: ShopQuery) {
+  const params = new URLSearchParams();
+
+  if (query?.category) params.append("category", query.category);
+  if (query?.filter) params.append("filter", query.filter);
+
+  const queryString = params.toString();
+  const url = queryString
+    ? `/users/shops/category?${queryString}`
+    : `/users/shops/category`;
+
+  const res: any = await api(url);
+
+  if (!res.success) throw new Error(res.message);
+  return res.data;
+}
+
+export async function getShopById(id: string) {
+  const res: any = await api(`/users/shops/getShopById/${id}`);
+  if (!res.success) throw new Error(res.message);
+  return res.data;
+}

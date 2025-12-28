@@ -264,6 +264,7 @@ export default function EditProduct() {
                     <TextInput
                         style={styles.input}
                         placeholder="Enter product name"
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         value={form.name}
                         onChangeText={(text) => updateForm('name', text)}
                     />
@@ -276,6 +277,7 @@ export default function EditProduct() {
                             style={styles.input}
                             placeholder="0.00"
                             keyboardType="numeric"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.price}
                             onChangeText={(text) => updateForm('price', text)}
                         />
@@ -286,6 +288,7 @@ export default function EditProduct() {
                             style={styles.input}
                             placeholder="0.00"
                             keyboardType="numeric"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.originalPrice}
                             onChangeText={(text) => updateForm('originalPrice', text)}
                         />
@@ -299,6 +302,7 @@ export default function EditProduct() {
                             style={styles.input}
                             placeholder="0"
                             keyboardType="numeric"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.stock}
                             onChangeText={(text) => updateForm('stock', text)}
                         />
@@ -309,6 +313,7 @@ export default function EditProduct() {
                             style={styles.input}
                             placeholder="0"
                             keyboardType="numeric"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.discount}
                             onChangeText={(text) => updateForm('discount', text)}
                         />
@@ -356,6 +361,7 @@ export default function EditProduct() {
                     <TextInput
                         style={[styles.input, styles.textArea]}
                         placeholder="Enter product description..."
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         multiline
                         numberOfLines={4}
                         value={form.description}
@@ -368,6 +374,7 @@ export default function EditProduct() {
                     <TextInput
                         style={[styles.input, styles.textArea]}
                         placeholder="List ingredients separated by commas..."
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         multiline
                         numberOfLines={3}
                         value={form.ingredients}
@@ -381,6 +388,7 @@ export default function EditProduct() {
                         <TextInput
                             style={styles.input}
                             placeholder="15 mins"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.preparationTime}
                             onChangeText={(text) => updateForm('preparationTime', text)}
                         />
@@ -390,6 +398,7 @@ export default function EditProduct() {
                         <TextInput
                             style={styles.input}
                             placeholder="200g"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.weight}
                             onChangeText={(text) => updateForm('weight', text)}
                         />
@@ -406,6 +415,7 @@ export default function EditProduct() {
                             style={styles.input}
                             placeholder="0"
                             keyboardType="numeric"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.calories}
                             onChangeText={(text) => updateForm('calories', text)}
                         />
@@ -415,6 +425,7 @@ export default function EditProduct() {
                         <TextInput
                             style={styles.input}
                             placeholder="Protein: 0g..."
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={form.nutritionalInfo}
                             onChangeText={(text) => updateForm('nutritionalInfo', text)}
                         />
@@ -477,6 +488,7 @@ export default function EditProduct() {
                         <TextInput
                             style={styles.modalInput}
                             placeholder="Enter category name"
+                            placeholderTextColor="rgba(63, 69, 78, 0.4)"
                             value={newCategory}
                             onChangeText={setNewCategory}
                         />

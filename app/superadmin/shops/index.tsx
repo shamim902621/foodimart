@@ -25,6 +25,8 @@ interface Shop {
   name: string;
   status: 'active' | 'inactive' | 'onboarding' | 'maintenance' | 'banned'; // Specific strings
   cuisineType?: string[];
+  categories?: string;
+  foodCategory?: string;
   rating?: number;
   totalRevenue?: number;
 }
@@ -92,7 +94,15 @@ const ShopCard = React.memo<ShopCardProps>(({ shop, onEditStatus }) => {
       <View style={styles.ownerContainer}>
         <Ionicons name="restaurant-outline" size={14} color="#6B7280" />
         <Text style={styles.ownerText} numberOfLines={1}>
-          {shop.cuisineType && shop.cuisineType.length > 0 ? shop.cuisineType.join(", ") : "Multi-cuisine"}
+          {/* {shop.cuisineType && shop.cuisineType.length > 0 ? shop.cuisineType.join(", ") : "Multi-cuisine"} */}
+          {
+            shop.categories
+              ? shop.categories
+              : shop.cuisineType && shop.cuisineType.length > 0
+                ? shop.cuisineType.join(", ")
+                : "Multi-cuisine"
+          }
+
         </Text>
       </View>
 
@@ -204,7 +214,7 @@ export default function ShopsList() {
         sortBy: 'newest'
       }).toString();
 
-      const response = await api(`/superadmin/getAllShops?${queryParams}`, "GET", null, token ?? undefined);
+      const response: any = await api(`/superadmin/getAllShops?${queryParams}`, "GET");
 
       if (response.success) {
         setShops(response.shops);
@@ -236,10 +246,10 @@ export default function ShopsList() {
     );
     const id = selectedShop._id;
     try {
-      const response = await api(`/superadmin/shops/updateShopStatus/${id}`, 'PUT', {
+      const response: any = await api(`/superadmin/shops/updateShopStatus/${id}`, 'PUT', {
         // shopId: selectedShop._id,
         status: newStatus
-      }, token ?? undefined);
+      },);
 
       if (!response.success) {
         throw new Error(response.message || "Failed to update");

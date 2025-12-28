@@ -15,13 +15,15 @@ type ShopForm = {
     zipCode: string;
     lat: string;
     lng: string;
-    categories: string[];
+    category: string;
+    foodCategory: string;
     description: string;
 };
 
 export default function EditShop() {
     const { token } = useAuth();
     const { id } = useLocalSearchParams();
+    const [initialLoading, setInitialLoading] = useState(true);
 
     const [form, setForm] = useState<ShopForm>({
         shopName: "",
@@ -34,17 +36,20 @@ export default function EditShop() {
         zipCode: "",
         lat: "",
         lng: "",
-        categories: [],
+        category: "",
+        foodCategory: "",
         description: ""
     });
 
     const categoriesList = [
-        "Restaurant & Cafe",
-        "Grocery Store",
-        "Bakery",
-        "Food Truck",
-        "Dessert Shop",
-        "Beverage Shop"
+        "grocery",
+        "medicine",
+        "beauty & cosmetic",
+        "electronics",
+        "fashion",
+        "sports",
+        "food",
+        "others"
     ];
 
     const [loading, setLoading] = useState(false);
@@ -58,42 +63,46 @@ export default function EditShop() {
     // -----------------------------
     const loadShop = async () => {
         try {
-            const response = await api(`/shops/${id}`, "PUT", token ?? undefined);
+            setInitialLoading(true);
+
+            const response: any = await api(`/superadmin/shops/getShopById/${id}`);
 
             if (response?.success) {
                 const s = response.data;
 
                 setForm({
-                    shopName: s.name,
-                    ownerName: s.ownerName,
-                    ownerEmail: s.contact.email,
-                    phone: s.contact.phone,
-                    street: s.address.street,
-                    city: s.address.city,
-                    state: s.address.state,
-                    zipCode: s.address.zipCode,
-                    lat: s.address.coordinates.lat?.toString() || "",
-                    lng: s.address.coordinates.lng?.toString() || "",
-                    categories: s.cuisineType || [],
-                    description: s.description,
+                    shopName: s.shop.name ?? "",
+                    ownerName: s.shop.ownerName ?? "",
+                    ownerEmail: s.user?.email ?? "",
+                    phone: s.user?.mobile ?? "",
+                    street: s.address?.street ?? "",
+                    city: s.address?.city ?? "",
+                    state: s.address?.state ?? "",
+                    zipCode: s.address?.zipCode ?? "",
+                    lat: s.address?.coordinates?.lat?.toString() ?? "",
+                    lng: s.address?.coordinates?.lng?.toString() ?? "",
+                    category: s.shop.category ?? "",
+                    foodCategory: s.shop.foodCategory ?? "",
+                    description: s.shop.description ?? "",
                 });
             }
         } catch (err) {
             console.log("ERROR:", err);
+            Alert.alert("Error", "Failed to load shop details");
+        } finally {
+            setInitialLoading(false);
         }
     };
+
 
     // -----------------------------
     // 2️⃣ TOGGLE CATEGORIES OUTSIDE UI
     // -----------------------------
     const toggleCategory = (category: string) => {
-        const isSelected = form.categories.includes(category);
-
         setForm({
             ...form,
-            categories: isSelected
-                ? form.categories.filter((c) => c !== category)
-                : [...form.categories, category],
+            category,
+            foodCategory: category === "food" ? form.foodCategory : "",
         });
     };
 
@@ -108,7 +117,9 @@ export default function EditShop() {
                 name: form.shopName,
                 ownerName: form.ownerName,
                 description: form.description,
-                cuisineType: form.categories,
+
+                category: form.category,
+                foodCategory: form.category === "food" ? form.foodCategory : null,
 
                 address: {
                     street: form.street,
@@ -127,7 +138,8 @@ export default function EditShop() {
                 },
             };
 
-            const response = await api(`/supperadmin/shops/editShop/${id}`, "PUT", payload, token ?? undefined);
+
+            const response: any = await api(`/superadmin/shops/editShop/${id}`, "PUT", payload);
 
             if (response.success) {
                 Alert.alert("Success", "Shop updated successfully!");
@@ -142,16 +154,33 @@ export default function EditShop() {
         }
     };
 
+    const formatCategory = (text: string) => {
+        if (!text) return "";
+        return text
+            .split(" ")
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+    };
+    if (initialLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                <Text>Loading shop details...</Text>
+            </View>
+        );
+    }
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Edit Shop</Text>
-
+            {/* value={form.zipCode}
+            onChangeText={(text) => setForm({ ...form, zipCode: text })} */}
             {/* SHOP NAME */}
             <View style={styles.inputGroup}>
                 <Text style={styles.label}>Shop Name *</Text>
                 <TextInput
                     style={styles.input}
                     value={form.shopName}
+                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
                     onChangeText={(text) => setForm({ ...form, shopName: text })}
                 />
             </View>
@@ -162,6 +191,7 @@ export default function EditShop() {
                     <Text style={styles.label}>Owner Name *</Text>
                     <TextInput
                         style={styles.input}
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         value={form.ownerName}
                         onChangeText={(text) => setForm({ ...form, ownerName: text })}
                     />
@@ -172,8 +202,17 @@ export default function EditShop() {
                     <TextInput
                         style={styles.input}
                         keyboardType="phone-pad"
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
+                        maxLength={10}
                         value={form.phone}
-                        onChangeText={(text) => setForm({ ...form, phone: text })}
+                        // onChangeText={(text) => setForm({ ...form, phone: text })}
+                        onChangeText={(text) => {
+                            const digits = text.replace(/[^0-9]/g, "");
+                            if (digits.length <= 10) {
+                                setForm({ ...form, phone: digits });
+                            }
+                        }}
+
                     />
                 </View>
             </View>
@@ -184,6 +223,7 @@ export default function EditShop() {
                 <TextInput
                     style={styles.input}
                     keyboardType="email-address"
+                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
                     value={form.ownerEmail}
                     onChangeText={(text) => setForm({ ...form, ownerEmail: text })}
                 />
@@ -195,7 +235,8 @@ export default function EditShop() {
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                     {categoriesList.map((cat) => {
-                        const isSelected = form.categories.includes(cat);
+                        const isSelected = form.category === cat.toLowerCase();
+
                         return (
                             <TouchableOpacity
                                 key={cat}
@@ -203,7 +244,9 @@ export default function EditShop() {
                                     styles.categoryButton,
                                     isSelected && styles.activeCategoryButton
                                 ]}
-                                onPress={() => toggleCategory(cat)}
+                                // onPress={() => toggleCategory(cat)}
+                                onPress={() => toggleCategory(cat.toLowerCase())}
+
                             >
                                 <Text
                                     style={[
@@ -211,19 +254,55 @@ export default function EditShop() {
                                         isSelected && styles.activeCategoryText
                                     ]}
                                 >
-                                    {cat}
+                                    {formatCategory(cat)}
+                                    {/* {cat} */}
                                 </Text>
                             </TouchableOpacity>
                         );
                     })}
                 </ScrollView>
             </View>
+            {form.category === "food" && (
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Food Type *</Text>
+
+                    <View style={styles.row}>
+                        {["veg", "non-veg", "mix"].map((type) => {
+                            const isSelected = form.foodCategory === type;
+
+                            return (
+                                <TouchableOpacity
+                                    key={type}
+                                    style={[
+                                        styles.categoryButton,
+                                        isSelected && styles.activeCategoryButton,
+                                    ]}
+                                    onPress={() =>
+                                        setForm({ ...form, foodCategory: type })
+                                    }
+                                >
+                                    <Text
+                                        style={[
+                                            styles.categoryText,
+                                            isSelected && styles.activeCategoryText,
+                                        ]}
+                                    >
+                                        {/* {type.toUpperCase()} */}
+                                        {formatCategory(type)}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
+                    </View>
+                </View>
+            )}
 
             {/* ADDRESS */}
             <View style={styles.inputGroup}>
                 <Text style={styles.label}>Street</Text>
                 <TextInput
                     style={styles.input}
+                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
                     value={form.street}
                     onChangeText={(text) => setForm({ ...form, street: text })}
                 />
@@ -235,6 +314,7 @@ export default function EditShop() {
                     <Text style={styles.label}>City</Text>
                     <TextInput
                         style={styles.input}
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         value={form.city}
                         onChangeText={(text) => setForm({ ...form, city: text })}
                     />
@@ -244,6 +324,7 @@ export default function EditShop() {
                     <Text style={styles.label}>State</Text>
                     <TextInput
                         style={styles.input}
+                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
                         value={form.state}
                         onChangeText={(text) => setForm({ ...form, state: text })}
                     />
@@ -255,6 +336,7 @@ export default function EditShop() {
                 <Text style={styles.label}>Zip Code</Text>
                 <TextInput
                     style={styles.input}
+                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
                     value={form.zipCode}
                     onChangeText={(text) => setForm({ ...form, zipCode: text })}
                 />
@@ -267,6 +349,7 @@ export default function EditShop() {
                     style={[styles.input, styles.textArea]}
                     multiline
                     value={form.description}
+                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
                     onChangeText={(text) => setForm({ ...form, description: text })}
                 />
             </View>
@@ -277,9 +360,19 @@ export default function EditShop() {
                     <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.saveButton} onPress={handleUpdate}>
-                    <Text style={styles.saveText}>Update</Text>
+                <TouchableOpacity
+                    style={[
+                        styles.saveButton,
+                        (!form.shopName || !form.ownerName || !form.category) && { opacity: 0.6 }
+                    ]}
+                    disabled={!form.shopName || !form.ownerName || !form.category}
+                    onPress={handleUpdate}
+                >
+                    <Text style={styles.saveText}>
+                        {loading ? "Updating..." : "Update"}
+                    </Text>
                 </TouchableOpacity>
+
             </View>
 
         </ScrollView>

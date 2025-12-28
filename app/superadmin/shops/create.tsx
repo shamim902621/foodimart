@@ -16,20 +16,23 @@ type ShopForm = {
   zipCode: string;
   lat: string;
   lng: string;
-  categories: string[];     // <--- IMPORTANT
+  categories: string;     // <--- IMPORTANT
+  foodCategory: string;
   description: string;
 };
 
 
 export default function CreateShop() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const categoriess = [
-    "Restaurant & Cafe",
-    "Grocery Store",
-    "Bakery",
-    "Food Truck",
-    "Dessert Shop",
-    "Beverage Shop"
+    "grocery",
+    "medicine",
+    "beauty & cosmetic",
+    "electronics",
+    "fashion",
+    "sports",
+    "food",
+    "others"
   ];
 
   const [form, setForm] = useState<ShopForm>({
@@ -43,7 +46,8 @@ export default function CreateShop() {
     zipCode: "",
     lat: "",
     lng: "",
-    categories: [],   // <--- Array of string
+    categories: "",
+    foodCategory: "",
     description: ""
   });
 
@@ -54,20 +58,13 @@ export default function CreateShop() {
   const [loading, setLoading] = useState(false);
 
   const toggleCategory = (category: string) => {
-    const isSelected = form.categories.includes(category);
-
-    if (isSelected) {
-      setForm({
-        ...form,
-        categories: form.categories.filter((c) => c !== category),
-      });
-    } else {
-      setForm({
-        ...form,
-        categories: [...form.categories, category],
-      });
-    }
+    setForm({
+      ...form,
+      categories: category,
+      foodCategory: category === "food" ? form.foodCategory : "", // reset if not food
+    });
   };
+
 
   const handleSubmit = async () => {
     if (
@@ -80,6 +77,11 @@ export default function CreateShop() {
       Alert.alert("Missing Fields", "Please fill all required fields (*)");
       return;
     }
+    // 🔥 food category validation
+    if (form.categories === "food" && !form.foodCategory) {
+      Alert.alert("Missing Food Type", "Please select Veg / Non-Veg / Mix");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -89,7 +91,8 @@ export default function CreateShop() {
         description: form.description,
         adminId: user?.id,
 
-        cuisineType: form.categories,
+        category: form.categories,          // ✅ single category
+        foodCategory: form.categories === "food" ? form.foodCategory : null,
 
         address: {
           street: form.street,
@@ -98,21 +101,21 @@ export default function CreateShop() {
           zipCode: form.zipCode,
           coordinates: {
             lat: Number(form.lat) || 0,
-            lng: Number(form.lng) || 0
-          }
+            lng: Number(form.lng) || 0,
+          },
         },
 
         contact: {
           phone: form.phone,
-          email: form.ownerEmail
+          email: form.ownerEmail,
         },
 
-        ownerName: form.ownerName
+        ownerName: form.ownerName,
       };
 
       console.log(payload);
 
-      const response = await api("/superadmin/shops/createShop", "POST", payload, token ?? undefined);
+      const response: any = await api("/superadmin/shops/createShop", "POST", payload,);
 
       const data = await response.json();  // <-- IMPORTANT
 
@@ -131,6 +134,13 @@ export default function CreateShop() {
     }
   };
 
+  const formatCategory = (text: string) => {
+    if (!text) return "";
+    return text
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -145,6 +155,7 @@ export default function CreateShop() {
             <TextInput
               style={styles.input}
               placeholder="e.g. Food Mart Indiranagar"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               value={form.shopName}
               onChangeText={(text) => setForm({ ...form, shopName: text })}
             />
@@ -156,6 +167,7 @@ export default function CreateShop() {
               <TextInput
                 style={styles.input}
                 placeholder="e.g. Shamim Ahmad"
+                placeholderTextColor="rgba(63, 69, 78, 0.4)"
                 value={form.ownerName}
                 onChangeText={(text) => setForm({ ...form, ownerName: text })}
               />
@@ -164,12 +176,23 @@ export default function CreateShop() {
               <Text style={styles.label}>Phone *</Text>
               <TextInput
                 style={styles.input}
-                placeholder="+91 9876543210"
-                keyboardType="phone-pad"
+                placeholder="9876543210"
+                keyboardType="number-pad"
+                placeholderTextColor="rgba(63, 69, 78, 0.4)"
+                maxLength={10}                 // ✅ hard limit
                 value={form.phone}
-                onChangeText={(text) => setForm({ ...form, phone: text })}
+                onChangeText={(text) => {
+                  // ✅ allow only digits
+                  const digitsOnly = text.replace(/[^0-9]/g, "");
+
+                  // ✅ limit to 10 digits
+                  if (digitsOnly.length <= 10) {
+                    setForm({ ...form, phone: digitsOnly });
+                  }
+                }}
               />
             </View>
+
           </View>
 
           <View style={styles.inputGroup}>
@@ -178,6 +201,7 @@ export default function CreateShop() {
               style={styles.input}
               placeholder="owner@shop.com"
               keyboardType="email-address"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               value={form.ownerEmail}
               onChangeText={(text) => setForm({ ...form, ownerEmail: text })}
             />
@@ -186,33 +210,71 @@ export default function CreateShop() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Category *</Text>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesContainer}
+            >
               {categoriess.map((category) => {
-                const isSelected = form.categories.includes(category);
+                const isSelected = form.categories === category; // ✅ string compare
 
                 return (
                   <TouchableOpacity
                     key={category}
                     style={[
                       styles.categoryButton,
-                      isSelected && styles.activeCategoryButton
+                      isSelected && styles.activeCategoryButton,
                     ]}
                     onPress={() => toggleCategory(category)}
                   >
                     <Text
                       style={[
                         styles.categoryText,
-                        isSelected && styles.activeCategoryText
+                        isSelected && styles.activeCategoryText,
                       ]}
                     >
-                      {category}
+                      {formatCategory(category)} {/* ✅ display only */}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
             </ScrollView>
-
           </View>
+
+          {/* Show food type only if category is food */}
+          {form.categories === "food" && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Food Type *</Text>
+
+              <View style={styles.row}>
+                {["veg", "non-veg", "mix"].map((type) => {
+                  const isSelected = form.foodCategory === type;
+
+                  return (
+                    <TouchableOpacity
+                      key={type}
+                      style={[
+                        styles.categoryButton,
+                        isSelected && styles.activeCategoryButton,
+                      ]}
+                      onPress={() =>
+                        setForm({ ...form, foodCategory: type })
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.categoryText,
+                          isSelected && styles.activeCategoryText,
+                        ]}
+                      >
+                        {formatCategory(type)}{/* ✅ display only */}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
 
 
           <View style={styles.inputGroup}>
@@ -220,6 +282,7 @@ export default function CreateShop() {
             <TextInput
               style={styles.input}
               placeholder="e.g. 243 Indira Nagar Main Road"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               value={form.street}
               onChangeText={(text) => setForm({ ...form, street: text })}
             />
@@ -231,6 +294,7 @@ export default function CreateShop() {
               <TextInput
                 style={styles.input}
                 placeholder="e.g. Bangalore"
+                placeholderTextColor="rgba(63, 69, 78, 0.4)"
                 value={form.city}
                 onChangeText={(text) => setForm({ ...form, city: text })}
               />
@@ -241,6 +305,7 @@ export default function CreateShop() {
               <TextInput
                 style={styles.input}
                 placeholder="e.g. Karnataka"
+                placeholderTextColor="rgba(63, 69, 78, 0.4)"
                 value={form.state}
                 onChangeText={(text) => setForm({ ...form, state: text })}
               />
@@ -253,6 +318,8 @@ export default function CreateShop() {
               style={styles.input}
               placeholder="560038"
               keyboardType="number-pad"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
+              maxLength={6}
               value={form.zipCode}
               onChangeText={(text) => setForm({ ...form, zipCode: text })}
             />
@@ -289,6 +356,7 @@ export default function CreateShop() {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Brief description about the shop"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               multiline
               numberOfLines={3}
               value={form.description}

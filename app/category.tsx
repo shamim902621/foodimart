@@ -92,9 +92,12 @@ const Categories: React.FC = () => {
   const handleCategoryPress = (category: Category) => {
     router.push({
       pathname: '/(tabs)/home',
-      params: { category: category.title },
+      params: {
+        category: category.title.toLowerCase() // 🔑 match backend
+      },
     });
   };
+
 
   const renderIcon = (icon: IconType, color = '#fff') => {
     switch (icon.type) {
@@ -112,7 +115,7 @@ const Categories: React.FC = () => {
   };
 
   return (
-   
+
     <View style={styles.container} >
       <StatusBar barStyle="light-content" backgroundColor="#6C63FF" />
       <View style={styles.header}>

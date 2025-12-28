@@ -22,7 +22,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { api, apiFormData } from '../lib/apiService';
 
 export default function ProfileScreen() {
-  const { user, token, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   console.log(user);
 
   const updateProfileField = async () => {
@@ -30,7 +30,7 @@ export default function ProfileScreen() {
       const formData = new FormData();
       formData.append(editField, editValue);
 
-      const res = await apiFormData("/profile", "PUT", formData, token ?? "");
+      const res: any = await apiFormData("/profile", "PUT", formData);
 
       Alert.alert("Success", "Profile updated!");
       setShowEditModal(false);
@@ -145,7 +145,7 @@ export default function ProfileScreen() {
 
   const getProfile = async () => {
     try {
-      const res = await api("/auth/profile", "GET", undefined, token ?? "");
+      const res: any = await api("/auth/profile");
       setProfile(res.user);
       console.log("PROFILE data:", res.user);
     } catch (error: any) {
@@ -387,6 +387,7 @@ export default function ProfileScreen() {
             <TextInput
               style={styles.modalInput}
               value={editValue}
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               onChangeText={setEditValue}
               placeholder={`Enter your ${editField}`}
             />
@@ -427,6 +428,7 @@ export default function ProfileScreen() {
               style={styles.modalInput}
               placeholder="Enter your email"
               keyboardType="email-address"
+              placeholderTextColor="rgba(63, 69, 78, 0.4)"
               autoCapitalize="none"
             />
             <View style={styles.modalButtons}>
