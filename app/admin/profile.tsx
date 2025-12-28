@@ -394,7 +394,7 @@ import { api } from "../lib/apiService";
 
 export default function Profile() {
   const router = useRouter();
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const userUUID = user?.userUUID;
 
   const [shop, setShop] = useState<any>(null);
@@ -419,7 +419,7 @@ export default function Profile() {
 
   const fetchShop = async () => {
     try {
-      const response = await api(`/admin/shop/getProfile/${userUUID}`, "GET", undefined, token ?? undefined);
+      const response: any = await api(`/admin/shop/getProfile/${userUUID}`,);
       if (response?.success) {
         setShop(response.data);
       }
@@ -448,11 +448,10 @@ export default function Profile() {
   const handleSaveChanges = async () => {
     setSaving(true);
     try {
-      const response = await api(
+      const response: any = await api(
         `/admin/shop/updateProfile/${userUUID}`,
         "PUT",
         formData,
-        token ?? undefined
       );
 
       if (response?.success) {

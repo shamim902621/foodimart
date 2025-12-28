@@ -15,10 +15,11 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { api } from "../../lib/apiService";
 
 // Import your hooks/constants
-import { API_BASE_URL } from "../constants/constant";
-import { useAuth } from "../hooks/useAuth";
+import { API_BASE_URL } from "../../../constants/constant";
+import { useAuth } from "../../../hooks/useAuth";
 
 // --- INTERFACES FOR TYPE SAFETY ---
 interface ProductForm {
@@ -183,6 +184,9 @@ export default function AddProduct() {
       if (response.ok) {
         Alert.alert("Success", "Product uploaded successfully!");
         router.back();
+
+        await api(`/admin/shop/getProfile/${user?.userUUID}`,);
+
       } else {
         Alert.alert("Error", data.message || "Failed to upload product");
       }

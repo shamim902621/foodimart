@@ -74,7 +74,7 @@ const UserCard = React.memo(({ user, onToggleStatus }: { user: IUser, onToggleSt
       </View>
 
       <View style={styles.userDetails}>
-        <Text style={styles.userShop}>{user.shop || "No shop provided"}</Text>
+        <Text style={styles.userShop}>{user.role || "No shop provided"}</Text>
         <Text style={styles.userPhone}>{user.phone}</Text>
       </View>
 
@@ -161,17 +161,13 @@ export default function ManageUsers() {
         limit: limit.toString(),
         search: query,
       }).toString();
-
-      const response = await api(
+      const response: any = await api(
         `/superadmin/getAllUsers?${queryParams}`,
-        "GET",
-        undefined,
-        apiToken ?? undefined
       );
 
-      if (response?.success) {
+      if (response) {
         setUsers(response.users);
-        setTotalPages(response.pagination.pages);
+        setTotalPages(response.pages);
       } else {
         setUsers([]);
       }
@@ -211,11 +207,10 @@ export default function ManageUsers() {
     );
 
     try {
-      const response = await api(
+      const response: any = await api(
         `/superadmin/users/toggle-status/${userUUID}`,
         "PUT",
         { status: newStatus },
-        token ?? undefined
       );
 
       if (!response.success) throw new Error(response.message);

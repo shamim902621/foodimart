@@ -1,10 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
   RefreshControl,
   ScrollView,
   StatusBar,
@@ -32,8 +36,115 @@ interface Product {
   description?: string;
 }
 
-// --- 2. PRODUCT CARD COMPONENT ---
-const ProductCard = ({ item, onDelete }: { item: Product, onDelete: (id: string) => void }) => {
+// --- 1. NEW COMPONENT: IMAGE CAROUSEL ---
+const ImageCarousel = ({ images }: { images: string[] }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [width, setWidth] = useState(0); // To store dynamic card width
+  const flatListRef = useRef<FlatList>(null);
+
+  // If no images, show placeholder
+  if (!images || images.length === 0) {
+    return (
+      <Image
+        source={{ uri: "https://via.placeholder.com/150" }}
+        style={styles.productImage}
+        resizeMode="cover"
+      />
+    );
+  }
+
+  // If only 1 image, show static image (No Swiper)
+  if (images.length === 1) {
+    return (
+      <Image
+        source={{ uri: images[0] }}
+        style={styles.productImage}
+        resizeMode="cover"
+      />
+    );
+  }
+
+  // --- AUTOMATIC SCROLL LOGIC ---
+  useEffect(() => {
+    if (images.length <= 1) return;
+
+    const intervalId = setInterval(() => {
+      // Calculate next index
+      let nextIndex = currentIndex + 1;
+      if (nextIndex >= images.length) {
+        nextIndex = 0; // Loop back to start
+      }
+
+      // Scroll to next item
+      if (width > 0 && flatListRef.current) {
+        flatListRef.current.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+        setCurrentIndex(nextIndex);
+      }
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(intervalId);
+  }, [currentIndex, width, images.length]);
+
+  // Handle Manual Scroll (Update Index)
+  const onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const index = event.nativeEvent.contentOffset.x / slideSize;
+    const roundIndex = Math.round(index);
+    if (roundIndex !== currentIndex) {
+      setCurrentIndex(roundIndex);
+    }
+  };
+
+  return (
+    <View
+      style={{ flex: 1, position: 'relative' }}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)} // Get exact width
+    >
+      <FlatList
+        ref={flatListRef}
+        data={images}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, index) => index.toString()}
+        onScroll={onScroll}
+        renderItem={({ item }) => (
+          <Image
+            source={{ uri: item }}
+            style={[styles.productImage, { width: width }]} // Apply dynamic width
+            resizeMode="cover"
+          />
+        )}
+        // Safety for auto-scroll
+        onScrollToIndexFailed={info => {
+          const wait = new Promise(resolve => setTimeout(resolve, 500));
+          wait.then(() => {
+            flatListRef.current?.scrollToIndex({ index: info.index, animated: true });
+          });
+        }}
+      />
+
+      {/* Pagination Dots */}
+      <View style={styles.paginationContainer}>
+        {images.map((_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.dot,
+              currentIndex === index ? styles.activeDot : styles.inactiveDot
+            ]}
+          />
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// --- 2. UPDATED PRODUCT CARD ---
+const ProductCard = ({ item, onDelete }: { item: any, onDelete: (id: string) => void }) => {
   const getStatus = (stock: number, availability: boolean) => {
     if (!availability || stock === 0) return 'out-of-stock';
     if (stock < 10) return 'low-stock';
@@ -50,14 +161,12 @@ const ProductCard = ({ item, onDelete }: { item: Product, onDelete: (id: string)
     }
   };
 
-  const imageUrl = item.images && item.images.length > 0
-    ? item.images[0]
-    : "https://via.placeholder.com/150";
-
   return (
     <View style={styles.productCard}>
       <View style={styles.productImageContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="cover" />
+        {/* REPLACED SINGLE IMAGE WITH CAROUSEL */}
+        <ImageCarousel images={item.images} />
+
         <View style={styles.ratingBadge}>
           <Ionicons name="star" size={10} color="#FFD700" />
           <Text style={styles.ratingText}>{item.rating?.toFixed(1) || "0.0"}</Text>
@@ -81,12 +190,11 @@ const ProductCard = ({ item, onDelete }: { item: Product, onDelete: (id: string)
         <TouchableOpacity
           style={styles.editBtn}
           onPress={() => {
-            // Navigate to Edit Screen and pass current data
             router.push({
-              pathname: "/product/edit/[id]", // Ensure this path matches your file structure
+              pathname: "/product/edit/[id]", // Ensure path is correct
               params: {
                 id: item._id,
-                productData: JSON.stringify(item) // Pass the whole object to pre-fill form
+                productData: JSON.stringify(item)
               }
             });
           }}
@@ -94,7 +202,6 @@ const ProductCard = ({ item, onDelete }: { item: Product, onDelete: (id: string)
           <Ionicons name="create-outline" size={20} color="#666" />
         </TouchableOpacity>
 
-        {/* DELETE BUTTON */}
         <TouchableOpacity style={styles.deleteBtn} onPress={() => onDelete(item._id)}>
           <Ionicons name="trash-outline" size={20} color="#FF5252" />
         </TouchableOpacity>
@@ -117,7 +224,7 @@ export default function Products() {
   const categories = ["All", "Fast Food", "Italian", "Beverages", "Snacks", "Healthy", "Desserts"];
 
   // --- NEW: HANDLE DELETE FUNCTION ---
-  const handleDelete = async (id: string) => {
+  const phandleDelete = async (id: string) => {
     if (!user?.userUUID) return;
     debugger
     console.log("Deleting product with ID:", id);
@@ -162,7 +269,69 @@ export default function Products() {
       ]
     );
   };
+  // --- HANDLE DELETE (WEB + MOBILE SUPPORT) ---
+  const handleDelete = async (id: string) => {
+    if (!user?.userUUID) return;
 
+    // 1. Define the actual delete logic (API Call)
+    // We separate this so we can call it from both Web and Mobile logic
+    const performDelete = async () => {
+      try {
+        console.log("Deleting product with ID:", id);
+
+        // Optimistic Update (Remove from UI immediately)
+        const previousProducts = [...products];
+        setProducts(products.filter(p => p._id !== id));
+
+        // Call API
+        const response = await fetch(`${API_BASE_URL}/admin/shop/product/deleteProduct/${id}?userUUID=${user?.userUUID}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // If failed, revert UI
+          setProducts(previousProducts);
+          Alert.alert("Error", data.message || "Failed to delete product");
+        } else {
+          // Success - Recalculate metrics
+          calculateMetrics(products.filter(p => p._id !== id));
+        }
+      } catch (error) {
+        console.error("Delete Error:", error);
+        Alert.alert("Error", "Network error while deleting");
+      }
+    };
+
+    // 2. Platform Specific Confirmation
+    if (Platform.OS === 'web') {
+      // --- WEB LOGIC ---
+      // Browsers use window.confirm for Yes/No dialogs
+      const confirmed = window.confirm("Are you sure you want to delete this product? This action cannot be undone.");
+      if (confirmed) {
+        performDelete();
+      }
+    } else {
+      // --- MOBILE LOGIC (iOS/Android) ---
+      // Native apps use the native Alert dialog
+      Alert.alert(
+        "Delete Product",
+        "Are you sure you want to delete this product? This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: performDelete, // Call the shared function
+          }
+        ]
+      );
+    }
+  };
   // --- SERVER SIDE FETCH FUNCTION ---
   // Accepts arguments to ensure we fetch with the LATEST values, not stale state
   const fetchProducts = useCallback(async (query = "", category = "All") => {
@@ -231,7 +400,7 @@ export default function Products() {
   // Initial Load
   useEffect(() => {
     fetchProducts(searchQuery, selectedCategory);
-  }, []); // Run once on mount
+  }, [searchQuery, selectedCategory, fetchProducts]); // Run once on mount
 
   // --- HANDLERS ---
 
@@ -269,7 +438,7 @@ export default function Products() {
             </TouchableOpacity>
             <Text style={styles.title}>Products</Text>
           </View>
-          <TouchableOpacity style={styles.addBtn} onPress={() => router.push("/add-product")}>
+          <TouchableOpacity style={styles.addBtn} onPress={() => router.push("/product/addproduct/add-product")}>
             <Ionicons name="add" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -388,6 +557,33 @@ const styles = StyleSheet.create({
   productImage: { width: "100%", height: "100%" },
   ratingBadge: { position: "absolute", top: 6, right: 6, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,0,0,0.7)", paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
   ratingText: { color: "#FFFFFF", fontSize: 10, fontWeight: "600", marginLeft: 3 },
+
+  // image
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 5,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginHorizontal: 3,
+  },
+  activeDot: {
+    backgroundColor: '#4CAF50', // Green for active
+    width: 8, // Slightly larger
+    height: 8,
+    borderRadius: 4,
+  },
+  inactiveDot: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+
 
   productInfo: { flex: 1 },
   productName: { fontSize: 14, fontWeight: "600", color: "#333", marginBottom: 2, height: 36 },
