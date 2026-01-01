@@ -62,10 +62,11 @@ export default function ProductDetailScreen() {
     return <Text>No product found</Text>;
   }
   const addItemToCart = async () => {
-    await addToCart({
+    const carts = await addToCart({
       productId: product.productId,
       quantity,
     });
+
     router.push("/cart");
   };
 
