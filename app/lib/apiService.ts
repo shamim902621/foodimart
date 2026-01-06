@@ -56,6 +56,18 @@ async function getAuthToken() {
   return await AsyncStorage.getItem("authToken");
 }
 
+export interface Address {
+  id: number; // or string depending on DB
+  type: 'Home' | 'Work' | 'Other';
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  landmark?: string;
+  isDefault: boolean;
+}
+
 export async function api<T>(
   path: string,
   method: HttpMethod = "GET",

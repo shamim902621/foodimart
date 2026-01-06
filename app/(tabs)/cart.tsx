@@ -1,568 +1,332 @@
 import BackButton from '@/components/back-button';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { useAuth } from "../../hooks/useAuth";
 import { api } from "../lib/apiService";
 
+// ==========================================
+// 1. API FUNCTIONS (Keep inside this file for simplicity)
+// ==========================================
 
-// ✅ Get Cart
-export async function getCart() {
-  const res: any = await api("/users/cart/getcart");
+// ✅ Get All Carts (Returns Array of Carts)
+export async function getCarts(userUUID: string) {
+  if (!userUUID) throw new Error("User ID is missing");
+
+  const res: any = await api(`/users/cart/getcart/${userUUID}`);
   if (!res.success) throw new Error(res.message);
-  return res.cart;
+
+  // Ensure we always return an array
+  return res.carts || [];
 }
 
-// ✅ Add to Cart
-export async function addToCart(payload: {
-  productId: string;
-  quantity: number;
-  customizations?: string;
-}) {
-  const res: any = await api("/users/cart/addcart", "POST", payload);
-  if (!res.success) throw new Error(res.message);
-  return res.cart;
-}
-
-// ✅ Update Quantity
-export async function updateCartItem(productId: string, quantity: number) {
-  const res: any = await api("/users/cart/item", "PATCH", {
+// ✅ Update Quantity (PATCH)
+export async function updateCartItem(userUUID: string, productId: string, quantity: number) {
+  const res: any = await api(`/users/cart/patch/${userUUID}`, "PATCH", {
     productId,
-    quantity,
+    quantity
   });
-  if (!res.success) throw new Error(res.message);
-  return res.cart;
+  return res; // Expected: { success: true, cart: {...}, isEmpty: boolean }
 }
 
-// ✅ Remove Item
-export async function removeCartItem(productId: string) {
-  const res: any = await api(`/users/cart/remove/${productId}`, "DELETE");
-  if (!res.success) throw new Error(res.message);
-  return res.cart;
+// ✅ Remove Item (DELETE)
+export async function removeCartItem(userUUID: string, productId: string) {
+  const res: any = await api(`/users/cart/remove/${userUUID}/${productId}`, "DELETE");
+  return res; // Expected: { success: true, cart: {...}, isEmpty: boolean }
 }
 
-// ✅ Clear Cart
-export async function clearCart() {
-  const res: any = await api("/users/cart/clear", "DELETE");
-  if (!res.success) throw new Error(res.message);
-}
-
+// ==========================================
+// 2. MAIN COMPONENT
+// ==========================================
 
 export default function CartScreen() {
-  // const cartItems = [
-  //   {
-  //     id: 1,
-  //     name: "Chicken Burger Meal",
-  //     restaurant: "Burger King",
-  //     price: 300,
-  //     quantity: 2,
-  //     image: "🍔",
-  //     customization: "Extra cheese, No onions"
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Margherita Pizza",
-  //     restaurant: "Pizza Palace",
-  //     price: 450,
-  //     quantity: 1,
-  //     image: "🍕",
-  //     customization: "Thin crust"
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Fresh Fruit Smoothie",
-  //     restaurant: "Healthy Bites",
-  //     price: 180,
-  //     quantity: 1,
-  //     image: "🥤",
-  //     customization: ""
-  //   }
-  // ];
-
-  const [cart, setCart] = useState<any>(null);
+  const [carts, setCarts] = useState<any[]>([]); // Array to store multiple carts
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    loadCart();
-  }, []);
+  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useAuth(); // Get logged-in user
 
-  const loadCart = async () => {
+  // --- Initial Load ---
+  useEffect(() => {
+    if (user?.userUUID) {
+      loadCarts();
+    }
+  }, [user?.userUUID]);
+
+  const loadCarts = async () => {
     try {
-      setLoading(true);
-      const data = await getCart();
-      setCart(data);
+      // 2. Strict Check (Recommended)
+      if (user?.userUUID) {
+        setLoading(true);
+        const data = await getCarts(user!.userUUID);
+        setCarts(data);
+      }
     } catch (e) {
-      console.log("Failed to load cart", e);
+      console.log("Failed to load carts", e);
+      setCarts([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    if (user?.userUUID) loadCarts();
+  }, [user]);
 
-  // const subtotal = cart.reduce((sum: any, item: any) => sum + (item.price * item.quantity), 0);
-  const subtotal = cart?.subtotal || 0;
-  const deliveryFee = cart?.deliveryFee || 0;
-  const tax = cart?.tax || 0;
-  const total = cart?.total || 0;
+  // --- HANDLER: Update Quantity ---
+  const handleUpdateQuantity = async (cartId: string, productId: string, currentQty: number, change: number) => {
+    const newQty = currentQty + change;
+    if (newQty < 1) return; // Prevent going below 1 (Use trash icon for removal)
+    // 2. Strict Check (Recommended)
 
-
-  const updateQuantity = async (productId: string, change: number) => {
     try {
-      const item = cart.items.find((i: any) => i.productId === productId);
-      const newQty = item.quantity + change;
+      if (user?.userUUID) {
 
-      const updatedCart = await updateCartItem(productId, newQty);
-      setCart(updatedCart);
+        // 1. Call API
+        const res = await updateCartItem(user!.userUUID, productId, newQty);
+
+        if (res.success) {
+          // 2. Update Local State (No full reload to prevent flicker)
+          setCarts(prevCarts => {
+            // If the cart became empty/deleted, remove it from list
+            if (res.isEmpty) {
+              return prevCarts.filter(c => c._id !== cartId);
+            }
+            // Otherwise, update the specific cart
+            return prevCarts.map(c => c._id === cartId ? res.cart : c);
+          });
+        }
+      }
     } catch (e) {
-      console.log("Quantity update failed", e);
+      Alert.alert("Error", "Failed to update quantity");
     }
   };
-  // const addItemToCart = async () => {
-  //   await addToCart({
-  //     productId,
-  //     quantity,
-  //   });
-  //   router.push("/cart");
-  // };
+
+  // --- HANDLER: Remove Item ---
+  const handleRemoveItem = async (cartId: string, productId: string) => {
+    try {
+      // 1. Call API
+      if (user?.userUUID) {
+        const res = await removeCartItem(user!.userUUID, productId);
+        if (res.success) {
+          // 2. Update Local State
+          setCarts(prevCarts => {
+            if (res.isEmpty) {
+              return prevCarts.filter(c => c._id !== cartId);
+            }
+            return prevCarts.map(c => c._id === cartId ? res.cart : c);
+          });
+        }
+      }
 
 
+    } catch (e) {
+      Alert.alert("Error", "Failed to remove item");
+    }
+  };
 
-  if (!loading && (!cart || cart.items.length === 0)) {
+  // --- RENDER LOADING ---
+  if (loading && !refreshing) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyEmoji}>🛒</Text>
-        <Text style={styles.emptyTitle}>Your cart is empty</Text>
-        <Text style={styles.emptySubtitle}>Add some delicious items from restaurants</Text>
-        <TouchableOpacity style={styles.shopButton}>
-          <Text style={styles.shopButtonText}>Start Shopping</Text>
-        </TouchableOpacity>
-
-        {/* <TouchableOpacity onPress={addItemToCart}>
-          <Text>Add Item to Cart</Text>
-        </TouchableOpacity> */}
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#FF6B35" />
       </View>
     );
   }
 
+  // --- RENDER EMPTY STATE ---
+  if (!carts || carts.length === 0) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyEmoji}>🛒</Text>
+        <Text style={styles.emptyTitle}>Your cart is empty</Text>
+        <Text style={styles.emptySubtitle}>Add items from different shops to get started!</Text>
+        <TouchableOpacity style={styles.shopButton} onPress={() => router.replace("/home")}>
+          <Text style={styles.shopButtonText}>Start Shopping</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // --- RENDER MAIN UI ---
   return (
     <View style={styles.container}>
-
+      {/* Header */}
       <View style={styles.header}>
         <BackButton />
-        <Text style={styles.headerTitle}>Your Cart</Text>
-        {/* <Text style={styles.itemCount}>{cart.item.length} items</Text> */}
+        <Text style={styles.headerTitle}>My Carts ({carts.length})</Text>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Cart Items */}
-        <View style={styles.itemsContainer}>
-          {cart?.items.map((item: any) => (
-            <View key={item.productId} style={styles.cartItem}>
-              <View style={styles.itemImage}>
-                <Text style={styles.itemEmoji}>{item.image}</Text>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 50 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+
+        {/* Loop through ALL Carts (One Card per Shop) */}
+        {carts.map((cart, index) => (
+          <View key={cart._id} style={styles.cartCard}>
+
+            {/* 1. Shop Header */}
+            <View style={styles.shopHeader}>
+              <View style={styles.shopInfo}>
+                <View style={styles.shopIcon}>
+                  <Ionicons name="storefront" size={20} color="#FFF" />
+                </View>
+                <View>
+                  {/* You can populate actual Shop Name from backend later */}
+                  <Text style={styles.shopName}>Order #{index + 1}</Text>
+                  <Text style={styles.shopSubtext}>{cart.items.length} Items • ₹{cart.total}</Text>
+                </View>
               </View>
+            </View>
 
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.restaurantName}>{item.restaurant}</Text>
+            {/* 2. Items List inside this Cart */}
+            {cart.items.map((item: any) => (
+              <View key={item.productId} style={styles.itemRow}>
+                {/* Image */}
+                <Image
+                  source={{ uri: item.image || "https://via.placeholder.com/60" }}
+                  style={styles.itemImage}
+                />
 
-                {item.customization ? (
-                  <Text style={styles.customization}>{item.customization}</Text>
-                ) : null}
+                {/* Name & Price */}
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+                  <Text style={styles.itemPriceSingle}>₹{item.price} x {item.quantity}</Text>
+                  {item.customizations ? <Text style={styles.customText}>{item.customizations}</Text> : null}
+                </View>
 
-                <View style={styles.itemActions}>
-                  <View style={styles.quantityContainer}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, -1)}
-                    >
-                      <Ionicons name="remove" size={16} color="#FF6B35" />
+                {/* Controls (Qty & Delete) */}
+                <View style={styles.controlsRight}>
+                  {/* Quantity */}
+                  <View style={styles.qtyContainer}>
+                    <TouchableOpacity onPress={() => handleUpdateQuantity(cart._id, item.productId, item.quantity, -1)}>
+                      <Ionicons name="remove-circle-outline" size={24} color="#FF6B35" />
                     </TouchableOpacity>
-
-                    <Text style={styles.quantityText}>{item.quantity}</Text>
-
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => updateQuantity(item.id, 1)}
-                    >
-                      <Ionicons name="add" size={16} color="#FF6B35" />
+                    <Text style={styles.qtyText}>{item.quantity}</Text>
+                    <TouchableOpacity onPress={() => handleUpdateQuantity(cart._id, item.productId, item.quantity, 1)}>
+                      <Ionicons name="add-circle" size={24} color="#FF6B35" />
                     </TouchableOpacity>
                   </View>
 
-                  <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
+                  {/* Delete */}
+                  <TouchableOpacity onPress={() => handleRemoveItem(cart._id, item.productId)} style={styles.deleteBtn}>
+                    <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                  </TouchableOpacity>
                 </View>
+              </View>
+            ))}
+
+            {/* 3. Bill & Checkout Action */}
+            <View style={styles.cardFooter}>
+              <View>
+                <Text style={styles.totalLabel}>Total to Pay</Text>
+                <Text style={styles.totalValue}>₹{cart.total}</Text>
               </View>
 
               <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeCartItem(item.id)}
+                style={styles.checkoutBtn}
+                // ✅ Proceed to Checkout with SPECIFIC Cart ID
+                onPress={() => router.push({ pathname: "/user/dashboard/checkout", params: { cartId: cart._id } })}
               >
-                <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                <Text style={styles.checkoutText}>Proceed</Text>
+                <Ionicons name="arrow-forward" size={18} color="#FFF" />
               </TouchableOpacity>
             </View>
-          ))}
-        </View>
 
-        {/* Delivery Address */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="location-outline" size={20} color="#FF6B35" />
-            <Text style={styles.sectionTitle}>Delivery Address</Text>
           </View>
-          <View style={styles.addressCard}>
-            <Text style={styles.addressType}>Home</Text>
-            <Text style={styles.addressText}>
-              123 Main Street, Apartment 4B{"\n"}
-              Bangalore, Karnataka 560001
-            </Text>
-            <TouchableOpacity style={styles.changeAddressButton}>
-              <Text style={styles.changeAddressText}>Change</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        ))}
 
-        {/* Payment Summary */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="receipt-outline" size={20} color="#FF6B35" />
-            <Text style={styles.sectionTitle}>Bill Details</Text>
-          </View>
-
-          <View style={styles.billDetails}>
-            <View style={styles.billRow}>
-              <Text style={styles.billLabel}>Item Total</Text>
-              <Text style={styles.billValue}>₹{subtotal}</Text>
-            </View>
-
-            <View style={styles.billRow}>
-              <Text style={styles.billLabel}>Delivery Fee</Text>
-              <Text style={styles.billValue}>₹{deliveryFee}</Text>
-            </View>
-
-            <View style={styles.billRow}>
-              <Text style={styles.billLabel}>Taxes & Charges</Text>
-              <Text style={styles.billValue}>₹{tax.toFixed(2)}</Text>
-            </View>
-
-            <View style={styles.billRow}>
-              <Text style={styles.billLabel}>Platform Fee</Text>
-              <Text style={styles.billValue}>₹5</Text>
-            </View>
-
-            <View style={[styles.billRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalValue}>₹{(total + 5).toFixed(2)}</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="pricetag-outline" size={20} color="#FF6B35" />
-            <Text style={styles.sectionTitle}>Offers & Coupons</Text>
-          </View>
-
-          <TouchableOpacity style={styles.couponCard}>
-            <View style={styles.couponInfo}>
-              <View style={styles.couponBadge}>
-                <Text style={styles.couponBadgeText}>60% OFF</Text>
-              </View>
-              <Text style={styles.couponText}>Get 60% off up to ₹100</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
+        <View style={{ height: 20 }} />
       </ScrollView>
-
-      {/* Checkout Footer */}
-      <View style={styles.footer}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.footerTotalLabel}>Total</Text>
-          <Text style={styles.footerTotalAmount}>₹{(total + 5).toFixed(2)}</Text>
-        </View>
-
-        <TouchableOpacity
-          disabled={!cart || cart.items.length === 0}
-          style={styles.checkoutButton}
-          onPress={() => router.push("/shiping-method")}
-        >
-
-          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
 
+// ==========================================
+// 3. STYLES
+// ==========================================
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f8f8",
+  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+
+  // Header
+  header: {
+    flexDirection: "row", alignItems: "center", paddingTop: 50, paddingBottom: 15,
+    paddingHorizontal: 20, backgroundColor: "#FFF", elevation: 2, borderBottomWidth: 1, borderBottomColor: '#EEE'
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    padding: 24,
+  headerTitle: { fontSize: 20, fontWeight: "700", marginLeft: 16, color: "#333" },
+
+  scrollView: { flex: 1, padding: 16 },
+
+  // Empty State
+  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24, backgroundColor: "#FFF" },
+  emptyEmoji: { fontSize: 64, marginBottom: 16 },
+  emptyTitle: { fontSize: 20, fontWeight: "700", marginBottom: 8, color: "#333" },
+  emptySubtitle: { fontSize: 14, color: "#666", marginBottom: 24, textAlign: 'center' },
+  shopButton: { backgroundColor: "#FF6B35", paddingVertical: 12, paddingHorizontal: 32, borderRadius: 12 },
+  shopButtonText: { color: "#FFF", fontSize: 16, fontWeight: "600" },
+
+  // --- CART CARD ---
+  cartCard: {
+    backgroundColor: "#FFF", borderRadius: 16, padding: 16, marginBottom: 20,
+    shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 5, elevation: 3
   },
 
-  emptyEmoji: {
-    fontSize: 80,
-    marginBottom: 16,
+  // Shop Header inside Card
+  shopHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: '#F0F0F0'
   },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
+  shopInfo: { flexDirection: 'row', alignItems: 'center' },
+  shopIcon: {
+    width: 40, height: 40, borderRadius: 20, backgroundColor: '#FF6B35',
+    justifyContent: 'center', alignItems: 'center', marginRight: 12
   },
-  emptySubtitle: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 32,
+  shopName: { fontSize: 16, fontWeight: '700', color: '#333' },
+  shopSubtext: { fontSize: 12, color: '#888', marginTop: 2 },
+
+  // Item Row
+  itemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  itemImage: { width: 50, height: 50, borderRadius: 8, backgroundColor: '#eee' },
+  itemInfo: { flex: 1, paddingHorizontal: 12 },
+  itemName: { fontSize: 14, fontWeight: '600', color: '#333' },
+  itemPriceSingle: { fontSize: 12, color: '#666', marginTop: 2 },
+  customText: { fontSize: 10, color: '#999', marginTop: 2, fontStyle: 'italic' },
+
+  controlsRight: { alignItems: 'flex-end' },
+
+  // Qty Control
+  qtyContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF0E6', borderRadius: 20, paddingHorizontal: 4, paddingVertical: 2 },
+  qtyText: { fontSize: 14, fontWeight: '600', marginHorizontal: 8, color: '#333' },
+
+  deleteBtn: { marginTop: 8, padding: 4 },
+
+  // Card Footer (Checkout)
+  cardFooter: {
+    marginTop: 10, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#F9F9F9',
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'
   },
-  shopButton: {
-    backgroundColor: "#328a0dff",
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 12,
+  totalLabel: { fontSize: 12, color: '#666' },
+  totalValue: { fontSize: 18, fontWeight: '700', color: '#333' },
+
+  checkoutBtn: {
+    backgroundColor: '#2E7D32', flexDirection: 'row', alignItems: 'center',
+    paddingVertical: 10, paddingHorizontal: 20, borderRadius: 24
   },
-  shopButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  header: {
-    backgroundColor: "#fff",
-    paddingTop: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  itemCount: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  itemsContainer: {
-    backgroundColor: "#fff",
-    marginBottom: 8,
-  },
-  cartItem: {
-    flexDirection: "row",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    alignItems: "flex-start",
-  },
-  itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: "#f8f8f8",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  itemEmoji: {
-    fontSize: 24,
-  },
-  itemDetails: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 2,
-  },
-  restaurantName: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  customization: {
-    fontSize: 12,
-    color: "#FF6B35",
-    fontStyle: "italic",
-    marginBottom: 8,
-  },
-  itemActions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 8,
-  },
-  quantityButton: {
-    padding: 8,
-  },
-  quantityText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    paddingHorizontal: 12,
-  },
-  itemPrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  removeButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  section: {
-    backgroundColor: "#fff",
-    marginBottom: 8,
-    padding: 16,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginLeft: 8,
-  },
-  addressCard: {
-    backgroundColor: "#f8f8f8",
-    padding: 12,
-    borderRadius: 8,
-  },
-  addressType: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  addressText: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-    marginBottom: 8,
-  },
-  changeAddressButton: {
-    alignSelf: "flex-start",
-  },
-  changeAddressText: {
-    color: "#57ff35ff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  billDetails: {
-    gap: 8,
-  },
-  billRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  billLabel: {
-    fontSize: 14,
-    color: "#666",
-  },
-  billValue: {
-    fontSize: 14,
-    color: "#333",
-    fontWeight: "500",
-  },
-  totalRow: {
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    paddingTop: 12,
-    marginTop: 4,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  totalValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  couponCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#FFF9E6",
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#b97003ff",
-  },
-  couponInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  couponBadge: {
-    backgroundColor: "#FF6B35",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  couponBadgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  couponText: {
-    fontSize: 14,
-    color: "#333",
-    fontWeight: "500",
-  },
-  footer: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  totalContainer: {
-    flex: 1,
-  },
-  footerTotalLabel: {
-    fontSize: 14,
-    color: "#666",
-  },
-  footerTotalAmount: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  checkoutButton: {
-    backgroundColor: "#328a0dff",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    minWidth: 160,
-    alignItems: "center",
-  },
-  checkoutButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  checkoutText: { color: '#FFF', fontWeight: '700', fontSize: 14, marginRight: 6 }
 });

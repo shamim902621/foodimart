@@ -133,7 +133,6 @@ export default function OTPVerificationScreen() {
       console.error("Error sending OTP:", error);
     }
   };
-  console.log("show otp", showotp);
 
   const isOtpComplete = otp.join('').length === 6;
 

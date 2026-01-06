@@ -1,636 +1,300 @@
-// import BackButton from '@/components/back-button';
-// import React, { useEffect, useState } from 'react';
-// import {
-//   Alert,
-//   ScrollView,
-//   StatusBar,
-//   StyleSheet,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   View
-// } from 'react-native';
-// import { useAuth } from "../../hooks/useAuth";
-// import { api } from "../lib/apiService"; // YOUR API helper
-
-// export default function PersonalDetails() {
-
-//   const { user, token } = useAuth();
-
-//   const [formData, setFormData] = useState({
-//     firstName: "",
-//     lastName: "",
-//     email: "",
-//     mobile: "",
-//     dob: "",
-//     gender: "",
-//   });
-
-//   const [isEditing, setIsEditing] = useState(false);
-
-//   // -------------------------------
-//   // 🔵 GET PROFILE (ON SCREEN LOAD)
-//   // -------------------------------
-//   const fetchProfile = async () => {
-//     try {
-//       const res = await api("/profile", "GET", undefined, token ?? "");
-
-//       setFormData({
-//         firstName: res.user.firstName || "",
-//         lastName: res.user.lastName || "",
-//         email: res.user.email || "",
-//         mobile: res.user.mobile || "",
-//         dob: res.user.dob ? res.user.dob.split("T")[0] : "",
-//         gender: res.user.gender || "",
-//       });
-
-//     } catch (error: any) {
-//       console.log("GET profile error:", error);
-//       Alert.alert("Error", error.message || "Failed to fetch profile");
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchProfile();
-//   }, []);
-
-//   // -------------------------------
-//   // 🔵 UPDATE FIELD LOCALLY
-//   // -------------------------------
-//   const updateField = (field: string, value: string) => {
-//     setFormData(prev => ({ ...prev, [field]: value }));
-//   };
-
-//   // -------------------------------
-//   // 🔥 SAVE CHANGES → PUT /profile
-//   // -------------------------------
-//   const handleSave = async () => {
-//     try {
-//       const body = {
-//         firstName: formData.firstName,
-//         lastName: formData.lastName,
-//         email: formData.email,
-//         mobile: formData.mobile,
-//         dob: formData.dob,
-//         gender: formData.gender,
-//       };
-
-//       const res = await api("/profile", "PUT", body, token ?? "");
-
-//       Alert.alert("Success", "Personal details updated!");
-//       setIsEditing(false);
-
-//       fetchProfile(); // refresh UI
-
-//     } catch (error: any) {
-//       console.log("UPDATE profile error:", error);
-//       Alert.alert("Error", error.message || "Update failed");
-//     }
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-//       {/* Header */}
-//       <View style={styles.header}>
-//         <BackButton />
-//         <Text style={styles.headerTitle}>Personal Details</Text>
-
-//         <TouchableOpacity
-//           style={styles.editButton}
-//           onPress={() => setIsEditing(!isEditing)}
-//         >
-//           <Text style={styles.editButtonText}>
-//             {isEditing ? "Cancel" : "Edit"}
-//           </Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       <ScrollView showsVerticalScrollIndicator={false}>
-
-//         {/* FORM */}
-//         <View style={styles.formSection}>
-
-//           <View style={styles.fieldRow}>
-//             <View style={styles.fieldContainer}>
-//               <Text style={styles.label}>First Name</Text>
-//               <TextInput
-//                 style={[styles.input,]}
-//                 value={formData.firstName}
-//                 onChangeText={(text) => updateField("firstName", text)}
-//                 editable={isEditing}
-//               />
-//             </View>
-
-//             <View style={styles.fieldContainer}>
-//               <Text style={styles.label}>Last Name</Text>
-//               <TextInput
-//                 style={[styles.input, !isEditing && styles.disabledInput]}
-//                 value={formData.lastName}
-//                 onChangeText={(text) => updateField("lastName", text)}
-//                 editable={isEditing}
-//               />
-//             </View>
-//           </View>
-
-//           <View style={styles.fieldContainer}>
-//             <Text style={styles.label}>Email</Text>
-//             <TextInput
-//               style={[styles.input, !isEditing && styles.disabledInput]}
-//               value={formData.email}
-//               onChangeText={(text) => updateField("email", text)}
-//               editable={isEditing}
-//               keyboardType="email-address"
-//             />
-//           </View>
-
-//           <View style={styles.fieldContainer}>
-//             <Text style={styles.label}>Phone</Text>
-//             <TextInput
-//               style={[styles.input, !isEditing && styles.disabledInput]}
-//               value={formData.mobile}
-//               onChangeText={(text) => updateField("mobile", text)}
-//               editable={isEditing}
-//               keyboardType="phone-pad"
-//             />
-//           </View>
-
-//           <View style={styles.fieldRow}>
-//             <View style={styles.fieldContainer}>
-//               <Text style={styles.label}>Date of Birth</Text>
-//               <TextInput
-//                 style={[styles.input, !isEditing && styles.disabledInput]}
-//                 value={formData.dob}
-//                 onChangeText={(text) => updateField("dob", text)}
-//                 editable={isEditing}
-//                 placeholder="YYYY-MM-DD"
-//               />
-//             </View>
-
-//             <View style={styles.fieldContainer}>
-//               <Text style={styles.label}>Gender</Text>
-//               <TextInput
-//                 style={[styles.input, !isEditing && styles.disabledInput]}
-//                 value={formData.gender}
-//                 onChangeText={(text) => updateField("gender", text)}
-//                 editable={isEditing}
-//               />
-//             </View>
-//           </View>
-
-//         </View>
-
-//         {/* Save Button */}
-//         {isEditing && (
-//           <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-//             <Text style={styles.saveButtonText}>Save Changes</Text>
-//           </TouchableOpacity>
-//         )}
-
-//       </ScrollView>
-//     </View>
-//   );
-// }
-
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#f8f9fa',
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     paddingHorizontal: 20,
-//     paddingTop: 20,
-//     paddingBottom: 16,
-//     backgroundColor: '#fff',
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#f0f0f0',
-//   },
-//   backButton: {
-//     padding: 4,
-//   },
-//   headerTitle: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     color: '#333',
-//   },
-//   editButton: {
-//     padding: 8,
-//   },
-//   editButtonText: {
-//     color: '#FF6B35',
-//     fontSize: 16,
-//     fontWeight: '600',
-//   },
-//   photoSection: {
-//     alignItems: 'center',
-//     backgroundColor: '#fff',
-//     paddingVertical: 30,
-//     marginBottom: 16,
-//   },
-//   avatarContainer: {
-//     position: 'relative',
-//     marginBottom: 12,
-//   },
-//   avatar: {
-//     width: 100,
-//     height: 100,
-//     borderRadius: 50,
-//     backgroundColor: '#FF6B35',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   avatarText: {
-//     fontSize: 32,
-//     fontWeight: 'bold',
-//     color: '#fff',
-//   },
-//   cameraButton: {
-//     position: 'absolute',
-//     bottom: 0,
-//     right: 0,
-//     backgroundColor: '#333',
-//     width: 36,
-//     height: 36,
-//     borderRadius: 18,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     borderWidth: 3,
-//     borderColor: '#fff',
-//   },
-//   photoText: {
-//     fontSize: 14,
-//     color: '#666',
-//   },
-//   formSection: {
-//     backgroundColor: '#fff',
-//     padding: 20,
-//     marginBottom: 16,
-//   },
-//   fieldRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     gap: 12,
-//   },
-//   fieldContainer: {
-//     flex: 1,
-//     marginBottom: 16,
-//   },
-//   label: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     color: '#333',
-//     marginBottom: 8,
-//   },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: '#e0e0e0',
-//     borderRadius: 8,
-//     padding: 12,
-//     fontSize: 16,
-//     backgroundColor: '#fff',
-//   },
-//   disabledInput: {
-//     backgroundColor: '#f8f8f8',
-//     color: '#666',
-//   },
-//   saveButton: {
-//     backgroundColor: '#FF6B35',
-//     marginHorizontal: 20,
-//     marginBottom: 20,
-//     padding: 16,
-//     borderRadius: 12,
-//     alignItems: 'center',
-//     shadowColor: '#FF6B35',
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.3,
-//     shadowRadius: 8,
-//     elevation: 4,
-//   },
-//   saveButtonText: {
-//     color: '#fff',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-//   optionsSection: {
-//     backgroundColor: '#fff',
-//     paddingHorizontal: 20,
-//   },
-//   optionItem: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     paddingVertical: 16,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#f0f0f0',
-//   },
-//   optionText: {
-//     flex: 1,
-//     fontSize: 16,
-//     color: '#333',
-//     marginLeft: 12,
-//   },
-// });
-
 import BackButton from '@/components/back-button';
-import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
-  KeyboardAvoidingView, // <--- IMPORT THIS
-  Platform,
-  Pressable, // <--- IMPORT THIS
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 import { useAuth } from "../../hooks/useAuth";
-import { api } from "../lib/apiService";
+import { api } from '../lib/apiService'; // Ensure this points to your API helper
 
-export default function PersonalDetails() {
+const PersonalDetails = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const { user, token } = useAuth();
-
+  // Form State
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    mobile: "",
-    dob: "",
-    gender: "",
+    fullName: '',
+    email: '',
+    mobile: '', // Mobile acts as ID usually, so we disable editing
   });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
-  const fetchProfile = async () => {
-    try {
-      const res: any = await api("/profile", "GET", undefined);
-      setFormData({
-        firstName: res.user.firstName || "",
-        lastName: res.user.lastName || "",
-        email: res.user.email || "",
-        mobile: res.user.mobile || "",
-        dob: res.user.dob ? res.user.dob.split("T")[0] : "",
-        gender: res.user.gender || "",
-      });
-    } catch (error: any) {
-      console.log("GET profile error:", error);
-      Alert.alert("Error", error.message || "Failed to fetch profile");
-    }
-  };
-
+  // 1. Fetch Data on Screen Load
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  const updateField = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      // Assuming your route is mapped to GET /api/auth/profile
+      const res: any = await api(`/auth/profile/get/${user?.userUUID}`);
+
+      if (res.success && res.user) {
+        setFormData({
+          fullName: res.user.fullName || '',
+          email: res.user.email || '',
+          mobile: res.user.mobile || '',
+        });
+      }
+    } catch (error) {
+      console.log("Fetch Error", error);
+      Alert.alert("Error", "Could not load profile data.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // 2. Save Data
   const handleSave = async () => {
     try {
-      const body = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        mobile: formData.mobile,
-        dob: formData.dob,
-        gender: formData.gender,
-      };
+      setSaving(true);
+      // Assuming your route is mapped to PUT /api/auth/profile
+      const res: any = await api('/auth/profile', 'PUT', {
+        fullName: formData.fullName,
+        email: formData.email
+      });
 
-      const res: any = await api("/profile", "PUT", body,);
-      Alert.alert("Success", "Personal details updated!");
-      setIsEditing(false);
-      fetchProfile();
-    } catch (error: any) {
-      console.log("UPDATE profile error:", error);
-      Alert.alert("Error", error.message || "Update failed");
+      if (res.success) {
+        Alert.alert("Success", "Profile updated successfully");
+      } else {
+        Alert.alert("Error", res.message || "Update failed");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setSaving(false);
     }
   };
-  const handleDateChange = (event: any, selectedDate: any) => {
-    setShowPicker(false);
-    if (selectedDate) {
-      updateField("dob", selectedDate.toISOString().split("T")[0]); // YYYY-MM-DD
-    }
-  };
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#FF6B35" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={styles.headerRow}>
         <BackButton />
         <Text style={styles.headerTitle}>Personal Details</Text>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => setIsEditing(!isEditing)}
-        >
-          <Text style={styles.editButtonText}>
-            {isEditing ? "Cancel" : "Edit"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
       </View>
 
-      {/* KeyboardAvoidingView prevents keyboard from covering inputs */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }} // Extra space at bottom
-        >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 
-          {/* FORM */}
-          <View style={styles.formSection}>
+        {/* Avatar Section */}
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : "U"}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.editIcon}>
+            <Ionicons name="camera" size={16} color="#FFF" />
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.fieldRow}>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>First Name</Text>
-                <TextInput
-                  // FIX 2: Added disabled style logic here
-                  style={[styles.input, !isEditing && styles.disabledInput]}
-                  value={formData.firstName}
+        {/* Form Inputs */}
+        <View style={styles.formSection}>
 
-                  onChangeText={(text) => updateField("firstName", text)}
-                  editable={isEditing}
-                  placeholderTextColor="#999" // Added placeholder color
-                />
-              </View>
-
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Last Name</Text>
-                <TextInput
-                  style={[styles.input, !isEditing && styles.disabledInput]}
-                  value={formData.lastName}
-                  onChangeText={(text) => updateField("lastName", text)}
-                  editable={isEditing}
-                  placeholderTextColor="#999"
-                />
-              </View>
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={[styles.input, !isEditing && styles.disabledInput]}
-                value={formData.email}
-                onChangeText={(text) => updateField("email", text)}
-                editable={isEditing}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                placeholderTextColor="#999"
-              />
-            </View>
-
-            <View style={styles.fieldContainer}>
-              <Text style={styles.label}>Phone</Text>
-              <TextInput
-                style={[styles.input, !isEditing && styles.disabledInput]}
-                value={formData.mobile}
-                onChangeText={(text) => updateField("mobile", text)}
-                editable={isEditing}
-                keyboardType="phone-pad"
-                placeholderTextColor="#999"
-              />
-            </View>
-
-            <View style={styles.fieldRow}>
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Date of Birth</Text>
-
-                <Pressable
-                  onPress={() => isEditing && setShowPicker(true)}
-                  style={[styles.input, !isEditing && styles.disabledInput]}
-                >
-                  <Text style={{ color: formData.dob ? "#000" : "#999" }}>
-                    {formData.dob ? formData.dob : "Select Date"}
-                  </Text>
-                </Pressable>
-
-                {showPicker && (
-                  <DateTimePicker
-                    value={formData.dob ? new Date(formData.dob) : new Date()}
-                    mode="date"
-                    maximumDate={new Date()}          // user can't select future date
-                    display="calendar"
-                    onChange={handleDateChange}
-                  />
-                )}
-              </View>
-
-              <View style={styles.fieldContainer}>
-                <Text style={styles.label}>Gender</Text>
-                <TextInput
-                  style={[styles.input, !isEditing && styles.disabledInput]}
-                  value={formData.gender}
-                  onChangeText={(text) => updateField("gender", text)}
-                  editable={isEditing}
-                  placeholderTextColor="#999"
-                />
-              </View>
-            </View>
-
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Full Name</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.fullName}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, fullName: text }))}
+              placeholder="Enter your name"
+              placeholderTextColor="#999"
+            />
           </View>
 
-          {/* Save Button */}
-          {isEditing && (
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </TouchableOpacity>
-          )}
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Email Address</Text>
+            <TextInput
+              style={styles.input}
+              value={formData.email}
+              onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
+              placeholder="Enter your email"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
-        </ScrollView>
-      </KeyboardAvoidingView>
+          <View style={styles.fieldContainer}>
+            <Text style={styles.label}>Phone Number</Text>
+            <View style={styles.disabledInputContainer}>
+              <TextInput
+                style={[styles.input, styles.disabledInput]}
+                value={formData.mobile}
+                editable={false}
+                placeholder="Mobile Number"
+              />
+              <Ionicons name="lock-closed-outline" size={20} color="#999" style={styles.lockIcon} />
+            </View>
+            <Text style={styles.helperText}>Mobile number cannot be changed.</Text>
+          </View>
+
+        </View>
+
+      </ScrollView>
+
+      {/* Footer Button */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+          {saving ? (
+            <ActivityIndicator color="#FFF" />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
   },
-  header: {
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+
+  // Header
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingTop: 10,
+    paddingBottom: 10,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#333',
   },
-  editButton: {
+
+  scrollView: {
+    flex: 1,
+  },
+
+  // Avatar
+  avatarContainer: {
+    alignSelf: 'center',
+    marginTop: 30,
+    marginBottom: 40,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FF6B35', // Orange Theme
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  editIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#333',
     padding: 8,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
-  editButtonText: {
-    color: '#FF6B35',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+
+  // Form
   formSection: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginBottom: 16,
-  },
-  fieldRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
+    paddingHorizontal: 20,
   },
   fieldContainer: {
-    flex: 1,
-    marginBottom: 16,
+    marginBottom: 24,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#666',
     marginBottom: 8,
+    marginLeft: 4,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
-    color: '#000', // <--- FIX 1: IMPORTANT! Ensures text is black even in Dark Mode
+    backgroundColor: '#FAFAFA',
+    color: '#333',
+  },
+
+  // Disabled Input Styling
+  disabledInputContainer: {
+    position: 'relative',
+    justifyContent: 'center'
   },
   disabledInput: {
-    backgroundColor: '#f8f8f8',
-    color: '#666',
+    backgroundColor: '#F0F0F0',
+    color: '#888',
+    paddingRight: 40
+  },
+  lockIcon: {
+    position: 'absolute',
+    right: 15,
+  },
+  helperText: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+    marginLeft: 4,
+  },
+
+  // Footer
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#F5F5F5',
   },
   saveButton: {
     backgroundColor: '#FF6B35',
-    marginHorizontal: 20,
-    marginBottom: 20,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
     shadowColor: '#FF6B35',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '700',
   },
 });
+
+export default PersonalDetails;
