@@ -63,7 +63,7 @@ export default function ProfileScreen() {
     {
       icon: 'location-outline',
       name: 'My Addresses',
-      action: () => router.push('/address'),
+      action: () => router.push('/user/dashboard/address'),
     },
     {
       icon: 'receipt-outline',
