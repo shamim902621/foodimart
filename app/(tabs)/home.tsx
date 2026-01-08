@@ -1,10 +1,11 @@
-import BackButton from '@/components/back-button';
+// import AppHeader from "@/components/app-header";
+import AppHeader from "@/components/profileHeader";
 import { Feather, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { api } from '../lib/apiService';
-const { width } = Dimensions.get('window');
+// const { width } = Dimensions.get('window');
 
 interface ApiShopItem {
   shop: {
@@ -111,212 +112,20 @@ export default function HomeScreen() {
 
 
 
-  // const restaurants = [
-  //   {
-  //     id: 1,
-  //     name: "Burger King",
-  //     cuisine: "Fast Food • American",
-  //     rating: 4.2,
-  //     time: "25-35 min",
-  //     price: "₹300 for one",
-  //     discount: "60% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Pizza Palace",
-  //     cuisine: "Italian • Pizza",
-  //     rating: 4.5,
-  //     time: "30-40 min",
-  //     price: "₹450 for one",
-  //     discount: "50% OFF",
-  //     badge: "PRO",
-  //     image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Healthy Bites",
-  //     cuisine: "Healthy • Salads",
-  //     rating: 4.3,
-  //     time: "20-30 min",
-  //     price: "₹350 for one",
-  //     discount: "40% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Biryani House",
-  //     cuisine: "Indian • Biryani",
-  //     rating: 4.6,
-  //     time: "35-45 min",
-  //     price: "₹280 for one",
-  //     discount: "30% OFF",
-  //     badge: "Popular",
-  //     image: "https://images.unsplash.com/photo-1563379091339-03246963d96b?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Sushi Master",
-  //     cuisine: "Japanese • Sushi",
-  //     rating: 4.7,
-  //     time: "40-50 min",
-  //     price: "₹600 for one",
-  //     discount: "20% OFF",
-  //     badge: "PRO",
-  //     image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Taco Fiesta",
-  //     cuisine: "Mexican • Tacos",
-  //     rating: 4.4,
-  //     time: "25-35 min",
-  //     price: "₹250 for one",
-  //     discount: "55% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 7,
-  //     name: "Dragon Wok",
-  //     cuisine: "Chinese • Asian",
-  //     rating: 4.1,
-  //     time: "30-40 min",
-  //     price: "₹320 for one",
-  //     discount: "45% OFF",
-  //     badge: "Popular",
-  //     image: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 8,
-  //     name: "Cafe Delight",
-  //     cuisine: "Cafe • Bakery",
-  //     rating: 4.8,
-  //     time: "15-25 min",
-  //     price: "₹180 for one",
-  //     discount: "35% OFF",
-  //     badge: "PRO",
-  //     image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 9,
-  //     name: "BBQ Nation",
-  //     cuisine: "Barbecue • Grill",
-  //     rating: 4.4,
-  //     time: "45-55 min",
-  //     price: "₹550 for one",
-  //     discount: "25% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 10,
-  //     name: "Ice Cream Paradise",
-  //     cuisine: "Desserts • Ice Cream",
-  //     rating: 4.9,
-  //     time: "10-20 min",
-  //     price: "₹150 for one",
-  //     discount: "30% OFF",
-  //     badge: "Popular",
-  //     image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 11,
-  //     name: "Spice Garden",
-  //     cuisine: "North Indian • Curry",
-  //     rating: 4.3,
-  //     time: "35-45 min",
-  //     price: "₹380 for one",
-  //     discount: "40% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1585937421612-70caa4c83c7e?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 12,
-  //     name: "Pasta Factory",
-  //     cuisine: "Italian • Pasta",
-  //     rating: 4.6,
-  //     time: "25-35 min",
-  //     price: "₹420 for one",
-  //     discount: "50% OFF",
-  //     badge: "PRO",
-  //     image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 13,
-  //     name: "Seafood Harbor",
-  //     cuisine: "Seafood • Coastal",
-  //     rating: 4.5,
-  //     time: "40-50 min",
-  //     price: "₹680 for one",
-  //     discount: "20% OFF",
-  //     badge: "Popular",
-  //     image: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 14,
-  //     name: "Vegan Vibes",
-  //     cuisine: "Vegan • Healthy",
-  //     rating: 4.7,
-  //     time: "20-30 min",
-  //     price: "₹290 for one",
-  //     discount: "35% OFF",
-  //     badge: "MAX Safety",
-  //     image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop"
-  //   },
-  //   {
-  //     id: 15,
-  //     name: "Street Food Hub",
-  //     cuisine: "Street Food • Indian",
-  //     rating: 4.2,
-  //     time: "15-25 min",
-  //     price: "₹200 for one",
-  //     discount: "60% OFF",
-  //     badge: "Popular",
-  //     image: "https://images.unsplash.com/photo-1551782450-17144efb9c50?w=400&h=300&fit=crop"
-  //   }
-  // ];
-  // const categories = [
-  //   { id: 1, name: "Healthy", icon: "🥗", color: "#4CAF50" },
-  //   { id: 2, name: "Biryani", icon: "🍛", color: "#FF9800" },
-  //   { id: 3, name: "Pizza", icon: "🍕", color: "#F44336" },
-  //   { id: 4, name: "Haleem", icon: "🍲", color: "#795548" },
-  //   { id: 5, name: "Chicken", icon: "🍗", color: "#FF5722" },
-  //   { id: 6, name: "Burger", icon: "🍔", color: "#8BC34A" },
-  //   { id: 7, name: "Cake", icon: "🎂", color: "#E91E63" },
-  //   { id: 8, name: "Shawarma", icon: "🌯", color: "#9C27B0" }
-  // ];
-
-  // const filters = [
-  //   { id: 1, name: "MAX Safety", icon: "shield-checkmark", active: true },
-  //   { id: 2, name: "PRO", icon: "star", active: false },
-  //   { id: 3, name: "Cuisines", icon: "restaurant", active: false },
-  //   { id: 4, name: "Rating", icon: "star", active: false },
-  //   { id: 5, name: "Popular", icon: "trending-up", active: false }
-  // ];
 
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.locationContainer}>
-          <BackButton />
-          <Ionicons name="location-sharp" size={20} color="#FF6B35" />
-          Delhi
-        </View>
-        <View style={styles.profileContainer}>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => router.push('/user/profile')}
-          >
-            <Ionicons name="person-circle-outline" size={28} color="#333" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* ✅ 1. Top Navigation Bar (Custom Header) */}
+      <AppHeader
+        showBack={false}
+        // locationText="New Delhi, India"
+        rightIcon="person-circle-outline"
+        onRightPress={() => router.push('/user/profile')}
+      />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
         {/* Search Bar */}
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
@@ -491,7 +300,7 @@ export default function HomeScreen() {
           </Text>
         </View>
       </ScrollView>
-    </View>
+    </View >
   );
 }
 
@@ -500,32 +309,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
+
   locationContainer: {
     flexDirection: "row",
     alignItems: "center",
   },
   locationText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '700',
+    color: '#333',
     marginLeft: 6,
-    marginRight: 4,
-    color: "#333",
+    marginRight: 4
   },
   profileContainer: {
     flexDirection: "row",

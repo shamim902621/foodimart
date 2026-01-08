@@ -1,4 +1,5 @@
 // app/superadmin/reports.tsx
+import AppHeader from "@/components/profileHeader";
 import { Ionicons } from "@expo/vector-icons";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -43,8 +44,14 @@ export default function Reports() {
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
+      <AppHeader
+        title="Super Admin"
+        showBack={true}
+        leftIcon="menu-outline"
+        rightIcon="settings-outline"
+        onRightPress={() => console.log("Settings")}
+      />
       <View style={styles.header}>
-        <Text style={styles.title}>Analytics & Reports</Text>
         <Text style={styles.subtitle}>Comprehensive business insights</Text>
       </View>
 
@@ -73,10 +80,10 @@ export default function Reports() {
                   styles.trendBadge,
                   report.trend === 'up' ? styles.trendUp : styles.trendDown
                 ]}>
-                  <Ionicons 
-                    name={report.trend === 'up' ? 'trending-up' : 'trending-down'} 
-                    size={12} 
-                    color={report.trend === 'up' ? '#10B981' : '#EF4444'} 
+                  <Ionicons
+                    name={report.trend === 'up' ? 'trending-up' : 'trending-down'}
+                    size={12}
+                    color={report.trend === 'up' ? '#10B981' : '#EF4444'}
                   />
                   <Text style={[
                     styles.trendText,

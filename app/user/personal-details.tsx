@@ -1,16 +1,15 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { useAuth } from "../../hooks/useAuth";
 import { api } from '../lib/apiService'; // Ensure this points to your API helper
@@ -85,14 +84,10 @@ const PersonalDetails = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      {/* Header */}
-      <View style={styles.headerRow}>
-        <BackButton />
-        <Text style={styles.headerTitle}>Personal Details</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <AppHeader
+        title="Personal Details"
+        showBack={true}
+      />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
 

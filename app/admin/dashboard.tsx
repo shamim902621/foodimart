@@ -1,3 +1,4 @@
+import AppHeader from "@/components/profileHeader";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -20,8 +21,8 @@ export default function Dashboard() {
     { id: "#ORD004", customer: "Emma L.", amount: 450, status: "pending", time: "Yesterday" }
   ]);
 
-  const getStatusColor = (status:any) => {
-    switch(status) {
+  const getStatusColor = (status: any) => {
+    switch (status) {
       case 'pending': return '#FFA500';
       case 'completed': return '#2ECC71';
       case 'delivered': return '#3498DB';
@@ -29,8 +30,8 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusText = (status:any) => {
-    switch(status) {
+  const getStatusText = (status: any) => {
+    switch (status) {
       case 'pending': return 'Pending';
       case 'completed': return 'Completed';
       case 'delivered': 'Delivered';
@@ -41,10 +42,10 @@ export default function Dashboard() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>📊 Dashboard</Text>
-        <Text style={styles.subtitle}>Welcome back, Shop Owner!</Text>
-      </View>
+      <AppHeader
+        showBack={true}
+        title="Dashboard Shop"
+      />
 
       {/* Main Stats Grid */}
       <View style={styles.statsGrid}>
@@ -117,7 +118,7 @@ export default function Dashboard() {
             <Text style={styles.seeAllText}>See All</Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.ordersList}>
           {recentOrders.map((order, index) => (
             <View key={order.id} style={styles.orderItem}>
@@ -171,29 +172,30 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: "#F8F9FA", 
-    padding: 16 
+  container: {
+    flex: 1,
+    backgroundColor: "#F8F9FA",
+    padding: 16
   },
   header: {
     marginBottom: 24,
   },
-  title: { 
-    fontSize: 28, 
-    fontWeight: "bold", 
-    color: "#2ECC71", 
-    marginBottom: 4 
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#2ECC71",
+    marginBottom: 4
   },
   subtitle: {
     fontSize: 16,
     color: "#7F8C8D",
   },
-  statsGrid: { 
-    flexDirection: "row", 
-    flexWrap: "wrap", 
+  statsGrid: {
+    marginTop: 4,
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 4,
   },
   statCard: {
     flex: 1,
@@ -234,14 +236,14 @@ const styles = StyleSheet.create({
   statContent: {
     flex: 1,
   },
-  statLabel: { 
-    fontSize: 14, 
+  statLabel: {
+    fontSize: 14,
     color: "#7F8C8D",
     fontWeight: "500",
   },
-  statValue: { 
-    fontSize: 20, 
-    fontWeight: "bold", 
+  statValue: {
+    fontSize: 20,
+    fontWeight: "bold",
     color: "#2C3E50",
     marginTop: 4,
   },
@@ -251,7 +253,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 16,
-    marginBottom: 24,
+    marginBottom: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 16,
-    marginBottom: 16,
+    marginBottom: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -286,7 +288,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 4,
   },
   sectionTitle: {
     fontSize: 18,
@@ -373,12 +375,15 @@ const styles = StyleSheet.create({
   revenueCard: {
     alignItems: "center",
     backgroundColor: "#2ECC71",
+    marginBottom: 22,
+    padding: 16,
+    borderRadius: 16,
   },
   revenueAmount: {
     fontSize: 32,
     fontWeight: "bold",
     color: "#FFFFFF",
-    marginVertical: 8,
+    marginVertical: 12,
   },
   revenueTrend: {
     fontSize: 14,

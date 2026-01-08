@@ -1,15 +1,14 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   Linking,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 export default function Help() {
@@ -103,14 +102,10 @@ export default function Help() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton />
-        <Text style={styles.headerTitle}>Help & Support</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader
+        title="Help"
+        showBack={true}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Search Bar */}

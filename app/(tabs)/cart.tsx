@@ -1,4 +1,4 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from "react";
@@ -163,11 +163,10 @@ export default function CartScreen() {
   // --- RENDER MAIN UI ---
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton />
-        <Text style={styles.headerTitle}>My Carts ({carts.length})</Text>
-      </View>
+      <AppHeader
+        title="My Cart"
+        showBack={true}
+      />
 
       <ScrollView
         style={styles.scrollView}

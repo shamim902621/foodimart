@@ -1,14 +1,13 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   ScrollView,
-  StatusBar,
   StyleSheet,
   Switch,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 export default function Notifications() {
@@ -82,14 +81,10 @@ export default function Notifications() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-       <BackButton/>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader
+        title="Notifications"
+        showBack={true}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Notification Summary */}

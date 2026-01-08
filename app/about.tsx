@@ -1,14 +1,14 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    Linking,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Linking,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function About() {
@@ -74,15 +74,11 @@ export default function About() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-       <BackButton/>
-        <Text style={styles.headerTitle}>About</Text>
-        <View style={styles.headerRight} />
-      </View>
-
+      <AppHeader
+        title="About Us"
+        showBack={true}
+      />
+      <StatusBar barStyle="dark-content" />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
@@ -118,7 +114,7 @@ export default function About() {
           <Text style={styles.storyText}>
             {companyInfo.description}
           </Text>
-          
+
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{companyInfo.founded}</Text>

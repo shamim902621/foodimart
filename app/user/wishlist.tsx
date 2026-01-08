@@ -1,16 +1,16 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function Wishlist() {
@@ -53,7 +53,7 @@ export default function Wishlist() {
     },
   ]);
 
-  const removeFromWishlist = (id) => {
+  const removeFromWishlist = (id: any) => {
     Alert.alert(
       'Remove Item',
       'Are you sure you want to remove this item from your wishlist?',
@@ -68,21 +68,18 @@ export default function Wishlist() {
     );
   };
 
-  const moveToCart = (item) => {
+  const moveToCart = (item: any) => {
     Alert.alert('Success', `${item.name} moved to cart!`);
     // Implement cart logic here
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton/>
-        <Text style={styles.headerTitle}>My Wishlist</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <AppHeader
+        title="My Wishlist"
+        showBack={true}
+      />
+      <StatusBar barStyle="dark-content" />
 
       {wishlistItems.length === 0 ? (
         <View style={styles.emptyState}>
@@ -91,7 +88,7 @@ export default function Wishlist() {
           <Text style={styles.emptySubtitle}>
             Save items you love for later
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.shopButton}
             onPress={() => router.push('/')}
           >
@@ -103,7 +100,7 @@ export default function Wishlist() {
           <View style={styles.wishlistGrid}>
             {wishlistItems.map((item) => (
               <View key={item.id} style={styles.wishlistCard}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.removeButton}
                   onPress={() => removeFromWishlist(item.id)}
                 >
@@ -111,12 +108,12 @@ export default function Wishlist() {
                 </TouchableOpacity>
 
                 <Image source={{ uri: item.image }} style={styles.productImage} />
-                
+
                 <View style={styles.productInfo}>
                   <Text style={styles.productName} numberOfLines={2}>
                     {item.name}
                   </Text>
-                  
+
                   <View style={styles.ratingContainer}>
                     <Ionicons name="star" size={14} color="#FFD700" />
                     <Text style={styles.rating}>{item.rating}</Text>
@@ -132,7 +129,7 @@ export default function Wishlist() {
                   )}
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[
                     styles.cartButton,
                     !item.inStock && styles.disabledButton

@@ -1,4 +1,5 @@
 
+import AppHeader from "@/components/profileHeader";
 import { StatBox } from "@/components/ui/stat-box";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -33,9 +34,17 @@ export default function SuperAdminDashboard() {
 
   return (
     <ScrollView style={styles.container}>
+      <AppHeader
+        title="Super Admin"
+        // subtitle="Manage Shops"
+        showBack={true} // ✅ Back icon removed
+        leftIcon="menu-outline"  // ✅ Custom Menu icon added
+        // onLeftPress={() => console.log("Drawer Open")} // ✅ Custom Action
+        rightIcon="settings-outline"
+        onRightPress={() => console.log("Settings")}
+      />
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Super Admin Dashboard</Text>
         <Text style={styles.subtitle}>Manage your entire network of shops</Text>
       </View>
 
@@ -60,27 +69,27 @@ export default function SuperAdminDashboard() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Overview</Text>
         <View style={styles.statsGrid}>
-          <StatBox 
-            title="Total Shops" 
-            value={stats.totalShops.toString()} 
+          <StatBox
+            title="Total Shops"
+            value={stats.totalShops.toString()}
             icon="🏪"
             color="#3B82F6"
           />
-          <StatBox 
-            title="Monthly Orders" 
-            value={stats.monthlyOrders.toLocaleString()} 
+          <StatBox
+            title="Monthly Orders"
+            value={stats.monthlyOrders.toLocaleString()}
             icon="📦"
             color="#10B981"
           />
-          <StatBox 
-            title="Pending Orders" 
-            value={stats.pendingOrders.toString()} 
+          <StatBox
+            title="Pending Orders"
+            value={stats.pendingOrders.toString()}
             icon="⏳"
             color="#F59E0B"
           />
-          <StatBox 
-            title="Total Revenue" 
-            value={`₹${(stats.totalRevenue / 1000).toFixed(0)}K`} 
+          <StatBox
+            title="Total Revenue"
+            value={`₹${(stats.totalRevenue / 1000).toFixed(0)}K`}
             icon="💰"
             color="#8B5CF6"
           />
@@ -95,7 +104,7 @@ export default function SuperAdminDashboard() {
             <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.shopsList}>
           {recentShops.map((shop) => (
             <TouchableOpacity
@@ -117,13 +126,13 @@ export default function SuperAdminDashboard() {
                     </View>
                   </View>
                 </View>
-                <View 
+                <View
                   style={[
                     styles.statusBadge,
                     { backgroundColor: getStatusColor(shop.status) + '20' }
                   ]}
                 >
-                  <Text 
+                  <Text
                     style={[
                       styles.statusText,
                       { color: getStatusColor(shop.status) }
@@ -190,7 +199,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    marginBottom:10,
+    marginBottom: 10,
     fontWeight: "600",
     color: "#374151",
   },

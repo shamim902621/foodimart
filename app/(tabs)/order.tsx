@@ -1,14 +1,13 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 const MyOrdersScreen = () => {
@@ -58,7 +57,7 @@ const MyOrdersScreen = () => {
     },
   ];
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: any) => {
     switch (status) {
       case 'placed':
         return 'receipt-outline';
@@ -75,7 +74,7 @@ const MyOrdersScreen = () => {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: any) => {
     switch (status) {
       case 'placed':
         return '#FFA500';
@@ -95,13 +94,10 @@ const MyOrdersScreen = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton />
-        <Text style={styles.headerTitle}>My Orders</Text>
-      </View>
+      <AppHeader
+        title="My Orders"
+        showBack={true}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Current Order Tracking */}
@@ -114,10 +110,10 @@ const MyOrdersScreen = () => {
                 <Text style={styles.orderDate}>Placed on {activeOrder.date}</Text>
               </View>
               <View style={styles.orderStatus}>
-                <Ionicons 
-                  name={getStatusIcon(activeOrder.status)} 
-                  size={20} 
-                  color={getStatusColor(activeOrder.status)} 
+                <Ionicons
+                  name={getStatusIcon(activeOrder.status)}
+                  size={20}
+                  color={getStatusColor(activeOrder.status)}
                 />
                 <Text style={[styles.statusText, { color: getStatusColor(activeOrder.status) }]}>
                   {activeOrder.status.replace('_', ' ').toUpperCase()}
@@ -135,14 +131,14 @@ const MyOrdersScreen = () => {
               {activeOrder.tracking.map((step, index) => (
                 <View key={index} style={styles.timelineStep}>
                   <View style={styles.timelineLineContainer}>
-                    <View 
+                    <View
                       style={[
                         styles.timelineDot,
                         step.completed ? styles.completedDot : styles.pendingDot
                       ]}
                     />
                     {index < activeOrder.tracking.length - 1 && (
-                      <View 
+                      <View
                         style={[
                           styles.timelineLine,
                           step.completed ? styles.completedLine : styles.pendingLine
@@ -151,7 +147,7 @@ const MyOrdersScreen = () => {
                     )}
                   </View>
                   <View style={styles.timelineContent}>
-                    <Text 
+                    <Text
                       style={[
                         styles.timelineStage,
                         step.completed ? styles.completedText : styles.pendingText
@@ -196,10 +192,10 @@ const MyOrdersScreen = () => {
                   <Text style={styles.orderDate}>Placed on {order.date}</Text>
                 </View>
                 <View style={styles.orderStatus}>
-                  <Ionicons 
-                    name="checkmark-done-circle-outline" 
-                    size={20} 
-                    color="#4CAF50" 
+                  <Ionicons
+                    name="checkmark-done-circle-outline"
+                    size={20}
+                    color="#4CAF50"
                   />
                   <Text style={[styles.statusText, { color: '#4CAF50' }]}>
                     DELIVERED

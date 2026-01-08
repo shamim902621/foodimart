@@ -11,14 +11,14 @@ import {
   Platform,
   RefreshControl,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
+import AppHeader from "@/components/profileHeader";
 import { API_BASE_URL } from "../../constants/constant";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -427,22 +427,12 @@ export default function Products() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-      {/* HEADER */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.title}>Products</Text>
-          </View>
-          <TouchableOpacity style={styles.addBtn} onPress={() => router.push("/product/addproduct/add-product")}>
-            <Ionicons name="add" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader
+        title="Products"
+        showBack={true}
+        rightIcon="add-circle"
+        onRightPress={() => router.push("/product/addproduct/add-product")}
+      />
 
       <ScrollView
         style={styles.content}
@@ -480,7 +470,7 @@ export default function Products() {
 
         {/* LOADING & GRID */}
         {loading ? (
-          <View style={{ padding: 40 }}><ActivityIndicator size="large" color="#4CAF50" /></View>
+          <View style={{ padding: 4 }}><ActivityIndicator size="large" color="#4CAF50" /></View>
         ) : (
           <View style={styles.productsGrid}>
             {products.length === 0 ? (
@@ -520,15 +510,15 @@ const styles = StyleSheet.create({
   center: { justifyContent: 'center', alignItems: 'center' },
 
   // Header
-  header: { backgroundColor: "#FFFFFF", paddingTop: 40, paddingBottom: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: "#E0E0E0", elevation: 2 },
-  headerContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  title: { fontSize: 20, fontWeight: "700", color: "#333" },
-  addBtn: { backgroundColor: "#4CAF50", width: 40, height: 40, borderRadius: 20, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+  // header: { backgroundColor: "#FFFFFF", paddingTop: 4, paddingBottom: 16, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: "#E0E0E0", elevation: 2 },
+  // headerContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  // title: { fontSize: 20, fontWeight: "700", color: "#333" },
+  // addBtn: { backgroundColor: "#4CAF50", width: 40, height: 40, borderRadius: 20, justifyContent: "center", alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
 
   content: { flex: 1 },
 
   // Search
-  searchContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", margin: 16, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: "#E0E0E0", height: 48 },
+  searchContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", margin: 8, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1, borderColor: "#E0E0E0", height: 48 },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, fontSize: 16, color: "#333", paddingVertical: 12, },
 
@@ -549,7 +539,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 16, fontWeight: "700", color: "#333" },
 
   // Grid
-  productsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 10, justifyContent: "space-between" },
+  productsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 4, justifyContent: "space-between" },
   productCard: { width: "48%", backgroundColor: "#FFFFFF", borderRadius: 12, marginBottom: 16, padding: 10, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, borderWidth: 1, borderColor: "#F0F0F0" },
 
   // Card Content
