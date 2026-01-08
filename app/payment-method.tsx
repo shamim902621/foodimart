@@ -1,4 +1,5 @@
 import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from "expo-router";
 import { useState } from "react";
@@ -30,11 +31,15 @@ export default function PaymentMethodScreen() {
 
   return (
     <View style={styles.container}>
+      <AppHeader
+        title="Payment Method"
+        showBack={true}
+      />
 
 
       {/* Progress Steps */}
       <View style={styles.progressContainer}>
-                <BackButton fallbackRoute="/cart" />
+        <BackButton fallbackRoute="/cart" />
 
         <View style={styles.steps}>
           <View style={styles.step}>
@@ -64,10 +69,10 @@ export default function PaymentMethodScreen() {
               ]}
               onPress={() => setSelectedMethod(method.id)}
             >
-              <Ionicons 
-                name={method.icon} 
-                size={24} 
-                color={selectedMethod === method.id ? "#FF6B35" : "#666"} 
+              <Ionicons
+                name={method.icon}
+                size={24}
+                color={selectedMethod === method.id ? "#FF6B35" : "#666"}
               />
               <Text style={[
                 styles.methodText,
@@ -136,7 +141,7 @@ export default function PaymentMethodScreen() {
               </View>
 
               {/* Save Card Toggle */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.saveCardOption}
                 onPress={() => setSaveCard(!saveCard)}
               >

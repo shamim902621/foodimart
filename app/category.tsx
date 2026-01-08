@@ -3,12 +3,13 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import {
   Dimensions,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 interface IconType {
@@ -162,7 +163,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#6C63FF',
     paddingHorizontal: 20,
-    paddingTop: 60,
+    // ✅ Add this line to push header down below status bar
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 60,
     paddingBottom: 30,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,

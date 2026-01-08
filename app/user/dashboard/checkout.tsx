@@ -1,4 +1,4 @@
-import BackButton from '@/components/back-button';
+import AppHeader from '@/components/profileHeader';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location'; // ✅ Import Location
 import { router, useLocalSearchParams } from "expo-router";
@@ -195,11 +195,10 @@ export default function CheckoutScreen() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <BackButton />
-                <Text style={styles.headerTitle}>Checkout</Text>
-            </View>
-
+            <AppHeader
+                title="Checkout"
+                showBack={true}
+            />
             <ScrollView style={styles.scrollView}>
 
                 {/* 1. DELIVERY ADDRESS SECTION */}

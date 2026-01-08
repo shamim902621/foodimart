@@ -1,14 +1,14 @@
+import AppHeader from '@/components/profileHeader';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function Payments() {
@@ -76,28 +76,33 @@ export default function Payments() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      
+      <AppHeader
+        title="My Payments"
+        showBack={true}
+        onRightPress={() => router.push('/add-payment')}
+        rightIcon="add-circle"
+      />
+
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
+      {/* <View style={styles.header}>
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment Methods</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => router.push('/add-payment')}
         >
           <Ionicons name="add" size={24} color="#FF6B35" />
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Add New Payment Card */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addCard}
           onPress={() => router.push('/add-payment')}
         >
@@ -140,7 +145,7 @@ export default function Payments() {
                     <Text style={styles.defaultText}>Default</Text>
                   </View>
                 )}
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.actionButton}
                   onPress={() => deletePaymentMethod(payment.id)}
                 >
@@ -150,7 +155,7 @@ export default function Payments() {
             </View>
 
             {!payment.isDefault && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.setDefaultButton}
                 onPress={() => setDefaultPayment(payment.id)}
               >

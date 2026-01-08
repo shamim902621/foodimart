@@ -1,3 +1,4 @@
+import AppHeader from "@/components/profileHeader";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -272,15 +273,21 @@ export default function ManageUsers() {
       {/* 🔥 PERFORMANCE KING: FlatList 
         Ye sirf visible items render karega, ScrollView sab kuch render kar deta hai
       */}
+      <AppHeader
+        title="Super Admin"
+        showBack={true}
+        rightIcon="menu-outline"
+        onRightPress={() => handleLogout}
+      />
       <View style={styles.headerContainer}>
-        <View style={styles.topBar}>
+        {/* <View style={styles.topBar}>
           <View style={styles.titleContainer}>
             <Text style={styles.mainTitle}>Manage Users</Text>
           </View>
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         <View style={styles.searchWrapper}>
           <View style={styles.searchContainer}>

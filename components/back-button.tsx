@@ -21,7 +21,7 @@ const BackButton: React.FC<BackButtonProps> = ({
     router.back(); 
     // Expo Router doesn't provide history check, so we immediately push fallback as a safe option
     setTimeout(() => {
-      router.replace(fallbackRoute);
+      // router.replace(fallbackRoute);
     }, 50); // slight delay to prevent crash if back fails
   };
 

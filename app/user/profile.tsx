@@ -1,7 +1,6 @@
-import BackButton from '@/components/back-button';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { useNavigation } from "@react-navigation/native";
+import AppHeader from '@/components/AppHeader';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
@@ -10,19 +9,19 @@ import {
   Image,
   Modal,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Switch,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { useAuth } from "../../hooks/useAuth";
 import { api, apiFormData } from '../lib/apiService';
 
 export default function ProfileScreen() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
+
   console.log(user);
 
   const updateProfileField = async () => {
@@ -73,12 +72,12 @@ export default function ProfileScreen() {
     {
       icon: 'heart-outline',
       name: 'Wishlist',
-      action: () => router.push('/wishlist'),
+      action: () => router.push('/user/wishlist'),
     },
     {
       icon: 'notifications-outline',
       name: 'Notifications',
-      action: () => router.push('/notifications'),
+      action: () => router.push('/user/notifications'),
     },
     {
       icon: 'lock-closed-outline',
@@ -88,7 +87,7 @@ export default function ProfileScreen() {
     {
       icon: 'help-circle-outline',
       name: 'Help & Support',
-      action: () => router.push('/help'),
+      action: () => router.push('/user/help'),
     },
     {
       icon: 'information-circle-outline',
@@ -180,52 +179,31 @@ export default function ProfileScreen() {
     Alert.alert('Success', 'Password reset link sent to your email!');
   };
 
-  const phandleLogout = () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to log out?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem("authToken");
-              await AsyncStorage.removeItem("userData");
 
-              router.replace("/login"); // Redirect to login
-            } catch (error) {
-              console.error("Error during logout:", error);
-            }
-          },
-        },
-      ]
-    );
-  };
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      await AsyncStorage.removeItem('userData');
-      router.replace('/login');
+      // 1. Clear Data
+      await logout();
+
+      // 2. Redirect Immediately
+      // Timeout isliye taaki AsyncStorage clear hone ka 100% time mil jaye
+      setTimeout(() => {
+        router.replace('/');
+      }, 100);
+
     } catch (error) {
       console.error('Error during logout:', error);
     }
   };
-
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <View style={styles.header}>
-        <BackButton />
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Feather name="edit-3" size={20} color="#328a0dff" />
-        </TouchableOpacity>
-      </View>
+      {/* ✅ Reusable Header Use Kiya */}
+      <AppHeader
+        title="My Profile"
+        showBack={true}
+        rightIcon="create-outline" // Edit Icon
+        onRightPress={() => console.log("Edit Profile Clicked")} // Action
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Profile Section */}

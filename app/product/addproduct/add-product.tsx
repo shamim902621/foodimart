@@ -18,6 +18,7 @@ import {
 import { api } from "../../lib/apiService";
 
 // Import your hooks/constants
+import AppHeader from "@/components/profileHeader";
 import { API_BASE_URL } from "../../../constants/constant";
 import { useAuth } from "../../../hooks/useAuth";
 
@@ -228,13 +229,13 @@ export default function AddProduct() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Add New Product</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <AppHeader
+        title="Add Product"
+        showBack={true}
+        rightIcon="create-outline" // Edit Icon
+        onRightPress={() => console.log("Edit Profile Clicked")} // Action
+      />
+
 
       <View style={styles.form}>
         {/* Product Images */}

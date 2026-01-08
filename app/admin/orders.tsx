@@ -1,5 +1,5 @@
+import AppHeader from "@/components/profileHeader";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useState } from "react";
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -17,7 +17,7 @@ export default function Orders() {
 
   const [activeTab, setActiveTab] = useState("All");
 
-  const getStatusColor = (status:any) => {
+  const getStatusColor = (status: any) => {
     switch (status) {
       case "Pending":
         return "#FFA500";
@@ -32,7 +32,7 @@ export default function Orders() {
     }
   };
 
-  const getStatusIcon = (status:any) => {
+  const getStatusIcon = (status: any) => {
     switch (status) {
       case "Pending":
         return "⏳";
@@ -55,9 +55,13 @@ export default function Orders() {
 
   return (
     <View style={styles.container}>
+      <AppHeader
+        showBack={true}
+        title="Orders"
+      />
+
       {/* Header with Stats */}
       <View style={styles.header}>
-        <Text style={styles.title}>📦 Orders Management</Text>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{allOrders.length}</Text>
@@ -100,7 +104,7 @@ export default function Orders() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            // onPress={() => router.push(`/order-details/${item.id}`)}
+          // onPress={() => router.push(`/order-details/${item.id}`)}
           >
             <View style={styles.cardHeader}>
               <View style={styles.orderInfo}>
@@ -140,7 +144,7 @@ export default function Orders() {
                 <Text style={styles.total}>₹{item.total}</Text>
                 <TouchableOpacity
                   style={styles.viewBtn}
-                  // onPress={() => router.push(`/order-details/${item.id}`)}
+                // onPress={() => router.push(`/order-details/${item.id}`)}
                 >
                   <Text style={styles.viewText}>View Details</Text>
                   <Ionicons name="chevron-forward" size={16} color="#fff" />
@@ -155,14 +159,14 @@ export default function Orders() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8F9FA", padding: 16 },
-  header: { marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#2ECC71", marginBottom: 16 },
+  container: { flex: 1, backgroundColor: "#F8F9FA" },
+  header: { marginBottom: 4 ,padding:8},
+  title: { fontSize: 24, fontWeight: "bold", color: "#2ECC71", marginBottom: 4 },
   statsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     backgroundColor: "#FFFFFF",
-    padding: 16,
+    padding: 8,
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -172,10 +176,10 @@ const styles = StyleSheet.create({
   },
   statItem: { alignItems: "center" },
   statNumber: { fontSize: 20, fontWeight: "bold", color: "#2C3E50" },
-  statLabel: { fontSize: 12, color: "#7F8C8D", marginTop: 4 },
+  statLabel: { fontSize: 12, color: "#7F8C8D", marginTop: 2 },
   filterTabs: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 4,
     backgroundColor: "#FFFFFF",
     padding: 4,
     borderRadius: 12,

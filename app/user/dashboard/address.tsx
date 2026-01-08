@@ -1,4 +1,4 @@
-import BackButton from "@/components/back-button";
+import AppHeader from "@/components/profileHeader";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location'; // ✅ Import Location
 import React, { useEffect, useState } from "react";
@@ -6,12 +6,11 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useAuth } from "../../../hooks/useAuth";
 import { api } from "../../lib/apiService";
@@ -67,7 +66,7 @@ export default function AddAddress() {
 
   useEffect(() => {
     loadAddresses();
-  }, []);
+  }, [user?.userUUID]);
 
   // 🔹 Handle Field Change
   const updateField = (key: string, value: string) => {
@@ -161,14 +160,10 @@ export default function AddAddress() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-
-      {/* HEADER */}
-      <View style={styles.headerRow}>
-        <BackButton />
-        <Text style={styles.headerTitle}>My Addresses</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <AppHeader
+        title="Add Address"
+        showBack={true}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 

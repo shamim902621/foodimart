@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
+import { DeviceEventEmitter } from "react-native"; // ✅ Import this
 
 export interface User {
   id: string;
@@ -20,7 +21,6 @@ export interface AuthState {
   token: string | null;
   loading: boolean;
   isAuthenticated: boolean;
-  userUUID?: string;
 }
 
 export function useAuth() {
@@ -29,11 +29,17 @@ export function useAuth() {
     token: null,
     loading: true,
     isAuthenticated: false,
-    userUUID: undefined,
   });
 
   useEffect(() => {
     loadAuthData();
+
+    // ✅ LISTEN FOR LOGIN/LOGOUT EVENTS
+    const listener = DeviceEventEmitter.addListener("auth_changed", loadAuthData);
+
+    return () => {
+      listener.remove();
+    };
   }, []);
 
   const loadAuthData = async () => {
@@ -60,12 +66,8 @@ export function useAuth() {
       }
     } catch (error) {
       console.error('Error loading auth data:', error);
-      setAuthState({
-        user: null,
-        token: null,
-        loading: false,
-        isAuthenticated: false,
-      });
+      // Error aane par bhi loading false karni hai taaki infinite loader na dikhe
+      setAuthState((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -82,6 +84,10 @@ export function useAuth() {
         loading: false,
         isAuthenticated: true,
       });
+
+      // ✅ BROADCAST LOGIN EVENT
+      DeviceEventEmitter.emit("auth_changed");
+
     } catch (error) {
       console.error('Error saving auth data:', error);
     }
@@ -89,13 +95,11 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      // 1. Remove data from phone storage
       await Promise.all([
         AsyncStorage.removeItem('authToken'),
         AsyncStorage.removeItem('userData'),
       ]);
 
-      // 2. Update the App State (This is the code you showed me)
       setAuthState({
         user: null,
         token: null,
@@ -103,8 +107,8 @@ export function useAuth() {
         isAuthenticated: false,
       });
 
-      // 3. OPTIONAL: You can navigate here, OR in the UI component
-      // router.replace('/login'); 
+      // ✅ BROADCAST LOGOUT EVENT
+      DeviceEventEmitter.emit("auth_changed");
 
     } catch (error) {
       console.error('Error during logout:', error);

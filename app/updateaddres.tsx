@@ -1,13 +1,13 @@
+import AppHeader from '@/components/profileHeader';
 import React, { useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const UpdateAddress = () => {
@@ -33,9 +33,9 @@ const UpdateAddress = () => {
     { key: 'type', label: 'Home', value: formData.type },
   ];
 
-//   const updateField = () => {
-//     setFormData(prev => ({ ...prev, [key]: value }));
-//   };
+  //   const updateField = () => {
+  //     setFormData(prev => ({ ...prev, [key]: value }));
+  //   };
 
   const handleDelete = () => {
     Alert.alert(
@@ -50,9 +50,11 @@ const UpdateAddress = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <Text style={styles.header}>Update Address</Text>
-      
+      <AppHeader
+        showBack={true}
+        title="Update Address"
+      />
+
       <ScrollView style={styles.scrollView}>
         {fields.map((field, index) => (
           <View key={index} style={styles.fieldContainer}>
@@ -61,7 +63,7 @@ const UpdateAddress = () => {
               style={styles.input}
               value={field.value}
               placeholderTextColor="#999"
-              
+
             />
           </View>
         ))}
@@ -70,7 +72,7 @@ const UpdateAddress = () => {
           <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
             <Text style={styles.deleteButtonText}>Delete</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.updateButton}>
             <Text style={styles.updateButtonText}>Update address</Text>
           </TouchableOpacity>

@@ -372,6 +372,7 @@
 // });
 
 
+import AppHeader from "@/components/profileHeader";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -491,6 +492,9 @@ export default function Profile() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F8F9FA" }}>
+      <AppHeader
+        showBack={true}
+        title="Profile" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
