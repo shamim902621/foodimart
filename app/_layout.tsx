@@ -1,44 +1,53 @@
-import { router, Stack, usePathname } from "expo-router";
+
+import { Stack, usePathname, useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-import { useAuth } from "../hooks/useAuth";
+const InitialLayout = () => {
+  const { user, loading, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-export default function Layout() {
-  const { user, loading } = useAuth();
-  const pathname = usePathname();
-
-  const publicRoutes = ["/login", "/signup", "/otp-verification", "/welcome"];
-  const isPublic = publicRoutes.includes(pathname);
-
+  // ✅ FIX 2: Use usePathname() to avoid TypeScript Union errors
+  const pathName = usePathname();
 
   useEffect(() => {
-    // This will run once when the component mounts
-    if (!loading) {
-      if (user) {
-        // Redirect based on user role
+    if (loading) return;
+
+    // Define public routes (Add all routes that don't need login)
+    const isPublicRoute =
+      pathName === "/login" ||
+      pathName === "/signup" ||
+      pathName === "/otp-verification" ||
+      pathName === "/welcome" ||
+      pathName === "/"; // index route
+
+    if (isAuthenticated && user) {
+      // 🟢 LOGGED IN LOGIC
+      // If user is logged in but on a public auth page, redirect to dashboard
+      if (pathName === "/login" || pathName === "/signup" || pathName === "/welcome") {
         switch (user.role) {
-          case 'USER':
-            router.replace('/category');
+          case 'SUPERADMIN':
+            router.replace('/superadmin/dashboard'); // Ensure this file exists
             break;
           case 'ADMIN':
             router.replace('/admin/dashboard');
             break;
-          case 'SUPERADMIN':
-            router.replace('/superadmin/dashboard');
-            break;
-          default:
-            router.replace('/');
+          default: // 'USER'
+            router.replace('/(tabs)/home'); // Or '/category' based on your structure
         }
       }
-      else if (!user) {
-        router.replace('/');
-      }
-      else {
-        router.replace('/login')
+    } else if (!isAuthenticated) {
+      // 🔴 LOGGED OUT LOGIC
+      // If user is NOT logged in and tries to access a private page, kick to Login
+      if (!isPublicRoute) {
+        router.replace('/login');
       }
     }
-  }, [loading, user]);
+  }, [user, loading, isAuthenticated, pathName]);
+
+
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -49,128 +58,66 @@ export default function Layout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* 🧑‍💼 USER ROUTES */}
-      {user?.role === "USER" && (
-        <>
-          <Stack.Screen name="shop" options={{ title: "Shop" }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="filters" options={{ title: "Filters", presentation: "modal" }} />
-          <Stack.Screen name="product-detail" options={{ title: "Product Details" }} />
-          <Stack.Screen name="shipping-method" options={{ title: "Shipping Method" }} />
-          <Stack.Screen name="shipping-address" options={{ title: "Shipping Address" }} />
-          <Stack.Screen name="payment-method" options={{ title: "Payment Method" }} />
-          <Stack.Screen name="order-success" options={{ headerShown: false }} />
-          <Stack.Screen name="order-tracking" options={{ title: "Order Tracking" }} />
-          <Stack.Screen name="user-orders" options={{ title: "My Orders" }} />
-        </>
-      )}
+      {/* ✅ FIX 1: ROUTE NAMES MUST MATCH YOUR FILE NAMES EXACTLY 
+         I updated these based on your console log list.
+      */}
 
-      {/* 🧑‍💻 ADMIN ROUTES */}
-      {user?.role === "ADMIN" && (
-        <>
-          <Stack.Screen name="admin/dashboard" options={{ title: "Admin Dashboard" }} />
-          <Stack.Screen name="admin/manage-users" options={{ title: "Manage Users" }} />
-        </>
-      )}
+      {/* --- PUBLIC ROUTES --- */}
+      <Stack.Screen name="index" />
+      <Stack.Screen name="welcome" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="signup" />
+      <Stack.Screen name="otp-verification" />
+      <Stack.Screen name="forgot-password" />
 
-      {/* Common Routes */}
-      <Stack.Screen name="login" options={{ title: "Sign In" }} />
-      <Stack.Screen name="signup" options={{ title: "Sign Up" }} />
-      <Stack.Screen name="otp-verification" options={{ title: "Verify OTP" }} />
+      {/* --- USER ROUTES --- */}
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="category" />
+
+      {/* 🚨 This was the error: Changed 'product-detail' to 'product-details' */}
+      <Stack.Screen name="product-details" options={{ title: "Product Details" }} />
+
+      {/* Dynamic Product Route (from your log: index 19) */}
+      <Stack.Screen name="product/[_id]" options={{ title: "Product View" }} />
+
+      {/* Dynamic Shop Route (from your log: index 22) */}
+      <Stack.Screen name="shop/[id]" options={{ title: "Shop" }} />
+
+      <Stack.Screen name="filters" options={{ presentation: 'modal' }} />
+
+      {/* Note: In your log, these are spelled 'shiping' (one 'p') */}
+      <Stack.Screen name="shiping-method" options={{ title: "Shipping Method" }} />
+      <Stack.Screen name="shiping-address" options={{ title: "Shipping Address" }} />
+
+      <Stack.Screen name="payment-method" options={{ title: "Payment Method" }} />
+      <Stack.Screen name="payment" options={{ title: "Payment" }} />
+      <Stack.Screen name="order-success" />
+      <Stack.Screen name="order-tracking" />
+
+      {/* --- USER DASHBOARD ROUTES --- */}
+      <Stack.Screen name="user/profile" />
+      <Stack.Screen name="user/wishlist" />
+      <Stack.Screen name="user/notifications" />
+      <Stack.Screen name="user/help" />
+      <Stack.Screen name="user/personal-details" />
+      <Stack.Screen name="user/dashboard/address" />
+      <Stack.Screen name="user/dashboard/checkout" />
+
+      {/* --- ADMIN ROUTES --- */}
+      <Stack.Screen name="admin" />
+      <Stack.Screen name="superadmin" />
+
+      {/* --- PRODUCT MANAGEMENT --- */}
+      <Stack.Screen name="product/addproduct/add-product" />
+      <Stack.Screen name="product/edit/[id]" />
     </Stack>
   );
+};
+
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <InitialLayout />
+    </AuthProvider>
+  );
 }
-
-
-// import { Stack, useRouter, useSegments } from "expo-router";
-// import { useEffect } from "react";
-// import { ActivityIndicator, View } from "react-native";
-// import { AuthProvider, useAuth } from "./context/AuthContext"; // ✅ Check this path
-
-// // 1️⃣ This component handles Logic & Routing
-// // It MUST be inside AuthProvider to use 'useAuth'
-// const InitialLayout = () => {
-//   const { user, loading, isAuthenticated } = useAuth();
-//   const router = useRouter();
-//   const segments = useSegments(); // Gets current route segments
-//   useEffect(() => {
-//     if (loading) return;
-
-//     // Check if user is currently in a public authentication screen
-//     const inAuthGroup = segments[0] === "login" || segments[0] === "signup" || segments[0] === "otp-verification" || segments[0] === "welcome";
-
-//     if (isAuthenticated && user) {
-//       // ✅ If user is Logged In...
-//       // And they are still on Login/Signup page, move them to Dashboard
-//       if (inAuthGroup) {
-//         switch (user.role) {
-//           case 'USER':
-//             router.replace('/category');
-//             break;
-//           case 'ADMIN':
-//             router.replace('/admin/dashboard');
-//             break;
-//           case 'SUPERADMIN':
-//             router.replace('/superadmin/dashboard');
-//             break;
-//           default:
-//             router.replace('/category'); // Fallback
-//         }
-//       }
-//     } else if (!isAuthenticated) {
-//       // ❌ If user is Not Logged In...
-//       // And they are NOT on a public page, kick them to Login
-//       if (!inAuthGroup) {
-//         router.replace('/login');
-//       }
-//     }
-//   }, [user, loading, isAuthenticated, segments]);
-
-//   // Show Loader while checking session
-//   if (loading) {
-//     return (
-//       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-//         <ActivityIndicator size="large" color="#2ECC71" />
-//       </View>
-//     );
-//   }
-
-//   // Define Screens
-//   return (
-//     <Stack screenOptions={{ headerShown: false }}>
-//       {/* 🧑‍💼 USER ROUTES */}
-//       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-//       <Stack.Screen name="category" options={{ headerShown: false }} />
-//       <Stack.Screen name="shop" options={{ title: "Shop" }} />
-//       <Stack.Screen name="filters" options={{ title: "Filters", presentation: "modal" }} />
-//       <Stack.Screen name="product-detail" options={{ title: "Product Details" }} />
-//       <Stack.Screen name="shipping-method" options={{ title: "Shipping Method" }} />
-//       <Stack.Screen name="shipping-address" options={{ title: "Shipping Address" }} />
-//       <Stack.Screen name="payment-method" options={{ title: "Payment Method" }} />
-//       <Stack.Screen name="order-success" options={{ headerShown: false }} />
-//       <Stack.Screen name="order-tracking" options={{ title: "Order Tracking" }} />
-//       <Stack.Screen name="user-orders" options={{ title: "My Orders" }} />
-
-//       {/* 🧑‍💻 ADMIN ROUTES */}
-//       <Stack.Screen name="admin/dashboard" options={{ title: "Admin Dashboard" }} />
-//       <Stack.Screen name="admin/manage-users" options={{ title: "Manage Users" }} />
-
-//       {/* 🔓 PUBLIC ROUTES */}
-//       <Stack.Screen name="index" options={{ headerShown: false }} />
-//       <Stack.Screen name="login" options={{ title: "Sign In" }} />
-//       <Stack.Screen name="signup" options={{ title: "Sign Up" }} />
-//       <Stack.Screen name="otp-verification" options={{ title: "Verify OTP" }} />
-//       <Stack.Screen name="welcome" options={{ headerShown: false }} />
-//     </Stack>
-//   );
-// };
-
-// // 2️⃣ This is the Main Export
-// // It simply wraps InitialLayout with the Provider
-// export default function RootLayout() {
-//   return (
-//     <AuthProvider>
-//       <InitialLayout />
-//     </AuthProvider>
-//   );
-// }

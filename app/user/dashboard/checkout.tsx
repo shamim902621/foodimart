@@ -41,7 +41,7 @@ async function createAddressAPI(userUUID: string, payload: any) {
 }
 
 async function placeOrderAPI(userUUID: string, cartId: string, addressId: any, paymentMethod: string) {
-    const res: any = await api(`/users/order/place`, "POST", {
+    const res: any = await api(`/users/orders/place/createOrder`, "POST", {
         userUUID,
         cartId,
         addressId, // Sending ID instead of raw string is better
@@ -169,7 +169,7 @@ export default function CheckoutScreen() {
         }
     };
 
-    const handlePlaceOrder = async () => {
+    const phandlePlaceOrder = async () => {
         if (!selectedAddress) {
             Alert.alert("Missing Address", "Please select a delivery address.");
             return;
@@ -181,8 +181,34 @@ export default function CheckoutScreen() {
             await placeOrderAPI(user!.userUUID || "", cartId!, selectedAddress.id || selectedAddress._id, paymentMethod);
 
             Alert.alert("Order Placed! 🎉", "Your food is on the way.", [
-                { text: "OK", onPress: () => router.replace("/order-tracking") }
+                { text: "OK", onPress: () => router.replace("/user/order-tracking") }
             ]);
+
+        } catch (error: any) {
+            Alert.alert("Order Failed", error.message);
+        } finally {
+            setPlacingOrder(false);
+        }
+    };
+    const handlePlaceOrder = async () => {
+        if (!selectedAddress) {
+            Alert.alert("Missing Address", "Please select a delivery address.");
+            return;
+        }
+
+        try {
+            setPlacingOrder(true);
+
+            // 1️⃣ Call API
+            const order = await placeOrderAPI(user!.userUUID || "", cartId!, selectedAddress.id || selectedAddress._id, paymentMethod);
+
+            // 2️⃣ Redirect to Success Screen with Order ID
+            // We pass the orderId as a parameter so the success screen can use it
+            router.replace({
+                pathname: "/user/order-success",
+                params: { orderId: order._id || order.id }
+            });
+
         } catch (error: any) {
             Alert.alert("Order Failed", error.message);
         } finally {

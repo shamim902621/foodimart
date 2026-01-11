@@ -218,7 +218,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.userName}>{user?.name}</Text>
+          <Text style={styles.userName}>{user?.firstName} {user?.lastName} </Text>
           <Text style={styles.userEmail}>{user?.email}</Text>
 
           {/* Stats Grid */}
@@ -246,7 +246,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.cardTitle}>Full Name</Text>
-              <Text style={styles.cardValue}>{user?.name}</Text>
+              <Text style={styles.cardValue}>{user?.firstName} {user?.lastName}</Text>
             </View>
             <Feather name="edit-2" size={16} color="#999" />
           </TouchableOpacity>

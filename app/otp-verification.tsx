@@ -292,7 +292,7 @@ export default function OTPVerificationScreen() {
   };
 
   // --- VERIFY ACTION ---
-  const handleVerify = async () => {
+  const phandleVerify = async () => {
     const otpString = otp.join('');
     if (otpString.length !== 6) {
       Alert.alert('Invalid OTP', 'Please enter the complete 6-digit code.');
@@ -341,7 +341,7 @@ export default function OTPVerificationScreen() {
           const userRole = result.user?.role || role;
           if (userRole === 'SUPERADMIN') router.replace('/superadmin/dashboard');
           else if (userRole === 'ADMIN') router.replace('/admin/dashboard');
-          else router.replace('/(tabs)/home'); // Standard User Home
+          else router.replace('/category'); // Standard User Home
         }, 500);
 
       } else {
@@ -357,7 +357,81 @@ export default function OTPVerificationScreen() {
       setLoading(false);
     }
   };
+  // ✅ THIS IS THE MAIN FIX
+  // ✅ REPLACE YOUR EXISTING handleVerify WITH THIS CODE
+  const handleVerify = async () => {
+    const otpString = otp.join('');
 
+    if (otpString.length !== 6) {
+      Alert.alert('Invalid OTP', 'Please enter the complete 6-digit code.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let url = `${API_BASE_URL}/auth/verify-otp`;
+      let payload: any = { mobile, otp: otpString };
+
+      // Signup logic
+      if (isSignup) {
+        url = `${API_BASE_URL}/auth/register`;
+        payload = {
+          mobile,
+          otp: otpString,
+          firstName,
+          lastName,
+          email,
+          password,
+          role: role || 'USER',
+        };
+      }
+
+      console.log(`Sending request to: ${url}`);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      console.log('Auth Response:', result);
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Invalid OTP');
+      }
+
+      // 1️⃣ Update Global Auth State
+      // Isko await karna zaroori hai
+      await login(result.token, result.user);
+
+      // 2️⃣ Get the Role from API response
+      const userRole = result.user?.role || 'USER';
+      console.log("✅ Login Success. Role:", userRole);
+
+      // 3️⃣ 🔥 FIX: Wait 500ms before redirecting
+      // Reason: _layout.tsx needs time to realize "user" is not null anymore.
+      setTimeout(() => {
+        if (userRole === 'SUPERADMIN') {
+          router.replace('/superadmin/dashboard');
+        } else if (userRole === 'ADMIN') {
+          router.replace('/admin/dashboard');
+        } else {
+          // Make sure this route matches your folder structure!
+          // Use '/(tabs)/home' or '/category' based on what you have in app/ folder
+          router.replace('/category');
+        }
+      }, 1000);
+
+    } catch (error: any) {
+      console.error('Verify Error:', error);
+      Alert.alert('Verification Failed', error.message);
+      setOtp(['', '', '', '', '', '']); // Reset OTP
+      inputs.current[0]?.focus(); // Focus first input
+      setLoading(false);
+    }
+  };
   // --- RESEND ACTION ---
   const handleResend = async () => {
     if (timer > 0) return;
