@@ -1,4 +1,5 @@
 // app/superadmin/shops/create.tsx
+import AppHeader from "@/components/profileHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -50,10 +51,6 @@ export default function CreateShop() {
     foodCategory: "",
     description: ""
   });
-
-
-
-
 
   const [loading, setLoading] = useState(false);
 
@@ -144,6 +141,7 @@ export default function CreateShop() {
 
   return (
     <ScrollView style={styles.container}>
+      <AppHeader title="Create Shop" showBack={true} />
 
       {/* Form */}
       <View style={styles.formCard}>
@@ -389,17 +387,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
-    padding: 16,
+    // padding: 16,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    // marginBottom: 24,
   },
-  backButton: {
-    padding: 8,
-    marginRight: 12,
-  },
+  // backButton: {
+  //   padding: 8,
+  //   marginRight: 12,
+  // },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -481,6 +479,7 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: "row",
     gap: 12,
+    marginBottom: 22
   },
   cancelButton: {
     flex: 1,
