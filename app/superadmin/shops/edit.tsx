@@ -21,7 +21,7 @@ type ShopForm = {
     ownerName: string;
     ownerEmail: string;
     phone: string;
-    street: string;
+    addressLine1: string;
     city: string;
     state: string;
     zipCode: string;
@@ -42,7 +42,7 @@ export default function EditShop() {
 
     const [form, setForm] = useState<ShopForm>({
         shopName: "", ownerName: "", ownerEmail: "", phone: "",
-        street: "", city: "", state: "", zipCode: "",
+        addressLine1: "", city: "", state: "", zipCode: "",
         lat: "", lng: "", category: "", foodCategory: "", description: ""
     });
 
@@ -54,6 +54,8 @@ export default function EditShop() {
 
     useEffect(() => {
         if (id) loadShop();
+        console.log(form);
+
     }, [id]);
 
     // 1️⃣ LOAD SHOP DETAILS
@@ -61,7 +63,6 @@ export default function EditShop() {
         try {
             setInitialLoading(true);
             const response: any = await api(`/superadmin/shops/getShopById/${id}`);
-
             if (response?.success) {
                 const s = response.data;
                 setForm({
@@ -69,7 +70,7 @@ export default function EditShop() {
                     ownerName: s.shop.ownerName ?? "",
                     ownerEmail: s.user?.email ?? "",
                     phone: s.user?.mobile ?? "",
-                    street: s.address?.street ?? "",
+                    addressLine1: s.address?.addressLine1 ?? "",
                     city: s.address?.city ?? "",
                     state: s.address?.state ?? "",
                     zipCode: s.address?.zipCode ?? "",
@@ -106,7 +107,7 @@ export default function EditShop() {
                 category: form.category,
                 foodCategory: form.category === "food" ? form.foodCategory : null,
                 address: {
-                    street: form.street,
+                    addressLine1: form.addressLine1,
                     city: form.city,
                     state: form.state,
                     zipCode: form.zipCode,
@@ -310,13 +311,13 @@ export default function EditShop() {
                             <Text style={styles.sectionHeader}>Address</Text>
 
                             <View style={styles.inputGroup}>
-                                <Label text="Street Address" />
+                                <Label text="Street Address" /> 
                                 <TextInput
                                     style={[styles.input, focusedInput === 'street' && styles.inputFocused]}
                                     placeholderTextColor="#9CA3AF"
-                                    value={form.street}
-                                    onChangeText={(text) => setForm({ ...form, street: text })}
-                                    onFocus={() => setFocusedInput('street')}
+                                    value={form.addressLine1}
+                                    onChangeText={(text) => setForm({ ...form, addressLine1: text })}
+                                    onFocus={() => setFocusedInput('addressLine1')}
                                     onBlur={() => setFocusedInput(null)}
                                 />
                             </View>

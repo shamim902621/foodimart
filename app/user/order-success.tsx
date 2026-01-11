@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
+import { router, useLocalSearchParams } from "expo-router";
 export default function OrderSuccessScreen() {
+  const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const trackOrder = () => {
-    router.push('/order-tracking');
+    // Redirect to tracking page with the specific Order ID
+    router.replace({
+      pathname: '/user/order-tracking',
+      params: { orderId: orderId }
+    });
   };
 
   const continueShopping = () => {
-    router.push('/home');
+    router.replace('/(tabs)/home');
   };
 
   return (
@@ -17,21 +21,19 @@ export default function OrderSuccessScreen() {
         <View style={styles.successIcon}>
           <Ionicons name="checkmark-circle" size={80} color="#328a0dff" />
         </View>
-        
-        <Text style={styles.title}>Order Success</Text>
-        <Text style={styles.subtitle}>
-          Your order was successful!
-        </Text>
+
+        <Text style={styles.title}>Order Placed Successfully!</Text>
+        <Text style={styles.subtitle}>Order ID: #{orderId?.slice(-6).toUpperCase()}</Text>
+
         <Text style={styles.description}>
-          You will get a response within{"\n"}
-          a few minutes.
+          Your order has been received. You can track its status in real-time.
         </Text>
 
         <View style={styles.buttons}>
           <TouchableOpacity style={styles.trackButton} onPress={trackOrder}>
-            <Text style={styles.trackButtonText}>Track order</Text>
+            <Text style={styles.trackButtonText}>Track Order</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.continueButton} onPress={continueShopping}>
             <Text style={styles.continueButtonText}>Continue Shopping</Text>
           </TouchableOpacity>

@@ -186,7 +186,7 @@ export default function AddProduct() {
         Alert.alert("Success", "Product uploaded successfully!");
         router.back();
 
-        await api(`/admin/shop/getProfile/${user?.userUUID}`,);
+        await api(`/admin/shop/getProfile/${user?.userUUID}`);
 
       } else {
         Alert.alert("Error", data.message || "Failed to upload product");
@@ -397,7 +397,8 @@ export default function AddProduct() {
             <Text style={styles.label}>Preparation Time</Text>
             <TextInput
               style={styles.input}
-              placeholder="15 mins"
+              placeholder="ex. 15 (in minutes)"
+              keyboardType="numeric"
               placeholderTextColor="rgba(63, 69, 78, 0.4)"
               value={form.preparationTime}
               onChangeText={(text) => updateForm('preparationTime', text)}
