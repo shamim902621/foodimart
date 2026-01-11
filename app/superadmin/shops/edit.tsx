@@ -1,7 +1,19 @@
-import { useAuth } from "@/hooks/useAuth";
+import AppHeader from "@/components/AppHeader"; // ✅ Reusable Header
+import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from "react-native";
 import { api } from "../../lib/apiService";
 
 type ShopForm = {
@@ -21,55 +33,37 @@ type ShopForm = {
 };
 
 export default function EditShop() {
-    const { token } = useAuth();
     const { id } = useLocalSearchParams();
+
+    // UI States
     const [initialLoading, setInitialLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
     const [form, setForm] = useState<ShopForm>({
-        shopName: "",
-        ownerName: "",
-        ownerEmail: "",
-        phone: "",
-        street: "",
-        city: "",
-        state: "",
-        zipCode: "",
-        lat: "",
-        lng: "",
-        category: "",
-        foodCategory: "",
-        description: ""
+        shopName: "", ownerName: "", ownerEmail: "", phone: "",
+        street: "", city: "", state: "", zipCode: "",
+        lat: "", lng: "", category: "", foodCategory: "", description: ""
     });
 
     const categoriesList = [
-        "grocery",
-        "medicine",
-        "beauty & cosmetic",
-        "electronics",
-        "fashion",
-        "sports",
-        "food",
-        "others"
+        "grocery", "medicine", "beauty & cosmetic",
+        "electronics", "fashion", "sports",
+        "food", "others"
     ];
 
-    const [loading, setLoading] = useState(false);
-
     useEffect(() => {
-        loadShop();
+        if (id) loadShop();
     }, [id]);
 
-    // -----------------------------
     // 1️⃣ LOAD SHOP DETAILS
-    // -----------------------------
     const loadShop = async () => {
         try {
             setInitialLoading(true);
-
             const response: any = await api(`/superadmin/shops/getShopById/${id}`);
 
             if (response?.success) {
                 const s = response.data;
-
                 setForm({
                     shopName: s.shop.name ?? "",
                     ownerName: s.shop.ownerName ?? "",
@@ -88,39 +82,29 @@ export default function EditShop() {
             }
         } catch (err) {
             console.log("ERROR:", err);
-            Alert.alert("Error", "Failed to load shop details");
+            Alert.alert("Error", "Failed to load shop details", [
+                { text: "Go Back", onPress: () => router.back() }
+            ]);
         } finally {
             setInitialLoading(false);
         }
     };
 
-
-    // -----------------------------
-    // 2️⃣ TOGGLE CATEGORIES OUTSIDE UI
-    // -----------------------------
-    const toggleCategory = (category: string) => {
-        setForm({
-            ...form,
-            category,
-            foodCategory: category === "food" ? form.foodCategory : "",
-        });
-    };
-
-    // -----------------------------
-    // 3️⃣ UPDATE API CALL
-    // -----------------------------
+    // 2️⃣ UPDATE API CALL
     const handleUpdate = async () => {
+        if (!form.shopName || !form.ownerName || !form.category) {
+            Alert.alert("Missing Fields", "Please fill required fields (*)");
+            return;
+        }
+
         try {
             setLoading(true);
-
             const payload = {
                 name: form.shopName,
                 ownerName: form.ownerName,
                 description: form.description,
-
                 category: form.category,
                 foodCategory: form.category === "food" ? form.foodCategory : null,
-
                 address: {
                     street: form.street,
                     city: form.city,
@@ -131,19 +115,18 @@ export default function EditShop() {
                         lng: Number(form.lng) || 0,
                     },
                 },
-
                 contact: {
                     phone: form.phone,
                     email: form.ownerEmail,
                 },
             };
 
-
             const response: any = await api(`/superadmin/shops/editShop/${id}`, "PUT", payload);
 
             if (response.success) {
-                Alert.alert("Success", "Shop updated successfully!");
-                router.back();
+                Alert.alert("Success", "Shop updated successfully!", [
+                    { text: "OK", onPress: () => router.back() }
+                ]);
             } else {
                 Alert.alert("Error", response.message || "Update failed!");
             }
@@ -156,207 +139,242 @@ export default function EditShop() {
 
     const formatCategory = (text: string) => {
         if (!text) return "";
-        return text
-            .split(" ")
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ");
+        return text.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
     };
+
+    // Helper Component for Labels
+    const Label = ({ text }: { text: string }) => (
+        <Text style={styles.label}>
+            {text.replace("*", "")}
+            {text.includes("*") && <Text style={{ color: '#EF4444' }}> *</Text>}
+        </Text>
+    );
+
     if (initialLoading) {
         return (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                <Text>Loading shop details...</Text>
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#2563EB" />
+                <Text style={styles.loadingText}>Loading shop details...</Text>
             </View>
         );
     }
 
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.title}>Edit Shop</Text>
-            {/* value={form.zipCode}
-            onChangeText={(text) => setForm({ ...form, zipCode: text })} */}
-            {/* SHOP NAME */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Shop Name *</Text>
-                <TextInput
-                    style={styles.input}
-                    value={form.shopName}
-                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                    onChangeText={(text) => setForm({ ...form, shopName: text })}
-                />
-            </View>
+        <View style={styles.container}>
+            {/* Header */}
+            <AppHeader title="Edit Shop" showBack={true} />
 
-            {/* OWNER / PHONE */}
-            <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={styles.label}>Owner Name *</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                        value={form.ownerName}
-                        onChangeText={(text) => setForm({ ...form, ownerName: text })}
-                    />
-                </View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.formCard}>
 
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={styles.label}>Phone *</Text>
-                    <TextInput
-                        style={styles.input}
-                        keyboardType="phone-pad"
-                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                        maxLength={10}
-                        value={form.phone}
-                        // onChangeText={(text) => setForm({ ...form, phone: text })}
-                        onChangeText={(text) => {
-                            const digits = text.replace(/[^0-9]/g, "");
-                            if (digits.length <= 10) {
-                                setForm({ ...form, phone: digits });
-                            }
-                        }}
+                        {/* Section: Basic Info */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionHeader}>Basic Information</Text>
 
-                    />
-                </View>
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Label text="Shop Name *" />
+                                <TextInput
+                                    style={[styles.input, focusedInput === 'name' && styles.inputFocused]}
+                                    value={form.shopName}
+                                    placeholderTextColor="#9CA3AF"
+                                    onChangeText={(text) => setForm({ ...form, shopName: text })}
+                                    onFocus={() => setFocusedInput('name')}
+                                    onBlur={() => setFocusedInput(null)}
+                                />
+                            </View>
 
-            {/* EMAIL */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Owner Email *</Text>
-                <TextInput
-                    style={styles.input}
-                    keyboardType="email-address"
-                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                    value={form.ownerEmail}
-                    onChangeText={(text) => setForm({ ...form, ownerEmail: text })}
-                />
-            </View>
+                            <View style={styles.inputGroup}>
+                                <Label text="Description" />
+                                <TextInput
+                                    style={[styles.input, styles.textArea, focusedInput === 'desc' && styles.inputFocused]}
+                                    multiline
+                                    numberOfLines={3}
+                                    value={form.description}
+                                    placeholderTextColor="#9CA3AF"
+                                    onChangeText={(text) => setForm({ ...form, description: text })}
+                                    onFocus={() => setFocusedInput('desc')}
+                                    onBlur={() => setFocusedInput(null)}
+                                />
+                            </View>
+                        </View>
 
-            {/* CATEGORY MULTI SELECT */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Category *</Text>
+                        {/* Section: Owner Info */}
+                        <View style={styles.section}>
+                            <Text style={styles.sectionHeader}>Owner Details</Text>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
-                    {categoriesList.map((cat) => {
-                        const isSelected = form.category === cat.toLowerCase();
+                            <View style={styles.inputGroup}>
+                                <Label text="Owner Name *" />
+                                <View style={styles.iconInputContainer}>
+                                    <Ionicons name="person-outline" size={20} color="#6B7280" style={styles.inputIcon} />
+                                    <TextInput
+                                        style={[styles.iconInput, focusedInput === 'owner' && styles.inputFocused]}
+                                        placeholderTextColor="#9CA3AF"
+                                        value={form.ownerName}
+                                        onChangeText={(text) => setForm({ ...form, ownerName: text })}
+                                        onFocus={() => setFocusedInput('owner')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                </View>
+                            </View>
 
-                        return (
-                            <TouchableOpacity
-                                key={cat}
-                                style={[
-                                    styles.categoryButton,
-                                    isSelected && styles.activeCategoryButton
-                                ]}
-                                // onPress={() => toggleCategory(cat)}
-                                onPress={() => toggleCategory(cat.toLowerCase())}
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Label text="Phone *" />
+                                    <TextInput
+                                        style={[styles.input, focusedInput === 'phone' && styles.inputFocused]}
+                                        keyboardType="number-pad"
+                                        placeholderTextColor="#9CA3AF"
+                                        maxLength={10}
+                                        value={form.phone}
+                                        onFocus={() => setFocusedInput('phone')}
+                                        onBlur={() => setFocusedInput(null)}
+                                        onChangeText={(text) => {
+                                            const digits = text.replace(/[^0-9]/g, "");
+                                            if (digits.length <= 10) setForm({ ...form, phone: digits });
+                                        }}
+                                    />
+                                </View>
+                                <View style={[styles.inputGroup, { flex: 1.2 }]}>
+                                    <Label text="Email *" />
+                                    <TextInput
+                                        style={[styles.input, focusedInput === 'email' && styles.inputFocused]}
+                                        keyboardType="email-address"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={form.ownerEmail}
+                                        onChangeText={(text) => setForm({ ...form, ownerEmail: text })}
+                                        onFocus={() => setFocusedInput('email')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                </View>
+                            </View>
+                        </View>
 
-                            >
-                                <Text
-                                    style={[
-                                        styles.categoryText,
-                                        isSelected && styles.activeCategoryText
-                                    ]}
-                                >
-                                    {formatCategory(cat)}
-                                    {/* {cat} */}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
-                </ScrollView>
-            </View>
-            {form.category === "food" && (
-                <View style={styles.inputGroup}>
-                    <Text style={styles.label}>Food Type *</Text>
+                        {/* Section: Category */}
+                        <View style={styles.section}>
+                            <Label text="Business Category *" />
+                            <View style={styles.categoryGrid}>
+                                {categoriesList.map((cat) => {
+                                    const isSelected = form.category === cat; // strict check
+                                    return (
+                                        <TouchableOpacity
+                                            key={cat}
+                                            style={[styles.categoryBadge, isSelected && styles.activeCategoryBadge]}
+                                            onPress={() => setForm({
+                                                ...form,
+                                                category: cat,
+                                                foodCategory: cat === "food" ? form.foodCategory : ""
+                                            })}
+                                        >
+                                            <Text style={[styles.categoryText, isSelected && styles.activeCategoryText]}>
+                                                {formatCategory(cat)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
 
-                    <View style={styles.row}>
-                        {["veg", "non-veg", "mix"].map((type) => {
-                            const isSelected = form.foodCategory === type;
+                            {/* Food Type Sub-selection */}
+                            {form.category === "food" && (
+                                <View style={styles.subCategoryBox}>
+                                    <Label text="Food Type *" />
+                                    <View style={styles.row}>
+                                        {["veg", "non-veg", "mix"].map((type) => {
+                                            const isSelected = form.foodCategory === type;
+                                            return (
+                                                <TouchableOpacity
+                                                    key={type}
+                                                    style={[styles.subCategoryBadge, isSelected && styles.activeSubCategoryBadge]}
+                                                    onPress={() => setForm({ ...form, foodCategory: type })}
+                                                >
+                                                    <Text style={[styles.subCategoryText, isSelected && styles.activeSubCategoryText]}>
+                                                        {formatCategory(type)}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
+                            )}
+                        </View>
 
-                            return (
-                                <TouchableOpacity
-                                    key={type}
-                                    style={[
-                                        styles.categoryButton,
-                                        isSelected && styles.activeCategoryButton,
-                                    ]}
-                                    onPress={() =>
-                                        setForm({ ...form, foodCategory: type })
-                                    }
-                                >
-                                    <Text
-                                        style={[
-                                            styles.categoryText,
-                                            isSelected && styles.activeCategoryText,
-                                        ]}
-                                    >
-                                        {/* {type.toUpperCase()} */}
-                                        {formatCategory(type)}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        })}
+                        {/* Section: Address */}
+                        <View style={[styles.section, { borderBottomWidth: 0 }]}>
+                            <Text style={styles.sectionHeader}>Address</Text>
+
+                            <View style={styles.inputGroup}>
+                                <Label text="Street Address" />
+                                <TextInput
+                                    style={[styles.input, focusedInput === 'street' && styles.inputFocused]}
+                                    placeholderTextColor="#9CA3AF"
+                                    value={form.street}
+                                    onChangeText={(text) => setForm({ ...form, street: text })}
+                                    onFocus={() => setFocusedInput('street')}
+                                    onBlur={() => setFocusedInput(null)}
+                                />
+                            </View>
+
+                            <View style={styles.row}>
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Label text="City" />
+                                    <TextInput
+                                        style={[styles.input, focusedInput === 'city' && styles.inputFocused]}
+                                        placeholderTextColor="#9CA3AF"
+                                        value={form.city}
+                                        onChangeText={(text) => setForm({ ...form, city: text })}
+                                        onFocus={() => setFocusedInput('city')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                </View>
+
+                                <View style={[styles.inputGroup, { flex: 1 }]}>
+                                    <Label text="State" />
+                                    <TextInput
+                                        style={[styles.input, focusedInput === 'state' && styles.inputFocused]}
+                                        placeholderTextColor="#9CA3AF"
+                                        value={form.state}
+                                        onChangeText={(text) => setForm({ ...form, state: text })}
+                                        onFocus={() => setFocusedInput('state')}
+                                        onBlur={() => setFocusedInput(null)}
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={styles.inputGroup}>
+                                <Label text="Zip Code" />
+                                <TextInput
+                                    style={[styles.input, focusedInput === 'zip' && styles.inputFocused]}
+                                    placeholderTextColor="#9CA3AF"
+                                    value={form.zipCode}
+                                    keyboardType="number-pad"
+                                    maxLength={6}
+                                    onChangeText={(text) => setForm({ ...form, zipCode: text })}
+                                    onFocus={() => setFocusedInput('zip')}
+                                    onBlur={() => setFocusedInput(null)}
+                                />
+                            </View>
+                        </View>
                     </View>
-                </View>
-            )}
 
-            {/* ADDRESS */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Street</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                    value={form.street}
-                    onChangeText={(text) => setForm({ ...form, street: text })}
-                />
-            </View>
+                    {/* Spacer for bottom buttons */}
+                    <View style={{ height: 120 }} />
+                </ScrollView>
+            </KeyboardAvoidingView>
 
-            {/* CITY / STATE */}
-            <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={styles.label}>City</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                        value={form.city}
-                        onChangeText={(text) => setForm({ ...form, city: text })}
-                    />
-                </View>
-
-                <View style={[styles.inputGroup, { flex: 1 }]}>
-                    <Text style={styles.label}>State</Text>
-                    <TextInput
-                        style={styles.input}
-                        placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                        value={form.state}
-                        onChangeText={(text) => setForm({ ...form, state: text })}
-                    />
-                </View>
-            </View>
-
-            {/* ZIP */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Zip Code</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                    value={form.zipCode}
-                    onChangeText={(text) => setForm({ ...form, zipCode: text })}
-                />
-            </View>
-
-            {/* DESCRIPTION */}
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>Description</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea]}
-                    multiline
-                    value={form.description}
-                    placeholderTextColor="rgba(63, 69, 78, 0.4)"
-                    onChangeText={(text) => setForm({ ...form, description: text })}
-                />
-            </View>
-
-            {/* BUTTONS */}
-            <View style={styles.actions}>
-                <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+            {/* Sticky Footer Buttons */}
+            <View style={styles.footerButtons}>
+                <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => router.back()}
+                    disabled={loading}
+                >
                     <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
 
@@ -365,70 +383,167 @@ export default function EditShop() {
                         styles.saveButton,
                         (!form.shopName || !form.ownerName || !form.category) && { opacity: 0.6 }
                     ]}
-                    disabled={!form.shopName || !form.ownerName || !form.category}
+                    disabled={loading || !form.shopName || !form.ownerName || !form.category}
                     onPress={handleUpdate}
                 >
-                    <Text style={styles.saveText}>
-                        {loading ? "Updating..." : "Update"}
-                    </Text>
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.saveText}>Update Shop</Text>
+                    )}
                 </TouchableOpacity>
-
             </View>
-
-        </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16, backgroundColor: "#F9FAFB" },
-    title: { fontSize: 22, fontWeight: "700", marginBottom: 20 },
+    container: { flex: 1, backgroundColor: "#F3F4F6" },
+    loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: '#F3F4F6' },
+    loadingText: { marginTop: 10, color: '#6B7280' },
 
-    inputGroup: { marginBottom: 16 },
-    label: { fontSize: 14, fontWeight: "500", marginBottom: 6 },
-    input: {
-        backgroundColor: "#fff",
-        borderWidth: 1,
-        borderColor: "#D1D5DB",
-        borderRadius: 12,
-        padding: 14,
+    scrollContent: { padding: 16 },
+
+    formCard: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    section: {
+        marginBottom: 24,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F3F4F6',
+        paddingBottom: 20,
+    },
+    sectionHeader: {
         fontSize: 16,
+        fontWeight: "700",
+        color: "#111827",
+        marginBottom: 16,
     },
 
+    // Inputs
+    inputGroup: { marginBottom: 16 },
+    label: { fontSize: 14, fontWeight: "600", color: "#374151", marginBottom: 8 },
+    input: {
+        backgroundColor: "#F9FAFB",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: "#1F2937",
+    },
+    inputFocused: {
+        borderColor: "#2563EB",
+        backgroundColor: "#FFFFFF"
+    },
     textArea: { height: 100, textAlignVertical: "top" },
-
     row: { flexDirection: "row", gap: 12 },
 
-    categoriesContainer: { flexDirection: "row", paddingVertical: 4 },
-    categoryButton: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        backgroundColor: "#FFF",
+    // Icon Inputs
+    iconInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: "#F9FAFB",
         borderWidth: 1,
-        borderRadius: 20,
-        borderColor: "#D1D5DB",
-        marginRight: 10,
+        borderColor: "#E5E7EB",
+        borderRadius: 10,
     },
-    activeCategoryButton: {
-        backgroundColor: "#2563EB",
-        borderColor: "#2563EB"
+    inputIcon: { marginLeft: 12 },
+    iconInput: {
+        flex: 1,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: "#1F2937",
     },
-    categoryText: { color: "#6B7280" },
-    activeCategoryText: { color: "#fff", fontWeight: "500" },
 
-    actions: { flexDirection: "row", gap: 12, marginTop: 20 },
+    // Category Grid
+    categoryGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    categoryBadge: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        backgroundColor: "#F3F4F6",
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: "transparent",
+    },
+    activeCategoryBadge: {
+        backgroundColor: "#EFF6FF",
+        borderColor: "#2563EB",
+    },
+    categoryText: { fontSize: 13, color: "#4B5563", fontWeight: "500" },
+    activeCategoryText: { color: "#2563EB", fontWeight: "700" },
+
+    // Food Sub-Category
+    subCategoryBox: {
+        marginTop: 16,
+        backgroundColor: '#F9FAFB',
+        padding: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    subCategoryBadge: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 8,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    activeSubCategoryBadge: {
+        borderColor: '#10B981',
+        backgroundColor: '#ECFDF5',
+    },
+    subCategoryText: { fontSize: 13, color: '#6B7280' },
+    activeSubCategoryText: { color: '#059669', fontWeight: '700' },
+
+    // Footer Buttons
+    footerButtons: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        padding: 16,
+        flexDirection: "row",
+        gap: 12,
+        borderTopWidth: 1,
+        borderTopColor: '#E5E7EB',
+        // 🔥 Added padding to avoid conflict with Dashboard Tabs/Home Indicator
+        paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    },
     cancelButton: {
         flex: 1,
-        padding: 16,
-        backgroundColor: "#E5E7EB",
+        padding: 14,
+        backgroundColor: "#F3F4F6",
         borderRadius: 12,
         alignItems: "center",
     },
     saveButton: {
-        flex: 1,
-        padding: 16,
+        flex: 2,
+        padding: 14,
         backgroundColor: "#2563EB",
         borderRadius: 12,
         alignItems: "center",
+        shadowColor: "#2563EB",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 3,
     },
     saveText: { color: "#fff", fontSize: 16, fontWeight: "600" },
     cancelText: { color: "#374151", fontSize: 16, fontWeight: "600" },
