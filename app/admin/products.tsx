@@ -20,7 +20,7 @@ import {
 
 import AppHeader from "@/components/profileHeader";
 import { API_BASE_URL } from "../../constants/constant";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 
 // --- 1. TYPE DEFINITIONS ---
 interface Product {

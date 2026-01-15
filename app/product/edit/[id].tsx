@@ -18,7 +18,7 @@ import {
 
 // --- Adjust these paths to match your folder structure ---
 import { API_BASE_URL } from "../../../constants/constant";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 // --- INTERFACES ---
 interface ProductForm {

@@ -1,6 +1,5 @@
 // import { ThemedText } from '@/components/themed-text';
 // import { ThemedView } from '@/components/themed-view';
-// import { useAuth } from '@/hooks/useAuth';
 // import { useLocalSearchParams, useRouter } from 'expo-router';
 // import { useRef, useState } from 'react';
 // import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
@@ -212,7 +211,6 @@
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useAuth } from '@/hooks/useAuth';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -227,6 +225,7 @@ import {
   View
 } from 'react-native';
 import { API_BASE_URL } from '../constants/constant';
+import { useAuth } from "./context/AuthContext";
 
 export default function OTPVerificationScreen() {
   // 1. Capture all possible params (Login params vs Signup params)
@@ -292,74 +291,46 @@ export default function OTPVerificationScreen() {
   };
 
   // --- VERIFY ACTION ---
-  const phandleVerify = async () => {
+  const handleVerify = async () => {
     const otpString = otp.join('');
+
     if (otpString.length !== 6) {
-      Alert.alert('Invalid OTP', 'Please enter the complete 6-digit code.');
+      Alert.alert('Invalid OTP', 'Please enter complete OTP');
       return;
     }
 
     setLoading(true);
 
     try {
-      let url = `${API_BASE_URL}/auth/verify-otp`;
-      let payload: any = { mobile, otp: otpString };
-
-      // 🚀 EDGE CASE: If Signup, switch endpoint & add user data
-      if (isSignup) {
-        url = `${API_BASE_URL}/auth/register`; // Or whatever your signup endpoint is
-        payload = {
-          mobile,
-          otp: otpString,
-          firstName,
-          lastName,
-          email,
-          password,
-          role: role || 'USER' // Default to USER if missing
-        };
-      }
-
-      console.log(`Verifying OTP for ${isSignup ? 'Signup' : 'Login'}...`);
-
-      const response = await fetch(url, {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ mobile, otp: otpString }),
       });
 
       const result = await response.json();
-      console.log('Auth Response:', result);
 
-      if (response.ok && result.success) {
-        // ✅ Login Success: Save Token
-        await login(result.token, result.user);
-
-        Alert.alert('Success', isSignup ? 'Account created successfully!' : 'Welcome back!');
-
-        // 🔀 Role-Based Redirect
-        setTimeout(() => {
-          const userRole = result.user?.role || role;
-          if (userRole === 'SUPERADMIN') router.replace('/superadmin/dashboard');
-          else if (userRole === 'ADMIN') router.replace('/admin/dashboard');
-          else router.replace('/category'); // Standard User Home
-        }, 500);
-
-      } else {
-        Alert.alert('Verification Failed', result.message || 'Invalid OTP code.');
-        setOtp(['', '', '', '', '', '']); // Reset OTP on failure
-        inputs.current[0]?.focus();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Invalid OTP');
       }
 
-    } catch (error) {
-      console.error('Verify Error:', error);
-      Alert.alert('Error', 'Server unreachable. Please check your connection.');
+      // ✅ ONLY THIS
+      await login(result.token, result.user);
+
+      Alert.alert('Success', 'Login successful');
+
+      // ❌ NO router.replace here
+
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
     } finally {
       setLoading(false);
     }
   };
+
   // ✅ THIS IS THE MAIN FIX
   // ✅ REPLACE YOUR EXISTING handleVerify WITH THIS CODE
-  const handleVerify = async () => {
+  const bhandleVerify = async () => {
     const otpString = otp.join('');
 
     if (otpString.length !== 6) {
@@ -412,17 +383,43 @@ export default function OTPVerificationScreen() {
 
       // 3️⃣ 🔥 FIX: Wait 500ms before redirecting
       // Reason: _layout.tsx needs time to realize "user" is not null anymore.
-      setTimeout(() => {
-        if (userRole === 'SUPERADMIN') {
-          router.replace('/superadmin/dashboard');
-        } else if (userRole === 'ADMIN') {
-          router.replace('/admin/dashboard');
-        } else {
-          // Make sure this route matches your folder structure!
-          // Use '/(tabs)/home' or '/category' based on what you have in app/ folder
-          router.replace('/category');
+      // setTimeout(() => {
+      //   if (userRole === 'SUPERADMIN') {
+      //     router.replace('/superadmin/dashboard');
+      //   } else if (userRole === 'ADMIN') {
+      //     router.replace('/admin/dashboard');
+      //   } else {
+      //     // Make sure this route matches your folder structure!
+      //     // Use '/(tabs)/home' or '/category' based on what you have in app/ folder
+      //     router.replace('/category');
+      //   }
+      // }, 1000);
+
+      if (result.success) {
+        await login(result.token, result.user); // save state first
+
+        Alert.alert('Success', result.message || 'Login successful!');
+        setTimeout(() => {
+          // router.replace('/category');
+        }, 500);
+        // Then navigate
+        switch (result?.user.role) {
+          case 'USER':
+            router.replace('/category');
+            break;
+
+          case 'ADMIN':
+            router.replace('/admin/dashboard');
+            break;
+
+          case 'SUPERADMIN':
+            router.replace('/superadmin/dashboard');
+            break;
+
+          default:
+            router.replace('/category');
         }
-      }, 1000);
+      }
 
     } catch (error: any) {
       console.error('Verify Error:', error);

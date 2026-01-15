@@ -1,50 +1,50 @@
 
-import { Stack, usePathname, useRouter } from "expo-router";
-import { useEffect } from "react";
+import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const InitialLayout = () => {
-  const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const { user, loading } = useAuth();
+  const pathname = usePathname();
 
-  // ✅ FIX 2: Use usePathname() to avoid TypeScript Union errors
-  const pathName = usePathname();
+  // ⏳ Wait till auth is restored
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#2ECC71" />
+      </View>
+    );
+  }
 
-  useEffect(() => {
-    if (loading) return;
+  // Public routes
+  const publicRoutes = [
+    "/",
+    "/welcome",
+    "/login",
+    "/signup",
+    "/otp-verification",
+    "/forgot-password",
+  ];
 
-    // Define public routes (Add all routes that don't need login)
-    const isPublicRoute =
-      pathName === "/login" ||
-      pathName === "/signup" ||
-      pathName === "/otp-verification" ||
-      pathName === "/welcome" ||
-      pathName === "/"; // index route
+  const isPublicRoute = publicRoutes.includes(pathname);
 
-    if (isAuthenticated && user) {
-      // 🟢 LOGGED IN LOGIC
-      // If user is logged in but on a public auth page, redirect to dashboard
-      if (pathName === "/login" || pathName === "/signup" || pathName === "/welcome") {
-        switch (user.role) {
-          case 'SUPERADMIN':
-            router.replace('/superadmin/dashboard'); // Ensure this file exists
-            break;
-          case 'ADMIN':
-            router.replace('/admin/dashboard');
-            break;
-          default: // 'USER'
-            router.replace('/(tabs)/home'); // Or '/category' based on your structure
-        }
-      }
-    } else if (!isAuthenticated) {
-      // 🔴 LOGGED OUT LOGIC
-      // If user is NOT logged in and tries to access a private page, kick to Login
-      if (!isPublicRoute) {
-        router.replace('/login');
-      }
+  // 🔴 Not logged in → protect private routes
+  if (!user && !isPublicRoute) {
+    return <Redirect href="/login" />;
+  }
+
+  // 🟢 Logged in → redirect based on role (ONLY once)
+  if (user && isPublicRoute) {
+    if (user.role === "SUPERADMIN") {
+      return <Redirect href="/superadmin/dashboard" />;
     }
-  }, [user, loading, isAuthenticated, pathName]);
+    if (user.role === "ADMIN") {
+      return <Redirect href="/admin/dashboard" />;
+    }
+    return <Redirect href="/category" />;
+  }
+
 
 
 
