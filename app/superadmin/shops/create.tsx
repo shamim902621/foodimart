@@ -1,6 +1,6 @@
 // app/superadmin/shops/create.tsx
 import AppHeader from "@/components/profileHeader";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";

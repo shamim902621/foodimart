@@ -1,5 +1,5 @@
 import AppHeader from "@/components/AppHeader"; // ✅ Standardized Header
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";

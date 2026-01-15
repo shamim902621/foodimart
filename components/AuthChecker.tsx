@@ -1,7 +1,7 @@
 // hooks/useAuthChecker.ts
 import { router, usePathname } from 'expo-router';
 import { useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../app/context/AuthContext';
 
 // --- Define allowed roles ---
 type UserRole = 'USER' | 'ADMIN' | 'SUPERADMIN';

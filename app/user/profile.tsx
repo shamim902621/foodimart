@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 import { api, apiFormData } from '../lib/apiService';
 
 export default function ProfileScreen() {

@@ -1,6 +1,6 @@
 import AppHeader from "@/components/AppHeader"; // ✅ Use the correct path
 import { StatBox } from "@/components/ui/stat-box"; // Assuming you have this component
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";

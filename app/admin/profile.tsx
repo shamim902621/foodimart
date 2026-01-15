@@ -4,7 +4,6 @@
 // import { useRouter } from "expo-router";
 // import { useEffect, useState } from "react";
 // import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-// import { useAuth } from "../../hooks/useAuth";
 // import { api } from "../lib/apiService";
 // export default function Profile() {
 //   const navigation = useNavigation();
@@ -390,7 +389,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/apiService";
 
 export default function Profile() {

@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 // import { useAuthChecker } from "../components/AuthChecker";
-// import { useAuth } from '../hooks/useAuth';
 
 
 export default function WelcomeScreen() {

@@ -1,6 +1,6 @@
 import AppHeader from "@/components/AppHeader"; // ✅ Reusable Header
 import { StatBox } from "@/components/ui/stat-box";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";

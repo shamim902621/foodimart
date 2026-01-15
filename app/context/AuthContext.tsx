@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             ]);
             setToken(null);
             setUser(null); // 👈 Ye turant _layout.tsx ko update karega
+            
         } catch (error) {
             console.error('Logout error:', error);
         }

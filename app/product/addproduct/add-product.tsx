@@ -20,7 +20,7 @@ import { api } from "../../lib/apiService";
 // Import your hooks/constants
 import AppHeader from "@/components/profileHeader";
 import { API_BASE_URL } from "../../../constants/constant";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 
 // --- INTERFACES FOR TYPE SAFETY ---
 interface ProductForm {

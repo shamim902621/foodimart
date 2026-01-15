@@ -99,7 +99,7 @@
 // });
 
 
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from './context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
