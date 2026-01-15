@@ -91,8 +91,9 @@ const InitialLayout = () => {
 
       <Stack.Screen name="payment-method" options={{ title: "Payment Method" }} />
       <Stack.Screen name="payment" options={{ title: "Payment" }} />
-      <Stack.Screen name="order-success" />
-      <Stack.Screen name="order-tracking" />
+      <Stack.Screen name="/user/order-success" />
+      <Stack.Screen name="/user/order-history" />
+      <Stack.Screen name="/user/order-tracking" />
 
       {/* --- USER DASHBOARD ROUTES --- */}
       <Stack.Screen name="user/profile" />
