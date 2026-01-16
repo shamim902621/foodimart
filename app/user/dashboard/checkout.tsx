@@ -471,6 +471,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import RazorpayCheckout from 'react-native-razorpay';
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/apiService";
 
@@ -485,6 +486,18 @@ interface Address {
     state: string;
     zipCode: string;
     isDefault?: boolean;
+}
+
+// Add these new API calls
+async function createRazorpayOrderAPI(amount: number) {
+    const res: any = await api(`/payment/create-order`, "POST", { amount });
+    if (!res.success) throw new Error(res.message);
+    return res;
+}
+
+async function verifyRazorpayPaymentAPI(data: any) {
+    const res: any = await api(`/payment/verify`, "POST", data);
+    return res.success;
 }
 
 // --- CONSTANTS ---
@@ -625,34 +638,258 @@ export default function CheckoutScreen() {
             Alert.alert("Error", e.message);
         }
     };
+    // only work cod
+    // const handlePlaceOrder = async () => {
+    //     if (!selectedAddress) {
+    //         Alert.alert("Missing Address", "Please select a delivery address.");
+    //         return;
+    //     }
 
-    const handlePlaceOrder = async () => {
+    //     try {
+    //         setPlacingOrder(true);
+    //         const addressId = selectedAddress.id || selectedAddress._id;
+
+    //         if (!addressId) throw new Error("Invalid Address ID");
+
+    //         const order = await placeOrderAPI(user!.userUUID || "", cartId!, addressId, paymentMethod);
+
+    //         router.replace({
+    //             pathname: "/user/order-success",
+    //             params: { orderId: order._id || order.id }
+    //         });
+
+    //     } catch (error: any) {
+    //         console.error("Order Failed", error);
+    //         Alert.alert("Order Failed", error.message || "Something went wrong");
+    //     } finally {
+    //         setPlacingOrder(false);
+    //     }
+    // };
+
+
+    // ✅ MAIN CHECKOUT HANDLER
+    const bhandlePlaceOrder = async () => {
+        // 1. Validation
         if (!selectedAddress) {
             Alert.alert("Missing Address", "Please select a delivery address.");
             return;
         }
 
+        const addressId = selectedAddress.id || selectedAddress._id;
+        if (!addressId) return Alert.alert("Error", "Invalid Address ID");
+
+        setPlacingOrder(true);
+
         try {
-            setPlacingOrder(true);
-            const addressId = selectedAddress.id || selectedAddress._id;
+            // ==========================================
+            // CASE 1: CASH ON DELIVERY (Simple Flow)
+            // ==========================================
+            if (paymentMethod === "COD") {
+                const order = await placeOrderAPI(user!.userUUID || "", cartId!, addressId, "COD");
 
-            if (!addressId) throw new Error("Invalid Address ID");
+                // Redirect to Success
+                router.replace({
+                    pathname: "/user/order-success",
+                    params: { orderId: order._id || order.id }
+                });
+            }
 
-            const order = await placeOrderAPI(user!.userUUID || "", cartId!, addressId, paymentMethod);
+            // ==========================================
+            // CASE 2: ONLINE PAYMENT (Razorpay Flow)
+            // ==========================================
+            else if (paymentMethod === "ONLINE") {
 
-            router.replace({
-                pathname: "/user/order-success",
-                params: { orderId: order._id || order.id }
-            });
+                // A. Calculate Amount (Grand Total)
+                const itemTotal = cart.totalPrice || cart.total || 0;
+                const grandTotal = itemTotal + DELIVERY_FEE;
+
+                // B. Create Order ID on Razorpay Server
+                // Note: Create this API wrapper if you haven't yet
+                const rpRes: any = await api(`/payment/create-order`, "POST", { amount: grandTotal });
+
+                if (!rpRes.success) throw new Error("Could not initiate payment");
+
+                // C. Open Razorpay UI
+                const options = {
+                    description: 'Food Order',
+                    image: 'https://cdn-icons-png.flaticon.com/512/7541/7541673.png', // Aapka App Logo
+                    currency: 'INR',
+                    key: rpRes.key_id, // Key from Backend
+                    amount: rpRes.amount, // Amount in Paise (e.g., 2000 for ₹20)
+                    name: 'FoodMart',
+                    order_id: rpRes.order_id, // Order ID from Backend
+                    prefill: {
+                        email: user?.email || 'test@example.com',
+                        contact: user?.mobile || '9999999999',
+                        name: user?.firstName || 'User'
+                    },
+                    theme: { color: '#FF6B35' }
+                };
+
+                // D. Handle Payment Result
+                RazorpayCheckout.open(options).then(async (data: any) => {
+                    // ✅ PAYMENT SUCCESSFUL (User paid via UPI/Card)
+                    console.log("Payment Success Data:", data);
+
+                    // E. Verify Signature on Backend
+                    const verifyRes: any = await api(`/payment/verify`, "POST", data);
+
+                    if (verifyRes.success) {
+                        // F. 🔥 CRITICAL STEP: CREATE ORDER IN DATABASE 🔥
+                        // Ab hum wahi API call karenge jo COD me karte hain, bas method 'ONLINE' hoga
+                        const dbOrder = await placeOrderAPI(
+                            user!.userUUID || "",
+                            cartId!,
+                            addressId,
+                            "ONLINE" // Payment Method
+                        );
+
+                        // G. Redirect to Tracking
+                        router.replace({
+                            pathname: "/user/order-success",
+                            params: { orderId: dbOrder._id || dbOrder.id }
+                        });
+                    } else {
+                        Alert.alert("Verification Failed", "Payment detected but verification failed.");
+                    }
+
+                }).catch((error: any) => {
+                    // ❌ Payment Cancelled or Failed
+                    // Error object ko pura print karo
+                    console.log("❌ Razorpay Failed Full Error:", JSON.stringify(error));
+
+                    // Specific error codes handle karo
+                    if (error.code === 0) {
+                        Alert.alert("Payment Cancelled", "User cancelled the payment.");
+                    } else if (error.code === 2) {
+                        Alert.alert("Network Error", "Internet connection lost during payment.");
+                    } else {
+                        Alert.alert("Payment Failed", error.description || "Something went wrong");
+                    }
+                    setPlacingOrder(false);
+                });
+            }
 
         } catch (error: any) {
-            console.error("Order Failed", error);
-            Alert.alert("Order Failed", error.message || "Something went wrong");
-        } finally {
+            console.error("Order Process Failed", error);
+            Alert.alert("Error", error.message || "Something went wrong");
             setPlacingOrder(false);
         }
     };
+    // ✅ MAIN CHECKOUT HANDLER
+    const handlePlaceOrder = async () => {
+        // 1. Validation
+        if (!selectedAddress) {
+            Alert.alert("Missing Address", "Please select a delivery address.");
+            return;
+        }
 
+        const addressId = selectedAddress.id || selectedAddress._id;
+        if (!addressId) return Alert.alert("Error", "Invalid Address ID");
+
+        setPlacingOrder(true);
+
+        try {
+            // 💰 UPDATED: Ensure Values are Numbers to prevent "Amount Error"
+            const itemTotal = Number(cart?.totalPrice || cart?.total || 0);
+            const grandTotal = itemTotal + Number(DELIVERY_FEE);
+
+            // ==========================================
+            // CASE 1: CASH ON DELIVERY (Simple Flow)
+            // ==========================================
+            if (paymentMethod === "COD") {
+                const order = await placeOrderAPI(user!.userUUID || "", cartId!, addressId, "COD");
+
+                router.replace({
+                    pathname: "/user/order-success",
+                    params: { orderId: order._id || order.id }
+                });
+            }
+
+            // ==========================================
+            // CASE 2: ONLINE PAYMENT (Razorpay Flow)
+            // ==========================================
+            else if (paymentMethod === "ONLINE") {
+
+                // A. Create Order ID on Razorpay Server
+                // Backend will handle the multiplication by 100
+                const rpRes: any = await api(`/payment/create-order`, "POST", { amount: grandTotal });
+
+                if (!rpRes.success) throw new Error("Could not initiate payment");
+
+                // 🛡️ UPDATED: Safety Checks for Options
+                const options = {
+                    description: 'Food Order Payment',
+                    image: 'https://cdn-icons-png.flaticon.com/512/7541/7541673.png',
+                    currency: 'INR',
+                    key: rpRes.key_id, // Key from Backend
+                    amount: rpRes.amount, // Amount from Backend (in Paise)
+                    name: 'FoodMart',
+                    order_id: rpRes.order_id, // Order ID from Backend
+                    prefill: {
+                        email: user?.email || 'guest@foodmart.com', // Fallback email
+                        contact: user?.mobile || '9999999999',      // Fallback mobile
+                        name: user?.firstName || 'Valued Customer'
+                    },
+                    theme: { color: '#FF6B35' }
+                };
+
+                // B. Open Razorpay UI
+                RazorpayCheckout.open(options).then(async (data: any) => {
+                    // ✅ PAYMENT SUCCESSFUL
+                    console.log("✅ Payment Success:", data);
+
+                    // C. Verify Signature on Backend
+                    const verifyRes: any = await api(`/payment/verify`, "POST", data);
+
+                    if (verifyRes.success) {
+                        // D. 🔥 PLACE ORDER IN DATABASE 🔥
+                        const dbOrder = await placeOrderAPI(
+                            user!.userUUID || "",
+                            cartId!,
+                            addressId,
+                            "ONLINE" // Payment Method
+                        );
+
+                        // E. Redirect to Tracking
+                        router.replace({
+                            pathname: "/user/order-success",
+                            params: { orderId: dbOrder._id || dbOrder.id }
+                        });
+                    } else {
+                        Alert.alert("Verification Failed", "Payment detected but signature invalid. Contact Support.");
+                        setPlacingOrder(false); // Stop loading if verification fails
+                    }
+
+                }).catch((error: any) => {
+                    // ❌ Payment Cancelled or Failed
+                    console.log("❌ Razorpay Error:", JSON.stringify(error));
+
+                    // Improved Error Handling
+                    const errorCode = error.code;
+                    const errorDesc = error.description || "Transaction cancelled";
+
+                    if (errorCode === 0) {
+                        // User cancelled (Back button pressed) - No Alert needed, just log
+                        console.log("User cancelled payment");
+                    } else if (errorCode === 2) {
+                        Alert.alert("Network Error", "Internet connection lost during payment.");
+                    } else {
+                        Alert.alert("Payment Failed", errorDesc);
+                    }
+
+                    setPlacingOrder(false); // Stop loading
+                });
+            }
+
+        } catch (error: any) {
+            console.error("Order Process Failed", error);
+            Alert.alert("Error", error.message || "Something went wrong");
+            setPlacingOrder(false); // Stop loading on catch
+        }
+        // Note: Don't put setPlacingOrder(false) in a 'finally' block for the main try-catch, 
+        // because for COD/Success we redirect, and unmounting component while setting state can cause warnings.
+    };
     if (loading) return <ActivityIndicator style={styles.center} size="large" color="#FF6B35" />;
     if (!cart) return <View style={styles.center}><Text>Cart Error</Text></View>;
 
@@ -735,8 +972,22 @@ export default function CheckoutScreen() {
                     </TouchableOpacity>
 
                     {/* Add Online Payment Option here later if needed */}
-                </View>
 
+                    <TouchableOpacity
+                        style={[styles.paymentOpt, paymentMethod === 'ONLINE' && styles.activePay]}
+                        onPress={() => setPaymentMethod('ONLINE')}>
+                        <Ionicons name="card-outline" size={20} color={paymentMethod === 'ONLINE' ? "#FF6B35" : "#000"} />
+                        <View>
+                            <Text style={[styles.payText, paymentMethod === 'ONLINE' && { color: '#FF6B35' }]}>Pay Online</Text>
+                            <Text style={styles.subText}>UPI, Card, Netbanking</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                {/* 4. PAYMENT METHOD SELECTION */}
+
+
+
+                <View style={{ height: 100 }} />
                 <View style={{ height: 100 }} />
             </ScrollView>
 
@@ -894,6 +1145,7 @@ const styles = StyleSheet.create({
     paymentOpt: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 16, borderRadius: 12, borderWidth: 1, borderColor: '#EEE' },
     activePay: { borderColor: '#FF6B35', backgroundColor: '#FFF5F0' },
     payText: { marginLeft: 10, fontWeight: '600' },
+    subText: { fontSize: 12, color: '#999', marginTop: 4 },
 
     // Footer
     footer: { position: 'absolute', bottom: 0, width: '100%', backgroundColor: '#FFF', padding: 16, borderTopWidth: 1, borderColor: '#EEE', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 30 },
