@@ -42,7 +42,13 @@ const InitialLayout = () => {
     if (user.role === "ADMIN") {
       return <Redirect href="/admin/dashboard" />;
     }
-    return <Redirect href="/category" />;
+    if (user.role === "RIDER") {
+      return <Redirect href="/rider/dashboard" />;
+    }
+    if (user.role === "USER") {
+      return <Redirect href="/category" />;
+    }
+    return <Redirect href="/" />;
   }
 
 
@@ -107,6 +113,13 @@ const InitialLayout = () => {
       {/* --- ADMIN ROUTES --- */}
       <Stack.Screen name="admin" />
       <Stack.Screen name="superadmin" />
+      {/* --- RIDER ROUTES --- */}
+      <Stack.Screen name="rider/dashboard" options={{ title: 'Rider Dashboard' }} />
+      <Stack.Screen name="rider/order-details" options={{ title: 'Order Details' }} />
+      <Stack.Screen name="rider/history" options={{ title: 'Delivery History' }} />
+      <Stack.Screen name="rider/profile" options={{ title: 'My Profile' }} />
+
+      {/* shops  */}
 
       {/* --- PRODUCT MANAGEMENT --- */}
       <Stack.Screen name="product/addproduct/add-product" />

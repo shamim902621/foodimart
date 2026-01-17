@@ -1,5 +1,4 @@
 import AppHeader from "@/components/AppHeader"; // ✅ Standardized Header
-import { useAuth } from "../../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -19,6 +18,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native";
+import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/apiService";
 
 // --- INTERFACES ---
@@ -50,7 +50,7 @@ const UserCard = React.memo(({ user, onToggleStatus, onViewDetails }: {
         <TouchableOpacity
             style={styles.userCard}
             activeOpacity={0.7}
-            onPress={() => onViewDetails(user.userUUID || "")} // 👈 Navigate to Tracking Page
+            // onPress={() => onViewDetails(user.userUUID || "")} // 👈 Navigate to Tracking Page
         >
             <View style={styles.cardMainRow}>
                 {/* User Icon */}

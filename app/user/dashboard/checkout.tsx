@@ -842,21 +842,41 @@ export default function CheckoutScreen() {
                     // C. Verify Signature on Backend
                     const verifyRes: any = await api(`/payment/verify`, "POST", data);
 
+                    // if (verifyRes.success) {
+                    //     // D. 🔥 PLACE ORDER IN DATABASE 🔥
+                    //     const dbOrder = await placeOrderAPI(
+                    //         user!.userUUID || "",
+                    //         cartId!,
+                    //         addressId,
+                    //         "ONLINE" // Payment Method
+                    //     );
+
+                    //     // E. Redirect to Tracking
+                    //     router.replace({
+                    //         pathname: "/user/order-success",
+                    //         params: { orderId: dbOrder._id || dbOrder.id }
+                    //     });
+                    // }
                     if (verifyRes.success) {
-                        // D. 🔥 PLACE ORDER IN DATABASE 🔥
+                        // 1. Create Order in DB
                         const dbOrder = await placeOrderAPI(
                             user!.userUUID || "",
                             cartId!,
                             addressId,
-                            "ONLINE" // Payment Method
+                            "ONLINE"
                         );
 
-                        // E. Redirect to Tracking
+                        // 2. Clear Cart Context locally if you have one
+                        // refreshCart(); 
+
+                        // 3. Redirect to Order Tracking (Pass the Order ID)
                         router.replace({
-                            pathname: "/user/order-success",
+                            pathname: "/user/order-tracking",
                             params: { orderId: dbOrder._id || dbOrder.id }
                         });
-                    } else {
+
+                    }
+                    else {
                         Alert.alert("Verification Failed", "Payment detected but signature invalid. Contact Support.");
                         setPlacingOrder(false); // Stop loading if verification fails
                     }

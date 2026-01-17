@@ -1,459 +1,426 @@
-// import AppHeader from "@/components/profileHeader";
-// import { Ionicons } from "@expo/vector-icons";
-// import React, { useState } from "react";
-// import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-// export default function Orders() {
-//   const allOrders = [
-//     { id: "1", customer: "Shamim Ahmad", total: 220, status: "Pending", items: 3, time: "10:30 AM", address: "123 Main St, Mumbai" },
-//     { id: "2", customer: "Aman Kumar", total: 300, status: "Delivered", items: 2, time: "9:15 AM", address: "456 Oak Avenue" },
-//     { id: "3", customer: "Priya Sharma", total: 450, status: "Preparing", items: 4, time: "11:45 AM", address: "789 Park Road" },
-//     { id: "4", customer: "Rahul Verma", total: 180, status: "Pending", items: 1, time: "12:20 PM", address: "321 Garden St" },
-//     { id: "5", customer: "Sneha Singh", total: 520, status: "Delivered", items: 5, time: "1:15 PM", address: "MG Road, Pune" },
-//     { id: "6", customer: "Rohit Mehta", total: 250, status: "Preparing", items: 2, time: "2:10 PM", address: "Park Street, Delhi" },
-//     { id: "7", customer: "Anjali Gupta", total: 150, status: "Pending", items: 1, time: "3:00 PM", address: "Lake View, Jaipur" },
-//     { id: "8", customer: "Vikram Chauhan", total: 400, status: "Delivered", items: 3, time: "4:30 PM", address: "Sector 22, Chandigarh" },
-//   ];
-
-//   const [activeTab, setActiveTab] = useState("All");
-
-//   const getStatusColor = (status: any) => {
-//     switch (status) {
-//       case "Pending":
-//         return "#FFA500";
-//       case "Preparing":
-//         return "#3498DB";
-//       case "Delivered":
-//         return "#2ECC71";
-//       case "Cancelled":
-//         return "#E74C3C";
-//       default:
-//         return "#95A5A6";
-//     }
-//   };
-
-//   const getStatusIcon = (status: any) => {
-//     switch (status) {
-//       case "Pending":
-//         return "⏳";
-//       case "Preparing":
-//         return "👨‍🍳";
-//       case "Delivered":
-//         return "✅";
-//       case "Cancelled":
-//         return "❌";
-//       default:
-//         return "📦";
-//     }
-//   };
-
-//   // 🧭 Filter orders based on selected tab
-//   const filteredOrders =
-//     activeTab === "All"
-//       ? allOrders
-//       : allOrders.filter((o) => o.status === activeTab);
-
-//   return (
-//     <View style={styles.container}>
-//       <AppHeader
-//         showBack={true}
-//         title="Orders"
-//       />
-
-//       {/* Header with Stats */}
-//       <View style={styles.header}>
-//         <View style={styles.statsRow}>
-//           <View style={styles.statItem}>
-//             <Text style={styles.statNumber}>{allOrders.length}</Text>
-//             <Text style={styles.statLabel}>Total</Text>
-//           </View>
-//           <View style={styles.statItem}>
-//             <Text style={styles.statNumber}>{allOrders.filter(o => o.status === 'Pending').length}</Text>
-//             <Text style={styles.statLabel}>Pending</Text>
-//           </View>
-//           <View style={styles.statItem}>
-//             <Text style={styles.statNumber}>{allOrders.filter(o => o.status === 'Delivered').length}</Text>
-//             <Text style={styles.statLabel}>Delivered</Text>
-//           </View>
-//         </View>
-//       </View>
-
-//       {/* Filter Tabs */}
-//       <View style={styles.filterTabs}>
-//         {["All", "Pending", "Preparing", "Delivered"].map((tab) => (
-//           <TouchableOpacity
-//             key={tab}
-//             style={[
-//               styles.filterTab,
-//               activeTab === tab && styles.activeTab
-//             ]}
-//             onPress={() => setActiveTab(tab)}
-//           >
-//             <Text style={activeTab === tab ? styles.activeTabText : styles.tabText}>
-//               {tab}
-//             </Text>
-//           </TouchableOpacity>
-//         ))}
-//       </View>
-
-//       {/* Orders List */}
-//       <FlatList
-//         data={filteredOrders}
-//         keyExtractor={(item) => item.id}
-//         showsVerticalScrollIndicator={false}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity
-//             style={styles.card}
-//           // onPress={() => router.push(`/order-details/${item.id}`)}
-//           >
-//             <View style={styles.cardHeader}>
-//               <View style={styles.orderInfo}>
-//                 <Text style={styles.orderId}>Order #{item.id}</Text>
-//                 <Text style={styles.customer}>{item.customer}</Text>
-//               </View>
-//               <View
-//                 style={[
-//                   styles.statusBadge,
-//                   { backgroundColor: getStatusColor(item.status) },
-//                 ]}
-//               >
-//                 <Text style={styles.statusIcon}>{getStatusIcon(item.status)}</Text>
-//                 <Text style={styles.statusText}>{item.status}</Text>
-//               </View>
-//             </View>
-
-//             <View style={styles.cardBody}>
-//               <View style={styles.orderDetails}>
-//                 <View style={styles.detailItem}>
-//                   <Ionicons name="time-outline" size={16} color="#7F8C8D" />
-//                   <Text style={styles.detailText}>{item.time}</Text>
-//                 </View>
-//                 <View style={styles.detailItem}>
-//                   <Ionicons name="cube-outline" size={16} color="#7F8C8D" />
-//                   <Text style={styles.detailText}>{item.items} items</Text>
-//                 </View>
-//                 <View style={styles.detailItem}>
-//                   <Ionicons name="location-outline" size={16} color="#7F8C8D" />
-//                   <Text style={styles.detailText} numberOfLines={1}>
-//                     {item.address}
-//                   </Text>
-//                 </View>
-//               </View>
-
-//               <View style={styles.cardFooter}>
-//                 <Text style={styles.total}>₹{item.total}</Text>
-//                 <TouchableOpacity
-//                   style={styles.viewBtn}
-//                 // onPress={() => router.push(`/order-details/${item.id}`)}
-//                 >
-//                   <Text style={styles.viewText}>View Details</Text>
-//                   <Ionicons name="chevron-forward" size={16} color="#fff" />
-//                 </TouchableOpacity>
-//               </View>
-//             </View>
-//           </TouchableOpacity>
-//         )}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#F8F9FA" },
-//   header: { marginBottom: 4 ,padding:8},
-//   title: { fontSize: 24, fontWeight: "bold", color: "#2ECC71", marginBottom: 4 },
-//   statsRow: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     backgroundColor: "#FFFFFF",
-//     padding: 8,
-//     borderRadius: 12,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//     elevation: 3,
-//   },
-//   statItem: { alignItems: "center" },
-//   statNumber: { fontSize: 20, fontWeight: "bold", color: "#2C3E50" },
-//   statLabel: { fontSize: 12, color: "#7F8C8D", marginTop: 2 },
-//   filterTabs: {
-//     flexDirection: "row",
-//     marginBottom: 4,
-//     backgroundColor: "#FFFFFF",
-//     padding: 4,
-//     borderRadius: 12,
-//   },
-//   filterTab: { flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 8 },
-//   activeTab: { backgroundColor: "#2ECC71" },
-//   tabText: { fontSize: 14, color: "#7F8C8D", fontWeight: "500" },
-//   activeTabText: { fontSize: 14, color: "#FFFFFF", fontWeight: "500" },
-//   card: {
-//     backgroundColor: "#FFFFFF",
-//     padding: 16,
-//     borderRadius: 16,
-//     marginBottom: 12,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//     elevation: 3,
-//   },
-//   cardHeader: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "flex-start",
-//     marginBottom: 12,
-//   },
-//   orderInfo: { flex: 1 },
-//   orderId: { fontSize: 14, fontWeight: "bold", color: "#2C3E50", marginBottom: 4 },
-//   customer: { fontSize: 16, fontWeight: "600", color: "#2C3E50" },
-//   statusBadge: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     paddingHorizontal: 8,
-//     paddingVertical: 4,
-//     borderRadius: 12,
-//     gap: 4,
-//   },
-//   statusIcon: { fontSize: 12 },
-//   statusText: { fontSize: 12, color: "#FFFFFF", fontWeight: "500" },
-//   cardBody: { gap: 12 },
-//   orderDetails: { gap: 8 },
-//   detailItem: { flexDirection: "row", alignItems: "center", gap: 8 },
-//   detailText: { fontSize: 14, color: "#7F8C8D" },
-//   cardFooter: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//     paddingTop: 12,
-//     borderTopWidth: 1,
-//     borderTopColor: "#ECF0F1",
-//   },
-//   total: { fontSize: 18, fontWeight: "bold", color: "#2C3E50" },
-//   viewBtn: {
-//     backgroundColor: "#2ECC71",
-//     flexDirection: "row",
-//     alignItems: "center",
-//     paddingHorizontal: 16,
-//     paddingVertical: 8,
-//     borderRadius: 8,
-//     gap: 4,
-//   },
-//   viewText: { color: "#FFFFFF", fontWeight: "500", fontSize: 14 },
-// });
-
-
 import AppHeader from "@/components/profileHeader";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState, useEffect, useCallback } from "react";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl, Alert } from "react-native";
-// import axios from 'axios'; // Ensure axios is installed
-// import { useAuth } from "@/context/AuthContext"; // Use your actual auth context
-import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image, Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { useAuth } from "../context/AuthContext"; // To get shopId
+import { api } from "../lib/apiService";
 
-// Define Type based on Schema
+
+// Interface
 interface OrderItem {
   _id: string;
   orderNumber: string;
-  customerName: string;
-  totalAmount: number;
   status: string;
-  createdAt: string; // ISO date string
-  address: string;
+  createdAt: string;
+  customerInfo: { name: string; phone: string; };
+  billDetails: { grandTotal: number; };
+  deliveryAddress: { fullAddress: string; };
+  riderId?: string; // Optional
   items: any[];
 }
-
-export default function Orders() {
-  // const { user, token } = useAuth(); // Get token for API
+export default function OrdersScreen() {
+  const { user } = useAuth(); // Assuming user contains shopId
   const [orders, setOrders] = useState<OrderItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false); // First load
+  const [loadingMore, setLoadingMore] = useState(false); // Pagination load
+  const [refreshing, setRefreshing] = useState(false); // Pull to refresh
+  // 🆕 MODAL STATE
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [onlineRiders, setOnlineRiders] = useState<any[]>([]);
+  const [ridersLoading, setRidersLoading] = useState(false);
+  // Filter State
   const [activeTab, setActiveTab] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock Shop ID (In production, get this from user context)
-  const SHOP_ID = "YOUR_SHOP_ID_HERE"; 
-  const API_URL = "http://your-ip-address:5000/api/orders"; // Replace with your API
+  // 1️⃣ Main Fetch Function
+  // const pfetchOrders = async (pageNum: number, shouldRefresh = false, search = searchQuery) => {
+  //   if (loadingMore) return;
 
-  // 1️⃣ Fetch Orders API
-  const fetchOrders = useCallback(async () => {
+  //   if (pageNum === 1) setLoading(true);
+  //   else setLoadingMore(true);
+
+  //   try {
+  //     const currentShopId = user?.userId || "6950e2923bc053d9c99f3542";
+
+  //     // ✅ CHANGE: Create Query String for GET Request
+  //     // URL looks like: /getShopOrders?shopId=123&page=1&limit=10&status=All
+  //     const queryString = `?shopId=${currentShopId}&status=${activeTab}&page=${pageNum}&limit=10&search=${search}`;
+
+  //     // ✅ CHANGE: Call API with GET and append queryString to URL
+  //     // No body object passed in GET
+  //     const res: any = await api(`/admin/shop/order/getShopOrders${queryString}`, 'GET');
+
+  //     if (res.success) {
+  //       if (shouldRefresh || pageNum === 1) {
+  //         setOrders(res.orders);
+  //       } else {
+  //         setOrders(prev => [...prev, ...res.orders]);
+  //       }
+  //       setHasMore(res.pagination.hasMore);
+  //     }
+  //   } catch (error) {
+  //     console.error("Fetch error:", error);
+  //   } finally {
+  //     setLoading(false);
+  //     setLoadingMore(false);
+  //     setRefreshing(false);
+  //   }
+  // };
+
+  // 1️⃣ Fetch Orders Logic (Production Optimized)
+  const fetchOrders = async (pageNum: number, shouldRefresh = false) => {
+    if (pageNum === 1) setLoading(true);
+
     try {
-      // Logic: If Admin, fetch Shop orders. If User, fetch My orders.
-      // Here we simulate Shop Admin flow:
-      
-      // const response = await axios.get(`${API_URL}/shop/${SHOP_ID}`, {
-      //   headers: { Authorization: `Bearer ${token}` }
-      // });
-      
-      // MOCK DATA (Remove this block when connecting real API) -------
-      // simulating network delay
-      await new Promise(r => setTimeout(r, 1000)); 
-      const mockResponse = [
-        { _id: "1", customerName: "Shamim Ahmad", totalAmount: 220, status: "Pending", items: [1,2,3], createdAt: new Date().toISOString(), address: "123 Main St, Mumbai", orderNumber: "ORD-123" },
-        { _id: "2", customerName: "Aman Kumar", totalAmount: 300, status: "Delivered", items: [1,2], createdAt: new Date().toISOString(), address: "456 Oak Avenue", orderNumber: "ORD-124" },
-      ];
-      setOrders(mockResponse);
-      // -------------------------------------------------------------
+      // LOGIC: Use Admin's UserID. Backend should find the Shop linked to this Admin.
+      // If you have a separate API to get ShopID, call that first. 
+      // For now, sending userId as shopId (assuming mapped in backend) or just userId.
+      const currentAdminId = user?.userUUID ;
 
-      // Uncomment for real API
-      // if(response.data.success) {
-      //   setOrders(response.data.orders);
-      // }
+      const queryString = `?userUUID=${currentAdminId}&status=${activeTab}&page=${pageNum}&limit=10&search=${searchQuery}`;
 
+      const res: any = await api(`/admin/shop/order/getShopOrders${queryString}`, 'GET');
+
+      if (res.success) {
+        if (shouldRefresh || pageNum === 1) {
+          setOrders(res.orders);
+        } else {
+          setOrders(prev => [...prev, ...res.orders]);
+        }
+        setHasMore(res.pagination.hasMore);
+      }
     } catch (error) {
       console.error("Fetch error:", error);
-      Alert.alert("Error", "Failed to fetch orders");
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  };
 
+  // 2️⃣ Effects
+  // Reset and fetch when Tab or Search changes
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    setPage(1);
+    setHasMore(true);
+    fetchOrders(1, true); // true = reset list
+  }, [activeTab, searchQuery]);
+  // 3️⃣ Status Update Handler (Accept/Reject/Prepare)
+  const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    try {
+      const res: any = await api('/admin/shop/order/updateStatus', 'POST', {
+        orderId,
+        status: newStatus
+      });
 
+      if (res.success) {
+        Alert.alert("Success", `Order ${newStatus}!`);
+        // Refresh local state instantly for better UX
+        setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+      } else {
+        Alert.alert("Error", res.message);
+      }
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  };
+
+  // 3️⃣ Handlers
   const onRefresh = () => {
     setRefreshing(true);
-    fetchOrders();
+    setPage(1);
+    fetchOrders(1, true);
   };
 
-  // 2️⃣ Formatting Helpers
-  const formatTime = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const loadMore = () => {
+    if (!hasMore || loadingMore || loading) return;
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchOrders(nextPage, false);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pending": return "#FFA500";
-      case "Preparing": return "#3498DB";
-      case "Delivered": return "#2ECC71";
-      case "Cancelled": return "#E74C3C";
+  // Formatting Helpers
+  const formatTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Helpers
+  const getStatusColor = (s: string) => {
+    switch (s) {
+      case "Pending": return "#FFA500"; // Orange
+      case "Confirmed": return "#3498DB"; // Blue
+      case "Preparing": return "#9B59B6"; // Purple
+      case "Ready": return "#F1C40F"; // Yellow
+      case "Delivered": return "#2ECC71"; // Green
+      case "Cancelled": return "#E74C3C"; // Red
       default: return "#95A5A6";
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Pending": return "⏳";
-      case "Preparing": return "👨‍🍳";
-      case "Delivered": return "✅";
-      case "Cancelled": return "❌";
-      default: return "📦";
+  // Render Function
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return <ActivityIndicator style={{ margin: 20 }} size="small" color="#2ECC71" />;
+  };
+
+
+  // 🆕 1. Fetch Online Riders (Jab Modal Open ho)
+  const fetchOnlineRiders = async () => {
+    setRidersLoading(true);
+    try {
+      const res: any = await api('/admin/delivery/get-online-riders', 'GET');
+      if (res.success) setOnlineRiders(res.riders);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setRidersLoading(false);
     }
   };
 
-  // 🧭 Client-side Filter
-  const filteredOrders = activeTab === "All"
-    ? orders
-    : orders.filter((o) => o.status === activeTab);
+  // 🆕 2. Open Modal Logic
+  const openAssignModal = (order: any) => {
+    setSelectedOrder(order);
+    setModalVisible(true);
+    fetchOnlineRiders();
+  };
 
-  // 3️⃣ Calculate Stats dynamically
-  const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'Pending').length,
-    delivered: orders.filter(o => o.status === 'Delivered').length
+  const handleAssign = async (riderId: string) => {
+    if (!selectedOrder) return;
+    try {
+      const res: any = await api('/admin/delivery/assign-order', 'POST', {
+        orderId: selectedOrder._id,
+        riderId: riderId
+      });
+      if (res.success) {
+        Alert.alert("Success", "Rider Assigned!");
+        setModalVisible(false);
+        // Update list locally
+        setOrders(prev => prev.map(o => o._id === selectedOrder._id ? { ...o, riderId: riderId, status: 'Ready' } : o));
+      } else { Alert.alert("Error", res.message); }
+    } catch (e: any) { Alert.alert("Error", e.message); }
   };
 
   return (
     <View style={styles.container}>
-      <AppHeader showBack={true} title="Orders Management" />
+      <AppHeader showBack={true} title="Shop Orders" />
 
-      {/* Header with Stats */}
-      <View style={styles.header}>
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.total}</Text>
-            <Text style={styles.statLabel}>Total</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.pending}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{stats.delivered}</Text>
-            <Text style={styles.statLabel}>Delivered</Text>
-          </View>
-        </View>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#888" style={{ marginRight: 10 }} />
+        <TextInput
+          placeholder="Search Order ID, Name or Phone..."
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={setSearchQuery} // Triggers useEffect
+        />
       </View>
-
-      {/* Filter Tabs */}
       <View style={styles.filterTabs}>
-        {["All", "Pending", "Preparing", "Delivered"].map((tab) => (
+        {["All", "Pending", "Confirmed", "Ready", "Delivered"].map((tab) => (
           <TouchableOpacity
             key={tab}
             style={[styles.filterTab, activeTab === tab && styles.activeTab]}
             onPress={() => setActiveTab(tab)}
           >
-            <Text style={activeTab === tab ? styles.activeTabText : styles.tabText}>
-              {tab}
-            </Text>
+            <Text style={activeTab === tab ? styles.activeTabText : styles.tabText}>{tab}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Orders List */}
-      {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#2ECC71" />
-        </View>
-      ) : (
-        <FlatList
-          data={filteredOrders}
-          keyExtractor={(item) => item._id}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#2ECC71"]} />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No orders found</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.card} onPress={() => {
-              // Navigate to details page (Create this file: app/order-details/[id].tsx)
-              // router.push(`/order-details/${item._id}`);
-            }}>
-              <View style={styles.cardHeader}>
-                <View style={styles.orderInfo}>
-                  <Text style={styles.orderId}>{item.orderNumber}</Text>
-                  <Text style={styles.customer}>{item.customerName}</Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-                  <Text style={styles.statusIcon}>{getStatusIcon(item.status)}</Text>
-                  <Text style={styles.statusText}>{item.status}</Text>
-                </View>
+      <FlatList
+        data={orders}
+        keyExtractor={(item) => item._id}
+        refreshing={refreshing}
+        onRefresh={() => fetchOrders(1, true)}
+        onEndReached={() => { if (hasMore && !loading) { setPage(p => p + 1); fetchOrders(page + 1); } }}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View>
+                <Text style={styles.orderId}>{item.orderNumber}</Text>
+                <Text style={styles.date}>{new Date(item.createdAt).toLocaleTimeString()}</Text>
               </View>
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+                <Text style={styles.statusText}>{item.status}</Text>
+              </View>
+            </View>
 
-              <View style={styles.cardBody}>
-                <View style={styles.orderDetails}>
-                  <View style={styles.detailItem}>
-                    <Ionicons name="time-outline" size={16} color="#7F8C8D" />
-                    <Text style={styles.detailText}>{formatTime(item.createdAt)}</Text>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <Ionicons name="cube-outline" size={16} color="#7F8C8D" />
-                    <Text style={styles.detailText}>{item.items.length} items</Text>
-                  </View>
-                  <View style={styles.detailItem}>
-                    <Ionicons name="location-outline" size={16} color="#7F8C8D" />
-                    <Text style={styles.detailText} numberOfLines={1}>{item.address}</Text>
-                  </View>
-                </View>
+            {/* Body */}
+            <View style={styles.cardBody}>
+              <Text style={styles.detailText}>👤 {item.customerInfo.name}</Text>
+              <Text style={styles.detailText}>📍 {item.deliveryAddress.fullAddress}</Text>
+              <Text style={styles.total}>Amount: ₹{item.billDetails.grandTotal}</Text>
+            </View>
 
-                <View style={styles.cardFooter}>
-                  <Text style={styles.total}>₹{item.totalAmount}</Text>
-                  <TouchableOpacity style={styles.viewBtn}>
-                    <Text style={styles.viewText}>View Details</Text>
-                    <Ionicons name="chevron-forward" size={16} color="#fff" />
+            {/* 🔥 ACTION BUTTONS (Logic based on Status) */}
+            <View style={styles.cardFooter}>
+
+              {/* CASE 1: Pending Order -> Accept or Reject */}
+              {item.status === 'Pending' && (
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: '#E74C3C' }]}
+                    onPress={() => handleStatusUpdate(item._id, 'Cancelled')}
+                  >
+                    <Text style={styles.btnText}>Reject</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, { backgroundColor: '#2ECC71' }]}
+                    onPress={() => handleStatusUpdate(item._id, 'Confirmed')}
+                  >
+                    <Text style={styles.btnText}>Accept</Text>
                   </TouchableOpacity>
                 </View>
+              )}
+
+              {/* CASE 2: Confirmed -> Mark Preparing */}
+              {item.status === 'Confirmed' && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: '#9B59B6' }]}
+                  onPress={() => handleStatusUpdate(item._id, 'Preparing')}
+                >
+                  <Text style={styles.btnText}>Start Preparing</Text>
+                </TouchableOpacity>
+              )}
+
+              {/* CASE 3: Preparing -> Assign Rider (Move to Ready) */}
+              {(item.status === 'Preparing' || item.status === 'Confirmed') && !item.riderId && (
+                <TouchableOpacity
+                  style={[styles.actionBtn, { backgroundColor: '#333', marginTop: 10 }]}
+                  onPress={() => openAssignModal(item)}
+                >
+                  <Text style={styles.btnText}>Assign Rider</Text>
+                  <Ionicons name="bicycle" size={16} color="#FFF" style={{ marginLeft: 5 }} />
+                </TouchableOpacity>
+              )}
+
+              {/* CASE 4: Rider Assigned */}
+              {item.riderId && (
+                <Text style={{ color: '#2ECC71', fontWeight: 'bold', fontSize: 12 }}>
+                  ✓ Rider Assigned
+                </Text>
+              )}
+
+            </View>
+          </View>
+        )}
+      />
+
+      <FlatList
+        data={orders}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View>
+                <Text style={styles.orderId}>{item.orderNumber}</Text>
+                {/* Show if Assigned */}
+                {item.riderId ? (
+                  <View style={styles.assignedBadge}>
+                    <Ionicons name="bicycle" size={12} color="#FFF" />
+                    <Text style={styles.assignedText}>Assigned</Text>
+                  </View>
+                ) : (
+                  <Text style={{ fontSize: 10, color: '#FF6B35' }}>● Pending Assignment</Text>
+                )}
               </View>
-            </TouchableOpacity>
-          )}
-        />
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+                <Text style={styles.statusText}>{item.status}</Text>
+              </View>
+            </View>
+
+            {/* Details */}
+            <View style={styles.cardBody}>
+              <Text style={styles.detailText}>📍 {item.deliveryAddress?.fullAddress}</Text>
+              <Text style={styles.total}>₹{item.billDetails?.grandTotal}</Text>
+            </View>
+
+            {/* 🔥 ASSIGN BUTTON (Only if Pending/Confirmed & Not Assigned) */}
+            <View style={styles.cardFooter}>
+              {!item.riderId && (item.status === 'Pending' || item.status === 'Confirmed') ? (
+                <TouchableOpacity
+                  style={styles.assignBtn}
+                  onPress={() => openAssignModal(item)}
+                >
+                  <Text style={styles.assignBtnText}>Assign Rider</Text>
+                  <Ionicons name="bicycle-outline" size={16} color="#FFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.viewBtn}>
+                  <Text style={styles.viewText}>View Details</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+      />
+
+      {/* 🚲 ASSIGN RIDER MODAL */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Delivery Partner</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.subTitle}>Available Online Riders</Text>
+
+            {ridersLoading ? (
+              <ActivityIndicator size="large" color="#FF6B35" />
+            ) : (
+              <FlatList
+                data={onlineRiders}
+                keyExtractor={(item) => item.id.toString()}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20, color: '#888' }}>No riders online right now.</Text>}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.riderCard}
+                    onPress={() => handleAssign(item.id)}
+                  >
+                    <Image
+                      source={{ uri: item.profilePicUrl || 'https://via.placeholder.com/50' }}
+                      style={styles.avatar}
+                    />
+                    <View style={{ flex: 1, marginLeft: 10 }}>
+                      <Text style={styles.riderName}>{item.fullName}</Text>
+                      <Text style={styles.riderInfo}>{item.RiderProfile?.vehicleType} • {item.RiderProfile?.vehicleNumber}</Text>
+                    </View>
+                    <View style={styles.selectBtn}>
+                      <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Assign</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Initial Loader Overlay */}
+      {loading && !refreshing && page === 1 && (
+        <View style={styles.centerLoader}>
+          <ActivityIndicator size="large" color="#2ECC71" />
+        </View>
       )}
     </View>
   );
@@ -461,89 +428,63 @@ export default function Orders() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F8F9FA" },
-  header: { marginBottom: 4, padding: 8 },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#FFFFFF",
-    padding: 12,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+
+  // Search Bar
+  searchContainer: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    margin: 10, paddingHorizontal: 15, borderRadius: 10, height: 50, elevation: 2
   },
-  statItem: { alignItems: "center", flex: 1 },
-  statNumber: { fontSize: 20, fontWeight: "bold", color: "#2C3E50" },
-  statLabel: { fontSize: 12, color: "#7F8C8D", marginTop: 2 },
-  filterTabs: {
-    flexDirection: "row",
-    marginBottom: 8,
-    backgroundColor: "#FFFFFF",
-    padding: 4,
-    borderRadius: 12,
-    marginHorizontal: 8,
-  },
+  searchInput: { flex: 1, fontSize: 16 },
+
+  // Tabs
+  filterTabs: { flexDirection: "row", marginBottom: 5, backgroundColor: "#FFF", padding: 5, borderRadius: 10, marginHorizontal: 10 },
   filterTab: { flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 8 },
   activeTab: { backgroundColor: "#2ECC71" },
-  tabText: { fontSize: 14, color: "#7F8C8D", fontWeight: "500" },
-  activeTabText: { fontSize: 14, color: "#FFFFFF", fontWeight: "500" },
-  card: {
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    marginHorizontal: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  orderInfo: { flex: 1 },
-  orderId: { fontSize: 13, fontWeight: "bold", color: "#95A5A6", marginBottom: 2 },
-  customer: { fontSize: 16, fontWeight: "700", color: "#2C3E50" },
-  statusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  statusIcon: { fontSize: 10 },
-  statusText: { fontSize: 11, color: "#FFFFFF", fontWeight: "600" },
-  cardBody: { gap: 12 },
-  orderDetails: { gap: 6 },
-  detailItem: { flexDirection: "row", alignItems: "center", gap: 8 },
-  detailText: { fontSize: 14, color: "#7F8C8D" },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F2F5",
-  },
-  total: { fontSize: 18, fontWeight: "bold", color: "#2C3E50" },
-  viewBtn: {
-    backgroundColor: "#2ECC71",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    gap: 4,
-  },
-  viewText: { color: "#FFFFFF", fontWeight: "500", fontSize: 13 },
-  loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  tabText: { fontSize: 13, color: "#666", fontWeight: "600" },
+  activeTabText: { fontSize: 13, color: "#FFF", fontWeight: "600" },
+
+  // Card
+  card: { backgroundColor: "#FFF", padding: 15, borderRadius: 12, marginBottom: 10, marginHorizontal: 10, elevation: 2 },
+  cardHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+  orderId: { fontSize: 12, fontWeight: "bold", color: "#999" },
+  customer: { fontSize: 16, fontWeight: "bold", color: "#333" },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start' },
+  statusText: { color: "#FFF", fontSize: 11, fontWeight: "bold" },
+  date: { fontSize: 10, color: '#888' },
+  cardBody: { gap: 8, marginBottom: 12 },
+  detailItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  detailText: { color: "#666", fontSize: 13 },
+
+  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingTop: 10, borderTopWidth: 1, borderColor: "#EEE" },
+  total: { fontSize: 18, fontWeight: "bold", color: "#2ECC71" },
+  viewBtn: { flexDirection: 'row', backgroundColor: '#333', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center', gap: 5 },
+  viewText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
+
   emptyContainer: { alignItems: 'center', marginTop: 50 },
-  emptyText: { color: '#95A5A6', fontSize: 16 }
+  emptyText: { color: '#999' },
+  centerLoader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.5)' }
+  ,
+  // NEW STYLES
+  assignedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#2ECC71', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginTop: 4, alignSelf: 'flex-start', gap: 4 },
+  assignedText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+
+  assignBtn: { flex: 1, backgroundColor: '#333', padding: 10, borderRadius: 8, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 },
+  assignBtnText: { color: '#FFF', fontWeight: 'bold' },
+
+  // Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#FFF', height: '60%', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 18, fontWeight: 'bold' },
+  subTitle: { fontSize: 12, color: '#666', marginBottom: 10, textTransform: 'uppercase' },
+
+  riderCard: { flexDirection: 'row', alignItems: 'center', padding: 15, backgroundColor: '#F9F9F9', borderRadius: 12, marginBottom: 10, borderWidth: 1, borderColor: '#EEE' },
+  avatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#DDD' },
+  riderName: { fontWeight: 'bold', fontSize: 16 },
+  riderInfo: { fontSize: 12, color: '#666' },
+  selectBtn: { backgroundColor: '#FF6B35', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 8 },
+  selectBtnText: { color: '#FFF', fontWeight: 'bold' },
+  actionRow: { flexDirection: 'row', gap: 10 },
+  actionBtn: { flex: 1, padding: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' },
+  btnText: { color: '#FFF', fontWeight: 'bold', fontSize: 12 },
 });
