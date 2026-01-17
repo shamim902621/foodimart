@@ -42,7 +42,7 @@ export default function OrderTrackingScreen() {
 
   // 2️⃣ Helper to determine Step Status (completed, current, pending)
   const getStepStatus = (stepStatus: string, currentStatus: string) => {
-    const statusOrder = ['Pending', 'Confirmed', 'Preparing', 'Out_for_Delivery', 'Delivered'];
+    const statusOrder = ['Pending', 'Confirmed', 'Preparing', 'Ready', 'Out_for_Delivery', 'Delivered'];
     const currentIndex = statusOrder.indexOf(currentStatus);
     const stepIndex = statusOrder.indexOf(stepStatus);
 
@@ -56,6 +56,7 @@ export default function OrderTrackingScreen() {
     { key: 'Pending', title: 'Order Placed', desc: 'We have received your order' },
     { key: 'Confirmed', title: 'Order Confirmed', desc: 'Restaurant has accepted your order' },
     { key: 'Preparing', title: 'Preparing', desc: 'Chef is preparing your food' },
+    { key: 'Ready', title: 'Rider Assigned', desc: 'Rider is on the way to shop' },
     { key: 'Out_for_Delivery', title: 'Out for Delivery', desc: 'Rider is on the way' },
     { key: 'Delivered', title: 'Delivered', desc: 'Enjoy your meal!' },
   ];

@@ -47,6 +47,34 @@ export default function Dashboard() {
         title="Dashboard Shop"
       />
 
+      {/* Quick Actions */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>⚡ Quick Actions</Text>
+        <View style={styles.quickActions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionIcon}>➕</Text>
+            <Text style={styles.actionText}>Add Product</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionIcon}>📋</Text>
+            <Text style={styles.actionText}>View Orders</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionIcon}>📊</Text>
+            <Text style={styles.actionText}>Inventory</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionIcon}>💰</Text>
+            <Text style={styles.actionText}>Sales Report</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton}>
+            <Text style={styles.actionIcon}>💰</Text>
+            <Text style={styles.actionText}>Mange Riders</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+
       {/* Main Stats Grid */}
       <View style={styles.statsGrid}>
         {/* Today's Sales */}
@@ -138,28 +166,7 @@ export default function Dashboard() {
         </View>
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>⚡ Quick Actions</Text>
-        <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>➕</Text>
-            <Text style={styles.actionText}>Add Product</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📋</Text>
-            <Text style={styles.actionText}>View Orders</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📊</Text>
-            <Text style={styles.actionText}>Inventory</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>💰</Text>
-            <Text style={styles.actionText}>Sales Report</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+
 
       {/* Monthly Revenue */}
       <View style={[styles.section, styles.revenueCard]}>

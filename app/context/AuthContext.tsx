@@ -5,8 +5,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 export interface User {
     id: string;
     mobile: string;
-    role: 'USER' | 'ADMIN' | 'SUPERADMIN';
-    name?: string;
+    role: 'USER' | 'ADMIN' | 'RIDER' | 'SUPERADMIN';
+    fullName?: string;
     firstName?: string;
     lastName?: string;
     email?: string;
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             ]);
             setToken(null);
             setUser(null); // 👈 Ye turant _layout.tsx ko update karega
-            
+
         } catch (error) {
             console.error('Logout error:', error);
         }
