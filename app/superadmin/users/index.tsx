@@ -43,7 +43,7 @@ const UserCard = React.memo(({ user, onToggleStatus, onViewDetails }: {
 }) => {
 
     const getStatusColor = (status: string) => {
-        return status === 'active' ? '#10B981' : '#EF4444';
+        return status === 'ACTIVE' ? '#10B981' : '#EF4444';
     };
 
     return (
@@ -69,10 +69,10 @@ const UserCard = React.memo(({ user, onToggleStatus, onViewDetails }: {
                 <View style={styles.statusContainer}>
                     <Switch
                         trackColor={{ false: "#D1D5DB", true: "#93C5FD" }}
-                        thumbColor={user.status === 'active' ? "#2563EB" : "#F3F4F6"}
+                        thumbColor={user.status === 'ACTIVE' ? "#2563EB" : "#F3F4F6"}
                         ios_backgroundColor="#3e3e3e"
                         onValueChange={() => onToggleStatus(user?.userUUID || "", user.status)}
-                        value={user.status === 'active'}
+                        value={user.status === 'ACTIVE'}
                     />
                     <Text style={[styles.statusText, { color: getStatusColor(user.status) }]}>
                         {user.status}
@@ -181,7 +181,7 @@ export default function ManageUsers() {
 
     // --- ACTIONS ---
     const handleToggleStatus = useCallback(async (userUUID: string, currentStatus: string) => {
-        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
         // Optimistic UI Update
         setUsers((prevUsers) =>
